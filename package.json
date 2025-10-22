@@ -22,6 +22,6 @@
     "image-to-base64": "^2.2.0",
     "jsonpath-js": "^0.2.0",
     "node-file-logger": "^0.9.5",
-    "puppeteer": "^24.15.0"
+    "puppeteer": "^24.26.0"
   }
 }
