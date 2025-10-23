@@ -5,10 +5,11 @@ NodeJS server to parse an event's page metadata from various platforms. Designed
 Supported plateforms :
 * Facebook
 * Instagram
+* Common meta data
 
 Working on :
-* Open Graph
 * HelloAsso
+* Shotgun
 
 # Getting started
 

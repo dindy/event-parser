@@ -4,6 +4,7 @@ const cors = require('cors');
 const scrapper = require('./scrapper.js');
 const fbParser = require('./facebook-parser.js');
 const instaParser = require('./instagram-parser.js');
+const defaultParser = require('./default-parser.js');
 
 const app = express();
 app.use(cors());
@@ -35,6 +36,7 @@ app.get("/scrap", async (req, res) => {
             break;
         default:
             // cookies_file = null;
+            parser = defaultParser;
             break;
     }
 

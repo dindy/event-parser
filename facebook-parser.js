@@ -3,24 +3,31 @@ const { getJsonPath, getFirstJsonPath } = require('./json-parser.js');
 const OGParser  = require('./og-parser.js');
 const fs = require('fs').promises;
 var he = require('he');
+const metaParser = require('./default-parser.js');
 
 module.exports = {
     parse: async (page, metas) => {
         const data = {};
+        data.images = [];
         const content = await page.content();
         await fs.writeFile('page.html', content);
 
-        OGMetas = await OGParser.parse(content);
+        commonMetas = await metaParser.parse(page, metas);
+        const url = commonMetas.metas.url;
+        metas.description = commonMetas.metas.description;
+        metas.url = commonMetas.metas.url;
+        metas.title = commonMetas.metas.title;
+        // if (commonMetas.images.length > 0) {
+        //     data.images.push(await convertUrlToBase64(commonMetas.images[0]));
+        // }
         let eventId = null;
-        const url = OGMetas.filter(meta => meta.property == 'og:url')[0]
         const idRegexp = /\/([0-9]{9,})\/$/g
-        const idMatches = [...url.content.matchAll(idRegexp)];
+        const idMatches = [...url.matchAll(idRegexp)];
         
         if (idMatches[0] && idMatches[0][1]) {
             eventId = idMatches[0][1];
         }
         
-
         const scripts = await page.$$eval('script', scripts => scripts
             .filter(script => script.type === "application/json")
             .map(script => script.textContent)
@@ -35,7 +42,6 @@ module.exports = {
                 if (label && label.indexOf('EventCometLineupsCardMeta') != -1) {
                     const startTimestamp = getFirstJsonPath("$..[*].start_timestamp", json);
                     const endTimestamp = getFirstJsonPath("$..[*].end_timestamp", json);
-                    console.log('startTimestamp', startTimestamp);
                     
                     if (startTimestamp && startTimestamp !== 0) {
                         metas.startTimestamp = startTimestamp;
@@ -49,7 +55,6 @@ module.exports = {
 
                 // ID
                 const scriptEventId = getFirstJsonPath("$..[*].result.data.event.id", json)
-                console.log('scriptEventId', scriptEventId);
                 
                 if (scriptEventId && eventId != scriptEventId) continue;
 
@@ -142,7 +147,6 @@ module.exports = {
             .map(image => image.src)
         );
         
-        data.images = [];
         for (const src of images) {
             data.images.push(await convertUrlToBase64(src));
         }
@@ -154,22 +158,22 @@ module.exports = {
             metas.url = matchesUrl[1];
         }
 
-        // Open graph
-        const regExp = /<meta\s[^>]*property=[\""'](og:[a-z]+)[\""']\s[^>]*content=[\""]([^\""]+?)[\""][^>]*>/g
-        const matches = [...content.matchAll(regExp)];
+        // // Open graph
+        // const regExp = /<meta\s[^>]*property=[\""'](og:[a-z]+)[\""']\s[^>]*content=[\""]([^\""]+?)[\""][^>]*>/g
+        // const matches = [...content.matchAll(regExp)];
 
-        if (matches) {
-            matches
-                .map(match => ({property: match[1], content:match[2]}))
-                .forEach(prop => {
-                    metas[prop.property] = he.decode(prop.content, {isAttributeValue: true}); 
+        // if (matches) {
+        //     matches
+        //         .map(match => ({property: match[1], content:match[2]}))
+        //         .forEach(prop => {
+        //             metas[prop.property] = he.decode(prop.content, {isAttributeValue: true}); 
     
-                    // Title
-                    if (prop.property === 'og:title') {
-                        metas.title = metas[prop.property];
-                    }
-                });
-        }
+        //             // Title
+        //             if (prop.property === 'og:title') {
+        //                 metas.title = metas[prop.property];
+        //             }
+        //         });
+        // }
 
         const extractAddressParts = string => {
 
