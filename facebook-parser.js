@@ -56,7 +56,7 @@ module.exports = {
                 // ID
                 const scriptEventId = getFirstJsonPath("$..[*].result.data.event.id", json)
                 
-                if (scriptEventId && eventId != scriptEventId) continue;
+                if (!scriptEventId || eventId != scriptEventId) continue;
 
                 const startTimestamp = getFirstJsonPath("$..[*].start_timestamp", json);
                 const endTimestamp = getFirstJsonPath("$..[*].end_timestamp", json);
