@@ -65,21 +65,24 @@ module.exports = {
                         }
                     }
                     let foundImages = getFirstJsonPath("$..['logo']", graph);
-                    console.log(foundImages);
                     
                     if (foundImages) {
                         images = [foundImages];
                     }
                     foundImages = getFirstJsonPath("$..['image']", graph);
-                    if (foundImages && foundImages.length > 0) {
-                        images = foundImages;
+                    if (foundImages) {
+                        if (Array.isArray(foundImages) && foundImages.length > 0) {
+                            images = foundImages;
+                        } else {
+                            images = [foundImages];
+                        }
                     }                    
                 }
             } catch (e) {
                 console.log('Erreur parsing JSON : ', e);
             }
         }
-        
+
         return {
             metas,
             images

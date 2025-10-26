@@ -16,7 +16,10 @@ module.exports = {
         
         let images = [];
         if (parsed.image) {
-            images.push(await convertUrlToBase64(parsed.image));
+            const parsedImage = await convertUrlToBase64(parsed.image);
+            if (parsedImage) {
+                images.push(parsedImage);
+            }
         }
         
         let parsedDates = parseDatesFromText(parsed.title + ' ' + parsed.description);
@@ -30,10 +33,15 @@ module.exports = {
         const parsedJsonLd = await jsonLdParser.parse(page);
         
         if (parsedJsonLd.images && parsedJsonLd.images.length > 0) {
+            
             for (const src of parsedJsonLd.images) {
-                images.push(await convertUrlToBase64(src));
+                const parsedImage = await convertUrlToBase64(src);
+                if (parsedImage) {
+                    images.push(parsedImage);
+                }                
             }
         }
+        
         return {
             images,
             metas: Object.assign(metas, parsedJsonLd.metas)

@@ -6,6 +6,7 @@ const fbParser = require('./facebook-parser.js');
 const instaParser = require('./instagram-parser.js');
 const defaultParser = require('./default-parser.js');
 const helloassoParser = require('./helloasso-parser.js');
+const shotgunParser = require('./shotgun-parser.js');
 
 const app = express();
 app.use(cors());
@@ -35,6 +36,9 @@ app.get("/scrap", async (req, res) => {
             break;
         case 'helloasso':
             parser = helloassoParser;
+            break;
+        case 'shotgun':
+            parser = shotgunParser;
             break;
         default:
             // cookies_file = null;

@@ -149,7 +149,10 @@ module.exports = {
         );
         
         for (const src of images) {
-            data.images.push(await convertUrlToBase64(src));
+            const parsedImage = await convertUrlToBase64(src);
+            if (parsedImage) {
+                data.images.push(parsedImage);
+            }            
         }
 
         // Canonical URL

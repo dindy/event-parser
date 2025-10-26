@@ -46,7 +46,9 @@ module.exports = {
             const images = object.image_versions2?.candidates;
             if (images && images.length > 0) {
               const base64Image = await convertUrlToBase64(images[0].url);
-              data.images.push(base64Image);
+              if (base64Image) {
+                data.images.push(base64Image);
+              }
             }
             
             if (object.user) {
@@ -85,7 +87,7 @@ module.exports = {
                 if (media.image_versions2?.candidates && media.image_versions2.candidates.length > 0) {
                   const url = media.image_versions2.candidates[0].url;
                   const base64Image = await convertUrlToBase64(url);
-                  if (!data.images.includes(base64Image)) {
+                  if (base64Image && !data.images.includes(base64Image)) {
                     data.images.push(base64Image);
                   } 
                 }
