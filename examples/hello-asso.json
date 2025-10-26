@@ -1,0 +1,53 @@
+{
+    "@context":"http://schema.org",
+    "@graph":[
+        {
+            "@context":"http://schema.org",
+            "@type":"Organization",
+            "url":"https://www.helloasso.com",
+            "logo":"https://www.helloasso.com/forms/helloasso-logo.png",
+            "name":"HelloAsso",
+            "sameAs":["https://www.facebook.com/helloasso",
+            "https://twitter.com/helloasso",
+            "https://www.youtube.com/channel/UCYz5xk40Yayisba7qTjHAdQ"]
+        },{
+            "@type":"Event",
+            "id":"https://www.helloasso.com/associations/dpdh/evenements/projection-feral-court-metrage",
+            "url":"https://www.helloasso.com/associations/dpdh/evenements/projection-feral-court-metrage",
+            "logo":"https://cdn.helloasso.com/img/photos/evenements/croppedimage-23fc34e9c15242fa8f4d368b4d19c504.png?resize=fit:500:360",
+            "description":"Des années après la disparition inexpliquée de son frère, Ismaël revient dans le village où il a grandi. \nLes souvenirs refont surface. Une nuit, sur la route, il percute un inconnu. En croisant son regard, il ressent en lui une étrange familiarité.",
+            "name":"FÉRAL - Projection du court-métrage ",
+            "organizer":{
+                "@type":"Organization",
+                "name":"DPDH",
+                "url":"https://www.helloasso.com/associations/dpdh"
+            },
+            "offers":{
+                "@type":"AggregateOffer",
+                "url":"https://www.helloasso.com/associations/dpdh/evenements/projection-feral-court-metrage",
+                "price":"NaN",
+                "priceCurrency":"Eur",
+                "offerCount":73,
+                "availability":"http://schema.org/SoldOut",
+                "offers":[{
+                    "url":"https://www.helloasso.com/associations/dpdh/evenements/projection-feral-court-metrage",
+                    "name":"0€",
+                    "priceCurrency":"Eur"
+                }]
+            },
+            "startDate":"2025-11-25T19:30:00+01:00",
+            "endDate":"2025-11-25T23:59:59+01:00",
+            "location":{
+                "@type":"Place",
+                "name":"UGC Gobelins ",
+                "address":{
+                    "@type":"PostalAddress",
+                    "streetAddress":"66b Avenue des Gobelins",
+                    "addressLocality":"Paris",
+                    "postalCode":"75013",
+                    "addressCountry":"FRA"
+                }
+            }
+        }
+    ]
+}

@@ -48,7 +48,7 @@ const convertMatchToTime = match => {
 }
 
 module.exports = {
-
+    monthTokens,
     parseDatesFromText: text => {
 
         let foundDates = [];

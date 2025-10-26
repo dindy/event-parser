@@ -1,0 +1,40 @@
+{
+    "@context":"https:\u002F\u002Fschema.org",
+    "@type":"MusicEvent",
+    "url":"https:\u002F\u002Fdice.fm\u002Fevent\u002Fq2anmx-karmen-20th-nov-rock-school-barbey-bordeaux-tickets",
+    "name":"Karmen ",
+    "startDate":"2025-11-20T20:30:00+01:00",
+    "endDate":"2025-11-20T23:45:00+01:00",
+    "eventAttendanceMode":"https:\u002F\u002Fschema.org\u002FOfflineEventAttendanceMode",
+    "eventStatus":"https:\u002F\u002Fschema.org\u002FEventScheduled",
+    "location":{
+        "@type":"Place",
+        "name":"ROCK SCHOOL BARBEY ",
+        "address":"18 Cr Barbey, 33800 Bordeaux, France",
+        "geo":{
+            "@type":"GeoCoordinates",
+            "latitude":44.82697479999999,
+            "longitude":-0.5634582000000001
+        }
+    },
+    "image":["https:\u002F\u002Fdice-media.imgix.net\u002Fattachments\u002F2025-09-02\u002F02b39f94-cd38-41f5-ba37-a29a9eca96e0.jpg?rect=0%2C1059%2C4235%2C4235"],
+    "description":"Après la sortie remarquée de son album « Comment t’aimer sans diamants ? » en avril 2025, Karmen s’impose comme l’une des figures montantes de la scène francophone.\n\nArtiste, auteur, compositeur, toplineur, Karmen porte ce projet par une plume affûtée, une voix grave et sensible, et un univers aux influences latines. L’album, salué par la critique et le public,\n\nexplore les failles, les espoirs, et les liens avec une rare intensité émotionnelle.\n\nÀ l’occasion de cette sortie, Karmen annonce sa tournée pour une dizaine de concerts à travers la France, la Belgique et la Suisse.\n\nUne série de dates intimes et fortes, à l’image de son projet, pour faire résonner en live toute la beauté brute de ses textes et l’élégance de sa mise en scène.\n\nKarmen en concert à Bordeaux à la Rock School Barbey le 20 novembre 2025, une soirée rare à ne pas manquer.",
+    "offers":[{
+        "@type":"Offer",
+        "url":"https:\u002F\u002Fdice.fm\u002Fevent\u002Fq2anmx-karmen-20th-nov-rock-school-barbey-bordeaux-tickets",
+        "price":"22.25",
+        "priceCurrency":"EUR",
+        "availability":"https:\u002F\u002Fschema.org\u002FInStock",
+        "validFrom":"2025-09-04T10:00:00+02:00"
+    }],
+    "performer":[{
+        "@type":"PerformingGroup",
+        "name":"Karmen",
+        "image":"https:\u002F\u002Fdice-i-scdn-co.imgix.net\u002Fimage\u002Fab6761610000e5eb7372b6895620e2ec2d5d77eb",
+        "url":"https:\u002F\u002Fdice.fm\u002Fartist\u002Fkarmen-m6kq9"
+    }],
+    "organizer":{
+        "@type":"Organization",
+        "name":"Présenté par Rock School Barbey"
+    }
+}

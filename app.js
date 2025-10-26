@@ -5,6 +5,7 @@ const scrapper = require('./scrapper.js');
 const fbParser = require('./facebook-parser.js');
 const instaParser = require('./instagram-parser.js');
 const defaultParser = require('./default-parser.js');
+const helloassoParser = require('./helloasso-parser.js');
 
 const app = express();
 app.use(cors());
@@ -27,12 +28,13 @@ app.get("/scrap", async (req, res) => {
 
     switch (provider) {
         case 'facebook':
-            // cookies_file = 'cookies_facebook.json';
             parser = fbParser;
             break;
         case 'instagram':
-            // cookies_file = 'cookies_instagram.json';
             parser = instaParser;
+            break;
+        case 'helloasso':
+            parser = helloassoParser;
             break;
         default:
             // cookies_file = null;

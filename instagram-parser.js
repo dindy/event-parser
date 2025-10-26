@@ -11,6 +11,7 @@ const { convertUrlToBase64 } = require('./utils.js');
 const fs = require('fs').promises;
 const { getJsonPath, getFirstJsonPath } = require('./json-parser.js');
 const { parseDatesFromText } = require('./parse-date.js');
+const defaultParser = require('./default-parser.js');
 
 module.exports = {
   parse: async (page, metas) => {
@@ -21,7 +22,12 @@ module.exports = {
     };
     const content = await page.content();
     await fs.writeFile('page.html', content);
-
+    
+    const commonMetas = await defaultParser.parse(page, metas);
+    metas.description = commonMetas.metas.description;
+    metas.url = commonMetas.metas.url;
+    // metas.title = commonMetas.metas.title;
+    
     const scripts = await page.$$eval('script', scripts => scripts
       .filter(script => script.type === "application/json")
       .map(script => script.textContent)

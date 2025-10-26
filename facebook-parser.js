@@ -1,9 +1,8 @@
 const { convertUrlToBase64 } = require('./utils.js');
 const { getJsonPath, getFirstJsonPath } = require('./json-parser.js');
-const OGParser  = require('./og-parser.js');
 const fs = require('fs').promises;
 var he = require('he');
-const metaParser = require('./default-parser.js');
+const defaultParser = require('./default-parser.js');
 
 module.exports = {
     parse: async (page, metas) => {
@@ -12,11 +11,13 @@ module.exports = {
         const content = await page.content();
         await fs.writeFile('page.html', content);
 
-        commonMetas = await metaParser.parse(page, metas);
+        const commonMetas = await defaultParser.parse(page, metas);
         const url = commonMetas.metas.url;
         metas.description = commonMetas.metas.description;
         metas.url = commonMetas.metas.url;
         metas.title = commonMetas.metas.title;
+        metas.startTimestamp = commonMetas.metas.startTimestamp;
+        metas.endTimestamp = commonMetas.metas.endTimestamp;
         // if (commonMetas.images.length > 0) {
         //     data.images.push(await convertUrlToBase64(commonMetas.images[0]));
         // }

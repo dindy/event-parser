@@ -1,5 +1,6 @@
 const fs = require('fs').promises;
 const metaParser = require('./meta-parser.js');
+const jsonLdParser = require('./json-ld-parser.js');
 const { parseDatesFromText } = require('./parse-date.js');
 const { convertUrlToBase64 } = require('./utils.js');
 
@@ -13,7 +14,7 @@ module.exports = {
         metas.title = parsed.title;        
         metas.url = parsed.url;        
         
-        const images = [];
+        let images = [];
         if (parsed.image) {
             images.push(await convertUrlToBase64(parsed.image));
         }
@@ -26,9 +27,16 @@ module.exports = {
             metas.endTimestamp = Math.floor(parsedDates.endDateTimeCandidate / 1000);            
         }
 
+        const parsedJsonLd = await jsonLdParser.parse(page);
+        
+        if (parsedJsonLd.images && parsedJsonLd.images.length > 0) {
+            for (const src of parsedJsonLd.images) {
+                images.push(await convertUrlToBase64(src));
+            }
+        }
         return {
             images,
-            metas
+            metas: Object.assign(metas, parsedJsonLd.metas)
         }
     }
 }
