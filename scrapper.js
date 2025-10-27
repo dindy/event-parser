@@ -6,7 +6,11 @@ const LOGGED_TOKEN = 'Sylvain';
 const getDefaultBrowser = async (url, headless) => {
   const browser = await puppeteer.launch({
     headless,
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      // '--proxy-server=http://127.0.0.1:8081'
+    ],
   });
   const context = browser.defaultBrowserContext();
   context.overridePermissions(url, []);

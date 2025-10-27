@@ -9,6 +9,7 @@ Supported platforms and formats :
 * [Dice](https://dice.fm/)
 * [Shotgun](https://shotgun.live/)
 * [Common meta data](https://metascraper.js.org/)
+* [Eventbrite](https://www.eventbrite.com/) (partial)
 
 Working on :
 * Any suggestions ?

@@ -1,5 +1,29 @@
 const { getJsonPath, getFirstJsonPath } = require('./json-parser.js');
 
+const eventTypes = [
+    'BusinessEvent',
+    'ChildrensEvent',
+    'ComedyEvent',
+    'CourseInstance',
+    'DanceEvent',
+    'DeliveryEvent',
+    'EducationEvent',
+    'EventSeries',
+    'ExhibitionEvent',
+    'Festival',
+    'FoodEvent',
+    'Hackathon',
+    'LiteraryEvent',
+    'MusicEvent',
+    'PublicationEvent',
+    'SaleEvent',
+    'ScreeningEvent',
+    'SocialEvent',
+    'SportsEvent',
+    'TheaterEvent',
+    'VisualArtsEvent',
+];
+
 module.exports = {
     parse: async (page) => { 
         const scripts = await page.$$eval('script', scripts => scripts
@@ -16,7 +40,7 @@ module.exports = {
                 let graph = getFirstJsonPath("$['@graph'][?(@['@type']=='Event')]", json);
                 
                 if (!graph) {
-                    if (json['@type'] && json['@type'] == 'MusicEvent') {
+                    if (json['@type'] && (eventTypes.includes(json['@type']) || json['@type'].indexOf('Event') !== -1 )) {
                         graph = json;
                     }
                 }
