@@ -2,16 +2,25 @@ const puppeteer = require('puppeteer');
 const fs = require('fs').promises;
 
 const LOGGED_TOKEN = 'Sylvain';
+const useProxy = process.env.USE_PROXY === '1' ? true : false;
+const proxyServer = process.env.PROXY_SERVER;
+const proxyUsername = process.env.PROXY_USERNAME;
+const proxyPassword = process.env.PROXY_PASSWORD;
 
 const getDefaultBrowser = async (url, headless) => {
+  const args = [
+    '--no-sandbox',
+    '--disable-setuid-sandbox',
+  ];
+  if (useProxy) {
+    console.log('Use proxy');
+    args.push('--proxy-server=' + proxyServer);
+  }
   const browser = await puppeteer.launch({
     headless,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      // '--proxy-server=http://127.0.0.1:8081'
-    ],
+    args,
   });
+  
   const context = browser.defaultBrowserContext();
   context.overridePermissions(url, []);
   return browser;
@@ -19,6 +28,13 @@ const getDefaultBrowser = async (url, headless) => {
 
 const getDefaultPage = async (browser) => {
   const page = await browser.newPage();
+  // Authenticate proxies
+  if (useProxy) {
+    await page.authenticate({
+        username: proxyUsername,
+        password: proxyPassword
+    });  
+  }
   const customUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:140.0) Gecko/20100101 Firefox/140.0'; 
   await page.setUserAgent(customUA);
   await page.setViewport({

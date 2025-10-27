@@ -16,7 +16,9 @@ Working on :
 
 # Getting started
 
+Create a .env file (see .env.sample)
+
 ```
 npm install
-node app.js
+node --env-file=.env app.js
 ```
