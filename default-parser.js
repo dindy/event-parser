@@ -12,7 +12,11 @@ module.exports = {
         
         metas.description = parsed.description;        
         metas.title = parsed.title;        
-        metas.url = parsed.url;        
+        metas.url = parsed.url;  
+        if (parsed.gps?.latitude && parsed.gps?.longitude) {
+            metas.physicalAddress.geom = `${parsed.gps.longitude};${parsed.gps.latitude}`
+        }
+        
         
         let images = [];
         if (parsed.image) {
