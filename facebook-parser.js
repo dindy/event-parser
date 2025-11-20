@@ -203,23 +203,40 @@ module.exports = {
 
             return null;
         }
-        
-        // Format Physical Address
-        if (metas.place) {
-            metas.physicalAddress.description = metas.place;
-        }
 
         // Address parts
+        let hasAddress = false
+
         // Get adress parts from metas.address
         if (metas.address) {
             const parts = extractAddressParts(metas.address)
-            if (parts) metas.physicalAddress = { ...metas.physicalAddress, ...parts }
+            if (parts) {
+                hasAddress = true 
+                metas.physicalAddress = { ...metas.physicalAddress, ...parts }
+            }
         }
+     
         // Else get adress parts from metas.place
-        if (metas.place && !metas.physicalAddress.locality) {
+        if (metas.place && !hasAddress) {
             const parts = extractAddressParts(metas.place)
-            if (parts) metas.physicalAddress = { ...metas.physicalAddress, ...parts }            
+            if (parts) {
+                hasAddress = true
+                metas.physicalAddress = { ...metas.physicalAddress, ...parts }
+            }
         }
+
+        // Format Physical Address
+        if (metas.place) {
+            const firstPart = metas.place.split(',')[0];
+            if (hasAddress) {
+                if (metas.physicalAddress.street.toUpperCase().indexOf(firstPart.toUpperCase()) === -1) {
+                    metas.physicalAddress.description = firstPart;
+                }
+            } else {
+                metas.physicalAddress.description = firstPart;
+            }
+        }   
+
         // Get position
         if (metas.position) {
             metas.physicalAddress.geom = `${metas.position.longitude};${metas.position.latitude}`;
