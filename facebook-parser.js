@@ -61,7 +61,6 @@ module.exports = {
 
                 const startTimestamp = getFirstJsonPath("$..[*].start_timestamp", json);
                 const endTimestamp = getFirstJsonPath("$..[*].end_timestamp", json);
-                console.log('startTimestamp', startTimestamp);
                 
                 if (startTimestamp && startTimestamp !== 0) {
                     metas.startTimestamp = startTimestamp;
@@ -180,23 +179,22 @@ module.exports = {
         // }
 
         const extractAddressParts = string => {
-
+            
             let address = {};
-            const addressRegexp = /(?:([^,]+), )?([^,]+), ([0-9]{5}) ([^,]+), (.+)/;
+            const addressRegexp = /(?:([^,]+), )?([^,]+), (?:([0-9]{5}) )?([^,]+), (.+)/;
             const addressRegexpResult = addressRegexp.exec(string);            
-
+            
             if (addressRegexpResult) {
                 if (typeof addressRegexpResult[1] !== "undefined") {                    
                     address.street = addressRegexpResult[1].trim() + ', ' + addressRegexpResult[2].trim();
-                    address.postalCode = addressRegexpResult[3].trim();
-                    address.locality = addressRegexpResult[4].trim();
-                    address.country = addressRegexpResult[5].trim();
                 } else {
                     address.street = addressRegexpResult[2].trim();
-                    address.postalCode = addressRegexpResult[3].trim();
-                    address.locality = addressRegexpResult[4].trim();
-                    address.country = addressRegexpResult[5].trim();
                 }
+                if (typeof addressRegexpResult[3] !== "undefined") {
+                    address.postalCode = addressRegexpResult[3].trim();
+                }
+                address.locality = addressRegexpResult[4].trim();
+                address.country = addressRegexpResult[5].trim();
 
                 return address;
             }            

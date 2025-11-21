@@ -13,7 +13,6 @@ const getDefaultBrowser = async (url, headless) => {
     '--disable-setuid-sandbox',
   ];
   if (useProxy) {
-    console.log('Use proxy');
     args.push('--proxy-server=' + proxyServer);
   }
   const browser = await puppeteer.launch({
@@ -71,13 +70,13 @@ module.exports = {
     const html = await page.content();
     const found = html.indexOf(LOGGED_TOKEN) !== -1;
     if (found && cookiesFile) {
-      console.log('Logged in !');
+      // console.log('Logged in !');
       // Save our freshest cookies
       await page.cookies().then(async (freshCookies) => {
         await fs.writeFile(cookiesFile, JSON.stringify(freshCookies, null, 2));
       });
     } else {
-      console.log('Not logged in :-(');
+      // console.log('Not logged in :-(');
     }
 
     // const content = await page.content();

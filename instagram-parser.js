@@ -15,7 +15,6 @@ const defaultParser = require('./default-parser.js');
 
 module.exports = {
   parse: async (page, metas) => {
-    console.log('parsing');
 
     const data = {
       images: []
