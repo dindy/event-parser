@@ -1,4 +1,4 @@
-const { convertUrlToBase64 } = require('./utils.js');
+const { convertUrlToBase64, extractAddressParts } = require('./utils.js');
 const { getJsonPath, getFirstJsonPath } = require('./json-parser.js');
 const fs = require('fs').promises;
 var he = require('he');
@@ -6,12 +6,14 @@ const defaultParser = require('./default-parser.js');
 
 module.exports = {
     parse: async (page, metas) => {
+
         const data = {};
         data.images = [];
         const content = await page.content();
         await fs.writeFile('page.html', content);
 
         const commonMetas = await defaultParser.parse(page, metas);
+        
         const url = commonMetas.metas.url;
         metas.description = commonMetas.metas.description;
         metas.url = commonMetas.metas.url;
@@ -178,29 +180,6 @@ module.exports = {
         //         });
         // }
 
-        const extractAddressParts = string => {
-            
-            let address = {};
-            const addressRegexp = /(?:([^,]+), )?([^,]+), (?:([0-9]{5}) )?([^,]+), (.+)/;
-            const addressRegexpResult = addressRegexp.exec(string);            
-            
-            if (addressRegexpResult) {
-                if (typeof addressRegexpResult[1] !== "undefined") {                    
-                    address.street = addressRegexpResult[1].trim() + ', ' + addressRegexpResult[2].trim();
-                } else {
-                    address.street = addressRegexpResult[2].trim();
-                }
-                if (typeof addressRegexpResult[3] !== "undefined") {
-                    address.postalCode = addressRegexpResult[3].trim();
-                }
-                address.locality = addressRegexpResult[4].trim();
-                address.country = addressRegexpResult[5].trim();
-
-                return address;
-            }            
-
-            return null;
-        }
 
         // Address parts
         let hasAddress = false
