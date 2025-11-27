@@ -63,7 +63,7 @@ module.exports = {
         }        
 
         // TODO: Keep bigger logo
-        let logos = await page.$$eval(`a svg[aria-label="${metas.name}"] image`, images => images
+        let logos = await page.$$eval(`svg[aria-label="${metas.name}"] image`, images => images
             .map(image => image.getAttribute('xlink:href'))
         );
 
