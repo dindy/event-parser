@@ -106,6 +106,14 @@ module.exports = {
                     metas.address = address;
                 }
 
+                // Cover
+                const fullImage = getFirstJsonPath("$..[*].cover_photo..full_image.uri", json);
+                if (fullImage) {
+                    const parsedImage = await convertUrlToBase64(fullImage);
+                    if (parsedImage) {
+                        data.images.push(parsedImage);
+                    }                     
+                }
                 // Hosts
                 const hostsContext = getJsonPath("$..[*].event_host_context_row_info.title.ranges[:].entity", json);
                 if (hostsContext) {
