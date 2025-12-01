@@ -4,6 +4,7 @@ const cors = require('cors');
 const scrapper = require('./scrapper.js');
 const fbParser = require('./facebook-parser.js');
 const fbGroupParser = require('./parsers/facebook-group-parser.js');
+const instaGroupParser = require('./parsers/instagram-group-parser.js');
 const defaultGroupParser = require('./parsers/default-group-parser.js');
 const instaParser = require('./instagram-parser.js');
 const defaultParser = require('./default-parser.js');
@@ -76,6 +77,9 @@ const scrapGroup = async (url, provider) => {
     switch (provider) {
         case 'facebook':
             parser = fbGroupParser;
+            break;
+        case 'instagram':
+            parser = instaGroupParser;
             break;
         default:
             parser = defaultGroupParser;

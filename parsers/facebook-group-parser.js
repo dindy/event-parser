@@ -14,7 +14,8 @@ module.exports = {
         const url = commonMetas.metas.url;        
         metas.description = commonMetas.metas.description;
         metas.url = commonMetas.metas.url;
-        
+        metas.name = commonMetas.metas.title;
+
         const scripts = await page.$$eval('script', scripts => scripts
             .filter(script => script.type === "application/json")
             .map(script => script.textContent)
@@ -38,18 +39,22 @@ module.exports = {
                     metas.description = description;
                 }
 
-                const name = getFirstJsonPath("$..[*].result.data.user..node..owning_profile.name", json);
-                if (name) {
-                    metas.name = name
+                // const name = getFirstJsonPath("$..[*].result.data.user..node..owning_profile.name", json);
+                // if (name) {
+                //     metas.name = name
                     
-                }                   
+                // }     
+                
+                const pic = getFirstJsonPath("$..[*].profilePicLarge.uri", json);
+                if (pic) {
+                    metas.logos.push(await convertUrlToBase64(pic));
+                }
             } catch (e) {
                 console.log('Erreur parsing JSON : ', e);
             }
 
         };             
         
-        // Image
         const banners = await page.$$eval('img', images => images
             .filter(image => "imgperflogname" in image.dataset && image.dataset.imgperflogname === 'profileCoverPhoto')
             .map(image => image.src)
