@@ -4,7 +4,7 @@ const metascraper = require('metascraper')([
   require('metascraper-image')(),
   require('metascraper-title')(),
   require('metascraper-url')(),
-  require('./metascraper-geo')()
+  require('./metascraper-geo.js')()
 //   require('metascraper-address')()
 ])
 

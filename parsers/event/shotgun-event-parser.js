@@ -1,5 +1,5 @@
 const fs = require('fs').promises;
-const defaultParser = require('./default-parser.js');
+const defaultParser = require('./default-event-parser.js');
 
 module.exports = {
     parse: async (page, metas) => {

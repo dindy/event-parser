@@ -1,16 +1,19 @@
+const path = require('path');
 const express = require("express");
 const log = require('node-file-logger');
 const cors = require('cors');
 const scrapper = require('./scrapper.js');
-const fbParser = require('./facebook-parser.js');
-const fbGroupParser = require('./parsers/facebook-group-parser.js');
-const instaGroupParser = require('./parsers/instagram-group-parser.js');
-const defaultGroupParser = require('./parsers/default-group-parser.js');
-const instaParser = require('./instagram-parser.js');
-const defaultParser = require('./default-parser.js');
-const helloassoParser = require('./helloasso-parser.js');
-const shotgunParser = require('./shotgun-parser.js');
+const fbParser = require('./parsers/event/facebook-event-parser.js');
+const fbGroupParser = require('./parsers/group/facebook-group-parser.js');
+const instaGroupParser = require('./parsers/group/instagram-group-parser.js');
+const defaultGroupParser = require('./parsers/group/default-group-parser.js');
+const instaParser = require('./parsers/event/instagram-event-parser.js');
+const defaultParser = require('./parsers/event/default-event-parser.js');
+const helloassoParser = require('./parsers/event/helloasso-event-parser.js');
+const shotgunParser = require('./parsers/event/shotgun-event-parser.js');
 
+global.appRootDir = path.resolve(__dirname);
+global.appDebugDir = global.appRootDir + '/debug/';
 const app = express();
 app.use(cors());
 const port = 3001;

@@ -1,15 +1,12 @@
 const fs = require('fs').promises;
-const metaParser = require('../meta-parser.js');
-const jsonLdParser = require('../json-ld-parser.js');
-const { parseDatesFromText } = require('../parse-date.js');
-const { convertUrlToBase64 } = require('../utils.js');
+const metaParser = require('../utils/metascrapers/metascraper-default.js');
+const jsonLdParser = require('../utils/json-ld-event-parser.js');
+const { convertUrlToBase64, debugPage } = require('../utils/utils.js');
 
 module.exports = {
     parse: async (page, metas) => { 
-        const content = await page.content();
-        await fs.writeFile('page.html', content);
+        debugPage(page);
         const parsed = await metaParser.parse(page);
-        
         metas.description = parsed.description;        
         metas.name = parsed.title;        
         metas.url = parsed.url;  

@@ -1,7 +1,7 @@
 const defaultGroupParser = require('./default-group-parser.js');
-const { getJsonPath, getFirstJsonPath } = require('../json-parser.js');
+const { getJsonPath, getFirstJsonPath } = require('../utils/json-parser.js');
 const metascraper = require('metascraper')([
-    require('../metascraper-instagram-description')(),
+    require('../utils/metascrapers/metascraper-instagram-description.js')(),
 ])
 module.exports = {
     parse: async (page, metas) => {

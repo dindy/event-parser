@@ -1,16 +1,16 @@
-const { convertUrlToBase64, extractAddressParts } = require('./utils.js');
-const { getJsonPath, getFirstJsonPath } = require('./json-parser.js');
+const { convertUrlToBase64, extractAddressParts, debugPage } = require('../utils/utils.js');
+const { getJsonPath, getFirstJsonPath } = require('../utils/json-parser.js');
 const fs = require('fs').promises;
 var he = require('he');
-const defaultParser = require('./default-parser.js');
+const defaultParser = require('./default-event-parser.js');
 
 module.exports = {
     parse: async (page, metas) => {
 
+        debugPage(page);
         const data = {};
         data.images = [];
         const content = await page.content();
-        await fs.writeFile('page.html', content);
 
         const commonMetas = await defaultParser.parse(page, metas);
         

@@ -1,15 +1,15 @@
-const { convertUrlToBase64 } = require('./utils.js');
+const { convertUrlToBase64, debugPage } = require('../utils/utils.js');
 const fs = require('fs').promises;
-const defaultParser = require('./default-parser.js');
-const { monthTokens } = require('./parse-date.js');
+const defaultParser = require('./default-event-parser.js');
+const { monthTokens } = require('../utils/date-parser.js');
 const { log } = require('console');
 
 module.exports = {
     parse: async (page, metas) => {
+
+        debugPage(page);
         const data = {};
         data.images = [];
-        const content = await page.content();
-        await fs.writeFile('page.html', content);
 
         const commonMetas = await defaultParser.parse(page, metas);
         metas.description = commonMetas.metas.description;

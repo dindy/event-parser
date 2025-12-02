@@ -1,4 +1,5 @@
 var axios = require('axios');
+const fs = require('fs').promises;
 
 module.exports = {
     convertUrlToBase64: async (url) => {
@@ -33,5 +34,9 @@ module.exports = {
         }            
 
         return null;
-    }    
+    },    
+    async debugPage(page) {
+        const content = await page.content();
+        await fs.writeFile(global.appDebugDir + 'page.html', content);
+    }
 }

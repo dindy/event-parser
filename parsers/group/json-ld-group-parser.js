@@ -1,4 +1,4 @@
-const { getJsonPath, getFirstJsonPath } = require('./json-parser.js');
+const { getJsonPath, getFirstJsonPath } = require('../utils/json-parser.js');
 
 module.exports = {
     parse: async (page) => {
