@@ -49,6 +49,11 @@ module.exports = {
                 if (pic) {
                     metas.logos.push(await convertUrlToBase64(pic));
                 }
+
+                const cover = getFirstJsonPath("$..[*].cover_photo.photo.image.uri", json);
+                if (cover) {
+                    metas.banners.push(await convertUrlToBase64(cover));
+                }
             } catch (e) {
                 console.log('Erreur parsing JSON : ', e);
             }
