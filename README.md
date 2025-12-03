@@ -22,3 +22,10 @@ Create a .env file (see .env.sample)
 npm install
 node --env-file=.env app.js
 ```
+
+Or with nodemon :
+
+```
+npm install
+nodemon --env-file=.env app--env-file=.env
+```

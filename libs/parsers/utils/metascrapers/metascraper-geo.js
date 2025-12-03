@@ -1,6 +1,7 @@
 'use strict'
 
-const { toRule, isString } = require('@metascraper/helpers')
+import helpers from '@metascraper/helpers'
+const { toRule, isString } = helpers
 
 const gpsCoordinates = (value) => {
   if (!isString(value)) return undefined
@@ -23,7 +24,7 @@ const gpsCoordinates = (value) => {
   }
 }
 
-module.exports = opts => {
+export default (opts) => {
   const toGPS = toRule(gpsCoordinates, opts)
 
   const rules = {

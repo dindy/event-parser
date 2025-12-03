@@ -1,16 +1,24 @@
-const metascraper = require('metascraper')([
-  require('metascraper-date')(),
-  require('metascraper-description')(),
-  require('metascraper-image')(),
-  require('metascraper-title')(),
-  require('metascraper-url')(),
-  require('./metascraper-geo.js')()
+import metaMetascraper from 'metascraper';
+import metascraperDate from 'metascraper-date';
+import metascraperDescription from 'metascraper-description';
+import metascraperImage from 'metascraper-image';
+import metascraperTitle from 'metascraper-title';
+import metascraperUrl from 'metascraper-url';
+import metascraperGeo from './metascraper-geo.js';
+
+const metascraper = metaMetascraper([
+  metascraperDate(),
+  metascraperDescription(),
+  metascraperImage(),
+  metascraperTitle(),
+  metascraperUrl(),
+  metascraperGeo()
 //   require('metascraper-address')()
 ])
 
-module.exports = {
-    parse: async (page) => { 
+const parse = async (page) => { 
         const content = await page.content();
         return await metascraper({url: page.url(), html: content});        
-    }
 }
+    
+export default { parse }

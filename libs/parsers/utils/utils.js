@@ -1,8 +1,7 @@
-var axios = require('axios');
-const fs = require('fs').promises;
+import axios from 'axios';
+import fs from 'fs/promises';
 
-module.exports = {
-    convertUrlToBase64: async (url) => {
+export const convertUrlToBase64 = async (url) => {
         try {
             const image = await axios.get(url, { responseType: 'arraybuffer' });
             const raw = Buffer.from(image.data).toString('base64');
@@ -10,9 +9,10 @@ module.exports = {
         } catch (e) {
             console.log('Erreur sur l\'url : ', url);
             return null;
-        }
-    },
-    extractAddressParts: (string) => {
+    }
+}
+
+export const extractAddressParts = (string) => {
         
         let address = {};
         const addressRegexp = /(?:([^,]+), )?([^,]+), (?:([0-9]{5}) )?([^,]+), (.+)/;
@@ -34,9 +34,9 @@ module.exports = {
         }            
 
         return null;
-    },    
-    async debugPage(page) {
+}
+
+export const debugPage = async (page) => {
         const content = await page.content();
         await fs.writeFile(global.appDebugDir + 'page.html', content);
     }
-}

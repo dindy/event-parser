@@ -1,4 +1,4 @@
-const { getJsonPath, getFirstJsonPath } = require('./json-parser.js');
+import { getFirstJsonPath } from './json-parser.js';
 
 const eventTypes = [
     'BusinessEvent',
@@ -24,8 +24,8 @@ const eventTypes = [
     'VisualArtsEvent',
 ];
 
-module.exports = {
-    parse: async (page) => { 
+export default {
+    parse: async (page) => {
         const scripts = await page.$$eval('script', scripts => scripts
             .filter(script => script.type === "application/ld+json")
             .map(script => script.textContent)
@@ -40,7 +40,7 @@ module.exports = {
                 let graph = getFirstJsonPath("$['@graph'][?(@['@type']=='Event')]", json);
                 
                 if (!graph) {
-                    if (json['@type'] && (eventTypes.includes(json['@type']) || json['@type'].indexOf('Event') !== -1 )) {
+                    if (json['@type'] && (eventTypes.includes(json['@type']) || json['@type'].indexOf('Event') !== -1)) {
                         graph = json;
                     }
                 }
@@ -56,7 +56,7 @@ module.exports = {
                         name: hostName,
                         url: hostUrl
                     }];
-                    const offers = getFirstJsonPath("$..['offers']", graph); 
+                    const offers = getFirstJsonPath("$..['offers']", graph);
                     if (offers && offers.length > 0) {
                         const offer = offers[0];
                         metas.ticketsUrl = getFirstJsonPath("$..['url']", offer);
@@ -81,7 +81,7 @@ module.exports = {
                         } else {
                             metas.physicalAddress.locality = getFirstJsonPath("$..['addressLocality']", address);
                             metas.physicalAddress.postalCode = getFirstJsonPath("$..['postalCode']", address);
-                            metas.physicalAddress.street = getFirstJsonPath("$..['streetAddress']", address);                        
+                            metas.physicalAddress.street = getFirstJsonPath("$..['streetAddress']", address);
                         }
                         const geo = getFirstJsonPath("$..['geo']", location);
                         if (geo) {
@@ -100,7 +100,7 @@ module.exports = {
                         } else {
                             images = [foundImages];
                         }
-                    }                    
+                    }
                 }
             } catch (e) {
                 console.log('Erreur parsing JSON : ', e);

@@ -47,114 +47,111 @@ const convertMatchToTime = match => {
     return { hours, minutes };
 }
 
-module.exports = {
-    monthTokens,
-    parseDatesFromText: text => {
+const parseDatesFromText = (text) => {
 
-        let foundDates = [];
-        let foundTimes = [];
-        let monthIndex = 0;
-        let score = 0;
+    let foundDates = [];
+    let foundTimes = [];
+    let monthIndex = 0;
+    let score = 0;
 
-        for (monthRegexp of monthsRegexp) {
-            
-            const matches = ([...text.matchAll(monthRegexp)]);
-            
-            if (matches) {
-                for (match of matches) {
-                    foundDates.push(convertMatchToDate(match, monthIndex));
-                }
-            }
-            monthIndex++;
-        }
-
-        if (foundDates.length == 0) {
-            const regExp = /([0-9]{1,2})(?:-|\/)([0-9]{1,2})((?:-|\/)([0-9]{4}|[0-9]{2}))?/gi;
-            const matches = ([...text.matchAll(regExp)]);
-
-            if (matches) {
-                for (match of matches) {
-                    foundDates.push(convertMatchToDate(match, parseInt(match[2]) - 1));
-                }
-            }    
-        }
-
-        let startDateCandidate = null;
-        let endDateCandidate = null;
-        let startTimeCandidate = null;
-        let endTimeCandidate = null;
-        let startDateTimeCandidate = null;
-        let endDateTimeCandidate = null;
-
-        if (foundDates.length > 0) {
-            startDateCandidate = foundDates[0];
-            
-            if (foundDates.length > 1) {
-                endDateCandidate = foundDates[1];
-                if (endDateCandidate < startDateCandidate) {
-                    tmpDate = startDateCandidate;
-                    startDateCandidate = endDateCandidate;
-                    endDateCandidate = tmpDate;
-                }
+    for (const monthRegexp of monthsRegexp) {
+        
+        const matches = ([...text.matchAll(monthRegexp)]);
+        
+        if (matches) {
+            for (match of matches) {
+                foundDates.push(convertMatchToDate(match, monthIndex));
             }
         }
+        monthIndex++;
+    }
 
-        const regExpTime = /(([0-9]{1,2})(?::|h)([0-9]{2})|([0-9]{1,2})(?:h))/gi
-        const matchesTime = ([...text.matchAll(regExpTime)]);
-        if (matchesTime) {
-            for (matchTime of matchesTime) {
-                foundTimes.push(convertMatchToTime(matchTime));
+    if (foundDates.length == 0) {
+        const regExp = /([0-9]{1,2})(?:-|\/)([0-9]{1,2})((?:-|\/)([0-9]{4}|[0-9]{2}))?/gi;
+        const matches = ([...text.matchAll(regExp)]);
+
+        if (matches) {
+            for (match of matches) {
+                foundDates.push(convertMatchToDate(match, parseInt(match[2]) - 1));
             }
-        }
+        }    
+    }
 
-        if (foundTimes.length > 0) {
-            startTimeCandidate = foundTimes[0];
+    let startDateCandidate = null;
+    let endDateCandidate = null;
+    let startTimeCandidate = null;
+    let endTimeCandidate = null;
+    let startDateTimeCandidate = null;
+    let endDateTimeCandidate = null;
 
-            if (foundTimes.length > 1) {
-                endTimeCandidate = foundTimes[1];
+    if (foundDates.length > 0) {
+        startDateCandidate = foundDates[0];
+        
+        if (foundDates.length > 1) {
+            endDateCandidate = foundDates[1];
+            if (endDateCandidate < startDateCandidate) {
+                tmpDate = startDateCandidate;
+                startDateCandidate = endDateCandidate;
+                endDateCandidate = tmpDate;
             }
-        }
-
-        if (startDateCandidate) {
-            startDateTimeCandidate = new Date(startDateCandidate.getTime());
-            if (startTimeCandidate) {
-                startDateTimeCandidate.setHours(startTimeCandidate.hours, startTimeCandidate.minutes);
-            }
-        }
-
-        if (endDateCandidate) {
-            endDateTimeCandidate = new Date(endDateCandidate.getTime());
-            if (endTimeCandidate) {
-                endDateTimeCandidate.setHours(endTimeCandidate.hours, endTimeCandidate.minutes);
-            }
-        } else if (endTimeCandidate && startDateCandidate) {
-            endDateTimeCandidate = new Date(startDateCandidate.getTime());
-            if (endTimeCandidate.hours < startTimeCandidate.hours) {
-                endDateTimeCandidate.setDate(endDateTimeCandidate.getDate() + 1);
-            }
-            endDateTimeCandidate.setHours(endTimeCandidate.hours, endTimeCandidate.minutes);
-        }
-
-        if (startDateCandidate) score++;
-        // if (startTimeCandidate) score++;
-        if (startDateCandidate && startTimeCandidate) score++;
-        if (endDateCandidate) score++;
-        // if (endTimeCandidate) score++;
-        if (endDateCandidate && endTimeCandidate || startDateCandidate && endTimeCandidate) score++;
-
-        // console.log('startDateCandidate',startDateCandidate);
-        // console.log('startTimeCandidate',startTimeCandidate);
-        // console.log('startDateTimeCandidate',startDateTimeCandidate);
-        // console.log('endDateCandidate',endDateCandidate);
-        // console.log('endTimeCandidate',endTimeCandidate);
-        // console.log('endDateTimeCandidate',endDateTimeCandidate);
-
-        return {
-            startDateTimeCandidate,
-            endDateTimeCandidate,
-            score
         }
     }
-}
 
+    const regExpTime = /(([0-9]{1,2})(?::|h)([0-9]{2})|([0-9]{1,2})(?:h))/gi
+    const matchesTime = ([...text.matchAll(regExpTime)]);
+    if (matchesTime) {
+        for (matchTime of matchesTime) {
+            foundTimes.push(convertMatchToTime(matchTime));
+        }
+    }
 
+    if (foundTimes.length > 0) {
+        startTimeCandidate = foundTimes[0];
+
+        if (foundTimes.length > 1) {
+            endTimeCandidate = foundTimes[1];
+        }
+    }
+
+    if (startDateCandidate) {
+        startDateTimeCandidate = new Date(startDateCandidate.getTime());
+        if (startTimeCandidate) {
+            startDateTimeCandidate.setHours(startTimeCandidate.hours, startTimeCandidate.minutes);
+        }
+    }
+
+    if (endDateCandidate) {
+        endDateTimeCandidate = new Date(endDateCandidate.getTime());
+        if (endTimeCandidate) {
+            endDateTimeCandidate.setHours(endTimeCandidate.hours, endTimeCandidate.minutes);
+        }
+    } else if (endTimeCandidate && startDateCandidate) {
+        endDateTimeCandidate = new Date(startDateCandidate.getTime());
+        if (endTimeCandidate.hours < startTimeCandidate.hours) {
+            endDateTimeCandidate.setDate(endDateTimeCandidate.getDate() + 1);
+        }
+        endDateTimeCandidate.setHours(endTimeCandidate.hours, endTimeCandidate.minutes);
+    }
+
+    if (startDateCandidate) score++;
+    // if (startTimeCandidate) score++;
+    if (startDateCandidate && startTimeCandidate) score++;
+    if (endDateCandidate) score++;
+    // if (endTimeCandidate) score++;
+    if (endDateCandidate && endTimeCandidate || startDateCandidate && endTimeCandidate) score++;
+
+    // console.log('startDateCandidate',startDateCandidate);
+    // console.log('startTimeCandidate',startTimeCandidate);
+    // console.log('startDateTimeCandidate',startDateTimeCandidate);
+    // console.log('endDateCandidate',endDateCandidate);
+    // console.log('endTimeCandidate',endTimeCandidate);
+    // console.log('endDateTimeCandidate',endDateTimeCandidate);
+
+    return {
+        startDateTimeCandidate,
+        endDateTimeCandidate,
+        score
+    }
+};
+
+export { monthTokens, parseDatesFromText };

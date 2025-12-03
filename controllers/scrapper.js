@@ -1,13 +1,13 @@
-const scrapper = require('../libs/scrapper.js');
-const fbParser = require('../libs/parsers/event/facebook-event-parser.js');
-const fbGroupParser = require('../libs/parsers/group/facebook-group-parser.js');
-const instaGroupParser = require('../libs/parsers/group/instagram-group-parser.js');
-const defaultGroupParser = require('../libs/parsers/group/default-group-parser.js');
-const instaParser = require('../libs/parsers/event/instagram-event-parser.js');
-const defaultParser = require('../libs/parsers/event/default-event-parser.js');
-const helloassoParser = require('../libs/parsers/event/helloasso-event-parser.js');
-const shotgunParser = require('../libs/parsers/event/shotgun-event-parser.js');
-const log = require('node-file-logger');
+import scrapper from '../libs/scrapper.js';
+import fbParser from '../libs/parsers/event/facebook-event-parser.js';
+import fbGroupParser from '../libs/parsers/group/facebook-group-parser.js';
+import instaGroupParser from '../libs/parsers/group/instagram-group-parser.js';
+import defaultGroupParser from '../libs/parsers/group/default-group-parser.js';
+import instaParser from '../libs/parsers/event/instagram-event-parser.js';
+import defaultParser from '../libs/parsers/event/default-event-parser.js';
+import helloassoParser from '../libs/parsers/event/helloasso-event-parser.js';
+import shotgunParser from '../libs/parsers/event/shotgun-event-parser.js';
+import log from 'node-file-logger';
 
 const scrapEvent = async (url, provider) => {
 
@@ -82,27 +82,27 @@ const scrapGroup = async (url, provider) => {
     return await scrapper.scrap(url, parser, metas);    
 }
 
-module.exports = {
-    scrap: async (req, res) => {
+const scrap = async (req, res) => {
 
-        const query = req.query;
-        const url = query.url;
-        const provider = query.provider;
-        const type = query.type;
-        
-        if (!query.url) return req.reject();
+    const query = req.query;
+    const url = query.url;
+    const provider = query.provider;
+    const type = query.type;
+    
+    if (!query.url) return res.end('No url parameter found');
 
-        let buff = new Buffer(url, 'base64');
-        let decodedUrl = buff.toString('ascii');
+    let buff = new Buffer(url, 'base64');
+    let decodedUrl = buff.toString('ascii');
 
-        log.Info('Request for ' + decodedUrl);
-        let data = null
-        if (type == 'event') {
-            data = await scrapEvent(decodedUrl, provider)
-        } else {
-            data = await scrapGroup(decodedUrl, provider)
-        }
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ data }));
+    log.Info('Request for ' + decodedUrl);
+    let data = null
+    if (type == 'event') {
+        data = await scrapEvent(decodedUrl, provider)
+    } else {
+        data = await scrapGroup(decodedUrl, provider)
     }
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ data }));
 }
+
+export { scrap };

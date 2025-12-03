@@ -1,4 +1,4 @@
-const { JSONPathJS } = require('jsonpath-js');
+import { JSONPathJS } from 'jsonpath-js';
 
 const getJsonPath = (path, json) => {
   const query = new JSONPathJS(path);
@@ -13,7 +13,4 @@ const getFirstJsonPath = (path, json) => {
   return results && results.length > 0 ? results[0] : null;
 };
 
-module.exports = {
-  getJsonPath,
-  getFirstJsonPath,
-};
+export { getJsonPath, getFirstJsonPath };

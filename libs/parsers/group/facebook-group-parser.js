@@ -1,89 +1,89 @@
-const { convertUrlToBase64, extractAddressParts, debugPage } = require('../utils/utils.js');
-const { getJsonPath, getFirstJsonPath } = require('../utils/json-parser.js');
-const fs = require('fs').promises;
-var he = require('he');
-const defaultParser = require('../event/default-event-parser.js');
+import { convertUrlToBase64, extractAddressParts, debugPage } from '../utils/utils.js';
+import { getJsonPath, getFirstJsonPath } from '../utils/json-parser.js';
+import fs from 'fs/promises';
+import he from 'he';
+import defaultParser from '../event/default-event-parser.js';
 
-module.exports = {
-    parse: async (page, metas) => { 
-        const data = {};
-        data.images = [];
-        const commonMetas = await defaultParser.parse(page, metas);
-        const url = commonMetas.metas.url;        
-        metas.description = commonMetas.metas.description;
-        metas.url = commonMetas.metas.url;
-        metas.name = commonMetas.metas.title;
+const parse = async (page, metas) => { 
+    const data = {};
+    data.images = [];
+    const commonMetas = await defaultParser.parse(page, metas);
+    const url = commonMetas.metas.url;        
+    metas.description = commonMetas.metas.description;
+    metas.url = commonMetas.metas.url;
+    metas.name = commonMetas.metas.title;
 
-        const scripts = await page.$$eval('script', scripts => scripts
-            .filter(script => script.type === "application/json")
-            .map(script => script.textContent)
-        );     
-        
-        for (const scriptContent of scripts) {    
-            try {
-                const json = JSON.parse(scriptContent);
-                const contextItems = getJsonPath("$..[*].context_item.title.text", json);
-                if (contextItems && contextItems.length > 0) {
-                    for (const item of contextItems) {
-                        const addressCandidate = extractAddressParts(item);
-                        if (addressCandidate) {
-                            metas.physicalAddress = addressCandidate;
-                        }
+    const scripts = await page.$$eval('script', scripts => scripts
+        .filter(script => script.type === "application/json")
+        .map(script => script.textContent)
+    );     
+    
+    for (const scriptContent of scripts) {    
+        try {
+            const json = JSON.parse(scriptContent);
+            const contextItems = getJsonPath("$..[*].context_item.title.text", json);
+            if (contextItems && contextItems.length > 0) {
+                for (const item of contextItems) {
+                    const addressCandidate = extractAddressParts(item);
+                    if (addressCandidate) {
+                        metas.physicalAddress = addressCandidate;
                     }
-                }   
-                
-                const description = getFirstJsonPath("$..[*].profile_status_text.text", json);
-                if (description) {
-                    metas.description = description;
                 }
-
-                // const name = getFirstJsonPath("$..[*].result.data.user..node..owning_profile.name", json);
-                // if (name) {
-                //     metas.name = name
-                    
-                // }     
-                
-                const pic = getFirstJsonPath("$..[*].profilePicLarge.uri", json);
-                if (pic) {
-                    metas.logos.push(await convertUrlToBase64(pic));
-                }
-
-                const cover = getFirstJsonPath("$..[*].cover_photo.photo.image.uri", json);
-                if (cover) {
-                    metas.banners.push(await convertUrlToBase64(cover));
-                }
-            } catch (e) {
-                console.log('Erreur parsing JSON : ', e);
+            }   
+            
+            const description = getFirstJsonPath("$..[*].profile_status_text.text", json);
+            if (description) {
+                metas.description = description;
             }
 
-        };             
-        
-        const banners = await page.$$eval('img', images => images
-            .filter(image => "imgperflogname" in image.dataset && image.dataset.imgperflogname === 'profileCoverPhoto')
-            .map(image => image.src)
-        );
-        
-        for (const src of banners) {
-            const parsedImage = await convertUrlToBase64(src);
-            if (parsedImage) {
-                metas.banners.push(parsedImage);
-            }            
-        }        
+            // const name = getFirstJsonPath("$..[*].result.data.user..node..owning_profile.name", json);
+            // if (name) {
+            //     metas.name = name
+                
+            // }     
+            
+            const pic = getFirstJsonPath("$..[*].profilePicLarge.uri", json);
+            if (pic) {
+                metas.logos.push(await convertUrlToBase64(pic));
+            }
 
-        // TODO: Keep bigger logo
-        let logos = await page.$$eval(`svg[aria-label="${metas.name}"] image`, images => images
-            .map(image => image.getAttribute('xlink:href'))
-        );
+            const cover = getFirstJsonPath("$..[*].cover_photo.photo.image.uri", json);
+            if (cover) {
+                metas.banners.push(await convertUrlToBase64(cover));
+            }
+        } catch (e) {
+            console.log('Erreur parsing JSON : ', e);
+        }
 
-        for (const src of logos) {
-            const parsedImage = await convertUrlToBase64(src);
-            if (parsedImage) {
-                metas.logos.push(parsedImage);
-            }            
-        }   
-        
-        console.log(metas);
-        
-        return metas;
-    }
+    };             
+    
+    const banners = await page.$$eval('img', images => images
+        .filter(image => "imgperflogname" in image.dataset && image.dataset.imgperflogname === 'profileCoverPhoto')
+        .map(image => image.src)
+    );
+    
+    for (const src of banners) {
+        const parsedImage = await convertUrlToBase64(src);
+        if (parsedImage) {
+            metas.banners.push(parsedImage);
+        }            
+    }        
+
+    // TODO: Keep bigger logo
+    let logos = await page.$$eval(`svg[aria-label="${metas.name}"] image`, images => images
+        .map(image => image.getAttribute('xlink:href'))
+    );
+
+    for (const src of logos) {
+        const parsedImage = await convertUrlToBase64(src);
+        if (parsedImage) {
+            metas.logos.push(parsedImage);
+        }            
+    }   
+    
+    console.log(metas);
+    
+    return metas;
 }
+
+export default { parse };

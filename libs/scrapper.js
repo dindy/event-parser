@@ -1,4 +1,5 @@
-const puppeteer = require('puppeteer');
+import puppeteer from 'puppeteer';
+
 const useProxy = process.env.USE_PROXY === '1' ? true : false;
 const proxyServer = process.env.PROXY_SERVER;
 const proxyUsername = process.env.PROXY_USERNAME;
@@ -60,8 +61,7 @@ const getDefaultPage = async (browser) => {
   return page;
 };
 
-module.exports = {
-  scrap: async (url, parser, metas) => {
+const scrap = async (url, parser, metas) => {
     const browser = await getDefaultBrowser(url, true);
     const page = await getDefaultPage(browser);
     await page.goto(url, { waitUntil: 'load', timeout: 0 });    
@@ -69,5 +69,6 @@ module.exports = {
     await browser.close();
 
     return data;
-  }
 }
+
+export default { scrap };

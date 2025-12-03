@@ -1,8 +1,9 @@
 'use strict'
 
-const { toRule, description } = require('@metascraper/helpers')
+import helpers from '@metascraper/helpers'
+const { toRule, description } = helpers
 
-module.exports = opts => {
+export default (opts) => {
   const toDescription = toRule(description, opts)
 
   const rules = {

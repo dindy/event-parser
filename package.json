@@ -2,6 +2,7 @@
   "name": "facebook-scrape",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "run": "node --env-file=.env app.js",
@@ -28,6 +29,7 @@
     "metascraper-image": "^5.49.5",
     "metascraper-title": "^5.49.5",
     "metascraper-url": "^5.49.5",
+    "mysql2": "^3.15.3",
     "node-file-logger": "^0.9.5",
     "puppeteer": "^24.26.0"
   }
