@@ -1,12 +1,12 @@
 const scrapper = require('../libs/scrapper.js');
-const fbParser = require('../parsers/event/facebook-event-parser.js');
-const fbGroupParser = require('../parsers/group/facebook-group-parser.js');
-const instaGroupParser = require('../parsers/group/instagram-group-parser.js');
-const defaultGroupParser = require('../parsers/group/default-group-parser.js');
-const instaParser = require('../parsers/event/instagram-event-parser.js');
-const defaultParser = require('../parsers/event/default-event-parser.js');
-const helloassoParser = require('../parsers/event/helloasso-event-parser.js');
-const shotgunParser = require('../parsers/event/shotgun-event-parser.js');
+const fbParser = require('../libs/parsers/event/facebook-event-parser.js');
+const fbGroupParser = require('../libs/parsers/group/facebook-group-parser.js');
+const instaGroupParser = require('../libs/parsers/group/instagram-group-parser.js');
+const defaultGroupParser = require('../libs/parsers/group/default-group-parser.js');
+const instaParser = require('../libs/parsers/event/instagram-event-parser.js');
+const defaultParser = require('../libs/parsers/event/default-event-parser.js');
+const helloassoParser = require('../libs/parsers/event/helloasso-event-parser.js');
+const shotgunParser = require('../libs/parsers/event/shotgun-event-parser.js');
 const log = require('node-file-logger');
 
 const scrapEvent = async (url, provider) => {
