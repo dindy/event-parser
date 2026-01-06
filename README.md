@@ -27,5 +27,5 @@ Or with nodemon :
 
 ```
 npm install
-nodemon --env-file=.env app--env-file=.env
+nodemon --env-file=.env app
 ```

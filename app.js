@@ -1,22 +1,52 @@
-import path from 'path';
-import express from 'express';
-import cors from 'cors';
-import { scrap } from './controllers/scrapper.js';
-import { login } from './controllers/auth.js';
-import { fileURLToPath } from 'url';
+import path from 'path'
+import express from 'express'
+import cors from 'cors'
+import bodyParser from 'body-parser'
+import cookieParser from 'cookie-parser'
+import multer from 'multer'
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { scrap } from './middlewares/scrapper.js'
+import { register, authorize } from './middlewares/auth.js'
+import { queryInstance } from './middlewares/mobilizon.js'
+import { tokenParser } from './middlewares/tokenParser.js'
+import { fileURLToPath } from 'url'
+import errorHandler from './middlewares/errorHandler.js'
+import mobilizonApiErrorHandler from './middlewares/mobilizonApiErrorHandler.js'
 
-global.appRootDir = __dirname;
-global.appDebugDir = global.appRootDir + '/debug/';
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
-const app = express();
-const port = 3001;
+global.appRootDir = __dirname
+global.appDebugDir = global.appRootDir + '/debug/'
 
-app.use(cors());
-app.get("/scrap", scrap);
-app.get("/login", login);
+const app = express()
+const port = 3001
+const jsonParser = bodyParser.json()
+const rawParser = bodyParser.raw({
+  inflate: true,
+  limit: '1gb',
+  type: '*/*'
+})
+const storage = multer.memoryStorage()
+const multipartFormParser = multer({ storage: storage })
+
+app.use(cookieParser())
+app.use(cors({origin: true, credentials: true}))
+app.get("/scrap", scrap)
+app.get("/auth/register", register)
+app.post("/auth/authorize", jsonParser, authorize)
+app.post("/mbz/query", /*multipartFormParser.any(),*/ rawParser, tokenParser, queryInstance)
+app.use(mobilizonApiErrorHandler)
+app.use(errorHandler)
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception:", err.message)
+  process.exit(1) // Exit to prevent an unstable state
+})
+// Handle unhandled promise rejections (async errors outside Express)
+process.on("unhandledRejection", (err) => {
+  console.error("Unhandled Promise Rejection:", err.message)
+  process.exit(1)
+})
 app.listen(port, () => {
-  console.log(`App listening on port ${port}!`);
-});
+  console.log(`Application listening on port ${port}!`)
+})
