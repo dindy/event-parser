@@ -59,7 +59,7 @@ const parseDatesFromText = (text) => {
         const matches = ([...text.matchAll(monthRegexp)]);
         
         if (matches) {
-            for (match of matches) {
+            for (const match of matches) {
                 foundDates.push(convertMatchToDate(match, monthIndex));
             }
         }
