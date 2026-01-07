@@ -3,7 +3,6 @@ import express from 'express'
 import cors from 'cors'
 import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
-import multer from 'multer'
 
 import { scrap } from './middlewares/scrapper.js'
 import { register, authorize } from './middlewares/auth.js'
@@ -27,15 +26,13 @@ const rawParser = bodyParser.raw({
   limit: '1gb',
   type: '*/*'
 })
-const storage = multer.memoryStorage()
-const multipartFormParser = multer({ storage: storage })
 
 app.use(cookieParser())
 app.use(cors({origin: true, credentials: true}))
 app.get("/scrap", scrap)
 app.get("/auth/register", register)
 app.post("/auth/authorize", jsonParser, authorize)
-app.post("/mbz/query", /*multipartFormParser.any(),*/ rawParser, tokenParser, queryInstance)
+app.post("/mbz/query", rawParser, tokenParser, queryInstance)
 app.use(mobilizonApiErrorHandler)
 app.use(errorHandler)
 process.on("uncaughtException", (err) => {

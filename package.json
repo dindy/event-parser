@@ -32,7 +32,6 @@
     "metascraper-image": "^5.49.5",
     "metascraper-title": "^5.49.5",
     "metascraper-url": "^5.49.5",
-    "multer": "^2.0.2",
     "mysql2": "^3.15.3",
     "node-file-logger": "^0.9.5",
     "puppeteer": "^24.26.0",
