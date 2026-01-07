@@ -80,9 +80,7 @@ const parse = async (page, metas) => {
             metas.logos.push(parsedImage);
         }            
     }   
-    
-    console.log(metas);
-    
+        
     return metas;
 }
 

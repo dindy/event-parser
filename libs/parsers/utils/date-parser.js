@@ -71,7 +71,7 @@ const parseDatesFromText = (text) => {
         const matches = ([...text.matchAll(regExp)]);
 
         if (matches) {
-            for (match of matches) {
+            for (const match of matches) {
                 foundDates.push(convertMatchToDate(match, parseInt(match[2]) - 1));
             }
         }    
@@ -100,7 +100,7 @@ const parseDatesFromText = (text) => {
     const regExpTime = /(([0-9]{1,2})(?::|h)([0-9]{2})|([0-9]{1,2})(?:h))/gi
     const matchesTime = ([...text.matchAll(regExpTime)]);
     if (matchesTime) {
-        for (matchTime of matchesTime) {
+        for (const matchTime of matchesTime) {
             foundTimes.push(convertMatchToTime(matchTime));
         }
     }

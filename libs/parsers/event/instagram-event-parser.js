@@ -71,7 +71,7 @@ const parse = async (page, metas) => {
           }
           
           if (object.carousel_media) {
-            for (media of object.carousel_media) {
+            for (const media of object.carousel_media) {
               if (media.image_versions2?.candidates && media.image_versions2.candidates.length > 0) {
                 const url = media.image_versions2.candidates[0].url;
                 const base64Image = await convertUrlToBase64(url);
@@ -87,7 +87,7 @@ const parse = async (page, metas) => {
           }
 
           let parsedDates = parseDatesFromText(description);
-          for (caption of AICaptions) {
+          for (const caption of AICaptions) {
             const captionParsedDates = parseDatesFromText(caption);
             if (captionParsedDates.score > parsedDates.score) {
               parsedDates = captionParsedDates;
