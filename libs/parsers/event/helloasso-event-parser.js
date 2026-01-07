@@ -2,6 +2,7 @@ import { convertUrlToBase64, debugPage } from '../utils/utils.js';
 import fs from 'fs/promises';
 import defaultParser from './default-event-parser.js';
 import { monthTokens } from '../utils/date-parser.js';
+import { parseDatesFromText } from '../utils/date-parser.js';
 
 const parse = async (page, metas) => {
 
@@ -49,6 +50,12 @@ const parse = async (page, metas) => {
 
     if (finalDescription != "") {
         metas.description = finalDescription;
+
+        if (!metas.startTimestamp || metas.startTimestamp == '') {
+            let parsedDates = parseDatesFromText(finalDescription);
+            metas.startTimestamp = Math.floor(parsedDates.startDateTimeCandidate / 1000);
+            metas.endTimestamp = Math.floor(parsedDates.endDateTimeCandidate / 1000);            
+        }
     }
 
     const images = await page.$$eval('.image img, .banner-wrapper img', images => images
