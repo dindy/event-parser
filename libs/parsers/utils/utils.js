@@ -1,14 +1,25 @@
 import axios from 'axios';
 import fs from 'fs/promises';
 
-export const convertUrlToBase64 = async (url) => {
-        try {
-            const image = await axios.get(url, { responseType: 'arraybuffer' });
-            const raw = Buffer.from(image.data).toString('base64');
-            return "data:" + image.headers["content-type"] + ";base64," + raw;
-        } catch (e) {
-            console.log('Erreur sur l\'url : ', url);
-            return null;
+export const fetchData = async url => await axios.get(url, { responseType: 'arraybuffer' })
+
+export const convertUrlToBase64 = async url => { 
+    
+    const response = await fetchData(url)
+
+    return {
+        base64: Buffer.from(response.data).toString('base64'),
+        type: response.headers["content-type"]
+    }
+}
+
+export const convertUrlToBase64DataUrl = async url => {
+    try {
+        const image = await convertUrlToBase64DataUrl(url)
+        return "data:" + image.type + ";base64," + image.base64;
+    } catch (e) {
+        console.log('Erreur sur l\'url : ', url);
+        return null;
     }
 }
 

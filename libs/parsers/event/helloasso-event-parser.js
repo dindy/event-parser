@@ -1,4 +1,4 @@
-import { convertUrlToBase64, debugPage } from '../utils/utils.js';
+import { convertUrlToBase64DataUrl, debugPage } from '../utils/utils.js';
 import fs from 'fs/promises';
 import defaultParser from './default-event-parser.js';
 import { monthTokens } from '../utils/date-parser.js';
@@ -150,7 +150,7 @@ const parse = async (page, metas) => {
     
         
     for (const src of images) {
-        const parsedImage = await convertUrlToBase64(src);
+        const parsedImage = await convertUrlToBase64DataUrl(src);
         if (parsedImage) {
             data.images.push(parsedImage);
         }                   

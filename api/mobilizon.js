@@ -1,4 +1,6 @@
+import FormData from 'form-data'
 import { RequestError, BadRequestError, ExpiredTokenError, NetworkError, AuthError } from "./exceptions/index.js"
+import fs from 'fs/promises'
 
 const clientName = 'import-mobilizon-events'
 const websiteUrl = 'https://website.mobilizon.webworkers.agency'
@@ -116,29 +118,41 @@ const graphql = (
     domain,
     accessToken,
     callback,
-    query,
-    variables = {},
-    type = 'application/json'
-) => {
-    
-    const headers = { 'Content-Type': type }
-    if (accessToken) {
-        headers['Authorization'] = `Bearer ${accessToken}`
-    }
+    body,
+    extraHeaders
+) => { 
+
+    let headers = {}
+    if (accessToken) headers = { 'Authorization' : `Bearer ${accessToken}` }
+    if (extraHeaders) headers = { ...headers, ...extraHeaders }
 
     return request(
         getApiUrl(domain),
         {
             method: 'POST',
             headers,
-            body: JSON.stringify({
-                query,
-                variables
-            })
+            body
         },
         callback
-    )
+    )    
 }
+
+const graphqlJson = (
+    domain,
+    accessToken,
+    callback,
+    query,
+    variables = {}
+) => graphql(
+    domain,
+    accessToken,
+    callback,
+    JSON.stringify({
+        query,
+        variables
+    }),
+    { 'Content-Type': "application/json" }
+)
 
 export const refreshToken = (
     domain,
@@ -153,7 +167,7 @@ export const refreshToken = (
     }`
     const variables = { refreshToken }
 
-    return graphql(
+    return graphqlJson(
         domain,
         null,
         data => data.data.refreshToken,
@@ -229,7 +243,7 @@ export const getIdentitiesAndGroups = (domain, accessToken) => {
         }
     }`        
     
-    return graphql(
+    return graphqlJson(
         domain,
         accessToken,
         data => data.data.loggedUser,
@@ -374,7 +388,7 @@ export const getConfiguration = (domain, accessToken) => {
         }    
     }`
 
-    return graphql(
+    return graphqlJson(
         domain,
         accessToken,
         data.data.config,
@@ -393,13 +407,79 @@ export const getUserId = (domain, accessToken) => {
 
     const callback = (data) => data.data.loggedUser.id
 
-    return graphql(
+    return graphqlJson(
         domain,
         accessToken,
         callback,
         query,
     )
 
+}
+
+export const saveEvent = (domain, accessToken, event) => {
+    
+    const bannerFormInputName = "p...i...c...t...u...r...e...m.e.d.i.a.file"
+    const formData = new FormData()
+    const updateLine1 = !event.id ? `` : `$id: ID!,
+    `
+    const updateLine2 = !event.id ? `` : `eventId: $id,
+    `
+    const operationName = !event.id ? 'createEvent' : 'updateEvent'
+console.log(operationName);
+
+    formData.append("query", `mutation ${operationName}(
+        ${updateLine1}$attributedToId: ID,
+        $organizerActorId: ID!,
+        $title: String!,
+        $description: String!,
+        $beginsOn: DateTime!,
+        $endsOn: DateTime,
+        $onlineAddress: String,
+        $status: EventStatus,
+        $picture: MediaInput,
+        $tags: [String],
+        $physicalAddress: AddressInput,
+        $options: EventOptionsInput,
+        $metadata: [EventMetadataInput],
+        $draft: Boolean
+    ) {
+        ${operationName}(
+            ${updateLine2}attributedToId: $attributedToId,
+            organizerActorId: $organizerActorId,
+            title: $title,
+            description: $description,
+            beginsOn: $beginsOn,
+            endsOn: $endsOn,
+            onlineAddress: $onlineAddress,
+            status: $status,
+            picture: $picture,
+            tags: $tags,
+            physicalAddress: $physicalAddress,
+            options: $options,
+            metadata: $metadata,
+            draft: $draft
+        ) {
+            id
+            uuid
+        }
+    }`)    
+
+    // Set picture
+    if (event.picture) {
+        const buffer = Buffer.from(event.picture.media.file, 'base64');
+        formData.append(bannerFormInputName, buffer, event.picture.media.name)        
+        event.picture.media.file = bannerFormInputName        
+    }
+
+    formData.append('variables', JSON.stringify(event))
+    
+    return graphql(
+        domain,
+        accessToken,
+        (data) => data.data[operationName],
+        formData.getBuffer(),
+        formData.getHeaders()
+    )    
 }
 
 export const pass = (domain, accessToken, contentType, body) => {

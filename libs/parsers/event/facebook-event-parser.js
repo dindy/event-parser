@@ -1,4 +1,4 @@
-import { convertUrlToBase64, extractAddressParts, debugPage } from '../utils/utils.js';
+import { convertUrlToBase64DataUrl, extractAddressParts, debugPage } from '../utils/utils.js';
 import { getJsonPath, getFirstJsonPath } from '../utils/json-parser.js';
 import fs from 'fs/promises';
 import he from 'he';
@@ -20,7 +20,7 @@ const parse = async (page, metas) => {
     metas.startTimestamp = commonMetas.metas.startTimestamp;
     metas.endTimestamp = commonMetas.metas.endTimestamp;
     // if (commonMetas.images.length > 0) {
-    //     data.images.push(await convertUrlToBase64(commonMetas.images[0]));
+    //     data.images.push(await convertUrlToBase64DataUrl(commonMetas.images[0]));
     // }
     let eventId = null;
     const idRegexp = /\/([0-9]{9,})\/$/g
@@ -108,7 +108,7 @@ const parse = async (page, metas) => {
             // Cover
             const fullImage = getFirstJsonPath("$..[*].cover_photo..full_image.uri", json);
             if (fullImage) {
-                const parsedImage = await convertUrlToBase64(fullImage);
+                const parsedImage = await convertUrlToBase64DataUrl(fullImage);
                 if (parsedImage) {
                     data.images.push(parsedImage);
                 }                     
@@ -157,7 +157,7 @@ const parse = async (page, metas) => {
     );
     
     for (const src of images) {
-        const parsedImage = await convertUrlToBase64(src);
+        const parsedImage = await convertUrlToBase64DataUrl(src);
         if (parsedImage) {
             data.images.push(parsedImage);
         }            

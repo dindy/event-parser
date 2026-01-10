@@ -33,14 +33,13 @@ export const updateTokenSession = async (res, auth, domain) => {
 const refreshAndUpdateAuthorization = async (domain, authId, res) => {
 
     try {
-        const auth = await findAuthById(authId)        
+        const auth = await findAuthById(authId)   
         const tokenData = await refreshToken(domain, auth.refreshToken).getData()
-        await refreshAuthorization(auth, tokenData.refreshToken, tokenData.accessToken)  
-        await updateTokenSession(res, auth, domain)
+        await refreshAuthorization(auth, tokenData.refreshToken, tokenData.accessToken) 
+        if (res) await updateTokenSession(res, auth, domain)
         return auth.accessToken
     } catch (error) {
         if (error instanceof RequestError) {
-            console.log(error);
             throw new MobilizonRefreshTokenError(error.message)
         } else {
             throw error

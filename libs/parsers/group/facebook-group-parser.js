@@ -1,4 +1,4 @@
-import { convertUrlToBase64, extractAddressParts, debugPage } from '../utils/utils.js';
+import { convertUrlToBase64DataUrl, extractAddressParts, debugPage } from '../utils/utils.js';
 import { getJsonPath, getFirstJsonPath } from '../utils/json-parser.js';
 import fs from 'fs/promises';
 import he from 'he';
@@ -44,12 +44,12 @@ const parse = async (page, metas) => {
             
             const pic = getFirstJsonPath("$..[*].profilePicLarge.uri", json);
             if (pic) {
-                metas.logos.push(await convertUrlToBase64(pic));
+                metas.logos.push(await convertUrlToBase64DataUrl(pic));
             }
 
             const cover = getFirstJsonPath("$..[*].cover_photo.photo.image.uri", json);
             if (cover) {
-                metas.banners.push(await convertUrlToBase64(cover));
+                metas.banners.push(await convertUrlToBase64DataUrl(cover));
             }
         } catch (e) {
             console.log('Erreur parsing JSON : ', e);
@@ -63,7 +63,7 @@ const parse = async (page, metas) => {
     );
     
     for (const src of banners) {
-        const parsedImage = await convertUrlToBase64(src);
+        const parsedImage = await convertUrlToBase64DataUrl(src);
         if (parsedImage) {
             metas.banners.push(parsedImage);
         }            
@@ -75,7 +75,7 @@ const parse = async (page, metas) => {
     );
 
     for (const src of logos) {
-        const parsedImage = await convertUrlToBase64(src);
+        const parsedImage = await convertUrlToBase64DataUrl(src);
         if (parsedImage) {
             metas.logos.push(parsedImage);
         }            

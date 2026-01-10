@@ -2,7 +2,7 @@
 import metaParser from '../utils/metascrapers/metascraper-default.js';
 import jsonLdParser from '../utils/json-ld-event-parser.js';
 import { parseDatesFromText } from '../utils/date-parser.js';
-import { convertUrlToBase64, debugPage } from '../utils/utils.js';
+import { convertUrlToBase64DataUrl, debugPage } from '../utils/utils.js';
 
 const parse = async (page, metas) => { 
     
@@ -18,7 +18,7 @@ const parse = async (page, metas) => {
     
     let images = [];
     if (parsed.image) {
-        const parsedImage = await convertUrlToBase64(parsed.image);
+        const parsedImage = await convertUrlToBase64DataUrl(parsed.image);
         if (parsedImage) {
             images.push(parsedImage);
         }
@@ -37,7 +37,7 @@ const parse = async (page, metas) => {
     if (parsedJsonLd.images && parsedJsonLd.images.length > 0) {
         
         for (const src of parsedJsonLd.images) {
-            const parsedImage = await convertUrlToBase64(src);
+            const parsedImage = await convertUrlToBase64DataUrl(src);
             if (parsedImage) {
                 images.push(parsedImage);
             }                

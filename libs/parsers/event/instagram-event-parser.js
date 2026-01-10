@@ -1,6 +1,6 @@
 // @TODO : Scrap meta en mode robot
 
-import { convertUrlToBase64, debugPage } from '../utils/utils.js';
+import { convertUrlToBase64DataUrl, debugPage } from '../utils/utils.js';
 import { getJsonPath, getFirstJsonPath } from '../utils/json-parser.js';
 import { parseDatesFromText } from '../utils/date-parser.js';
 import defaultParser from './default-event-parser.js';
@@ -33,7 +33,7 @@ const parse = async (page, metas) => {
           
           const images = object.image_versions2?.candidates;
           if (images && images.length > 0) {
-            const base64Image = await convertUrlToBase64(images[0].url);
+            const base64Image = await convertUrlToBase64DataUrl(images[0].url);
             if (base64Image) {
               data.images.push(base64Image);
             }
@@ -74,7 +74,7 @@ const parse = async (page, metas) => {
             for (const media of object.carousel_media) {
               if (media.image_versions2?.candidates && media.image_versions2.candidates.length > 0) {
                 const url = media.image_versions2.candidates[0].url;
-                const base64Image = await convertUrlToBase64(url);
+                const base64Image = await convertUrlToBase64DataUrl(url);
                 if (base64Image && !data.images.includes(base64Image)) {
                   data.images.push(base64Image);
                 } 
