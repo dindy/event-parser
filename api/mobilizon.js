@@ -392,8 +392,7 @@ export const getConfiguration = (domain, accessToken) => {
         domain,
         accessToken,
         data.data.config,
-        query,
-        { page: 1, limit: 999 }
+        query
     )    
 }
 
@@ -425,7 +424,6 @@ export const saveEvent = (domain, accessToken, event) => {
     const updateLine2 = !event.id ? `` : `eventId: $id,
     `
     const operationName = !event.id ? 'createEvent' : 'updateEvent'
-console.log(operationName);
 
     formData.append("query", `mutation ${operationName}(
         ${updateLine1}$attributedToId: ID,

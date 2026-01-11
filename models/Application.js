@@ -8,9 +8,6 @@ Application.init({
         type: DataTypes.STRING,
         allowNull: false,
     },
-    redirectUri: {
-        type: DataTypes.STRING,
-    },
     scope: {
         type: DataTypes.STRING
     },
@@ -35,12 +32,11 @@ const query = async (sql, params) => {
     }        
 }
 
-export const findByInstanceAndUri = async (domain, redirectUri) => {
+export const findByInstance = async (domain) => {
 
     return Application.findOne({
         where: {
-            domain,
-            redirectUri
+            domain
         },
     })
 }
@@ -67,6 +63,5 @@ export const save = async (appData) => {
         ...appData,
         clientSecret: appData.client_secret,
         clientId: appData.client_id,
-        redirectUri: appData.redirect_uri[0],
     })
 }

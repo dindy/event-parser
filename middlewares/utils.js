@@ -11,6 +11,7 @@ export const updateTokenSession = async (res, auth, domain) => {
     const secret = new TextEncoder().encode(process.env.JWT_SECRET);
     const token = await new SignJWT({
         authId: auth.id,
+        mbzUserId: auth.mobilizonUserId,
         mobilizonAccessToken: auth.accessToken,
         mobilizonDomain: domain
     })

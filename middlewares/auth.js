@@ -3,7 +3,7 @@ import { refreshOnExpired, updateTokenSession } from './utils.js'
 import {
     findById as findAppById,
     findByClientId as findAppByClientId,
-    findByInstanceAndUri as findAppByInstanceAndUri,
+    findByInstance as findAppByInstance,
     save as saveApp
 } from '../models/Application.js' 
 
@@ -34,7 +34,7 @@ export const register = async (req, res, next) => {
     const redirectUri = req.query.redirect_uri
     if (!redirectUri) throw new MissingParameter('redirect_uri')  
     
-    let app = await findAppByInstanceAndUri(instanceDomain, redirectUri)
+    let app = await findAppByInstance(instanceDomain)
 
     // If no app has already been registered for this mobilizon instance
     if (!app) {
@@ -47,14 +47,12 @@ export const register = async (req, res, next) => {
     }
 
     // Return the mobilizon app authorization url to the client
-    const appRegistrationUrl = getApplicationAuthorizationUrl(app.domain, app.clientId, app.redirectUri, app.scope, app.id)
+    const appRegistrationUrl = getApplicationAuthorizationUrl(app.domain, app.clientId, redirectUri, app.scope, app.id)
 
     res.json({ url: appRegistrationUrl })   
 }
 
 export const authorize = async (req, res) => {
-
-    console.log('Hit /auth/authorize')
 
     // Check query params
     if (!req.body) throw new InvalidJsonBody
@@ -64,6 +62,9 @@ export const authorize = async (req, res) => {
         
     const clientId = req.body.client_id
     if (!clientId) throw new InvalidJsonProperty('client_id', clientId)
+
+    const redirectUri = req.body.redirect_uri
+    if (!redirectUri) throw new InvalidJsonProperty('client_id', redirectUri)
     
     // Get the mobilizon app from the client id
     const app = await findAppByClientId(clientId)
@@ -71,7 +72,7 @@ export const authorize = async (req, res) => {
     if (app) {
 
         // Exchange returned code for a mobilizon auth token
-        const authData = await exchangeCodeForToken(code, app.domain, app.clientId, app.clientSecret, app.redirectUri, app.scope) 
+        const authData = await exchangeCodeForToken(code, app.domain, app.clientId, app.clientSecret, redirectUri, app.scope) 
 
         // Create authorization model instance
         let auth = await createTempAuth(app.id, authData)

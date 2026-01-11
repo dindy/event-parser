@@ -11,7 +11,15 @@ import { tokenParser } from './middlewares/tokenParser.js'
 import { fileURLToPath } from 'url'
 import errorHandler from './middlewares/errorHandler.js'
 import mobilizonApiErrorHandler from './middlewares/mobilizonApiErrorHandler.js'
-import { forceAutomation, createAutomation, executeAutomations, getAutomations, getAutomationImportedEvents, getAutomationLogs } from './middlewares/automation.js'
+import {
+  deleteAutomation, 
+  forceAutomation, 
+  createAutomation, 
+  executeAutomations, 
+  getAutomations, 
+  getAutomationImportedEvents,
+  getAutomationLogs
+} from './middlewares/automation.js'
 import { cronSecretChecker } from './middlewares/cronSecretChecker.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -40,6 +48,7 @@ app.get("/automations", tokenParser, getAutomations)
 app.get("/automation/:id/execute", tokenParser, forceAutomation)
 app.get("/automation/:id/events", tokenParser, getAutomationImportedEvents)
 app.get("/automation/:id/logs", tokenParser, getAutomationLogs)
+app.get("/automation/:id/delete", tokenParser, deleteAutomation)
 app.get("/cron/automations", cronSecretChecker, executeAutomations)
 app.use(mobilizonApiErrorHandler)
 app.use(errorHandler)
