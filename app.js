@@ -17,8 +17,7 @@ import {
   createAutomation, 
   executeAutomations, 
   getAutomations, 
-  getAutomationImportedEvents,
-  getAutomationLogs
+  getAutomationHistory
 } from './middlewares/automation.js'
 import { cronSecretChecker } from './middlewares/cronSecretChecker.js'
 
@@ -43,11 +42,10 @@ app.get("/scrap", scrap)
 app.get("/auth/register", register)
 app.post("/auth/authorize", jsonParser, authorize)
 app.post("/mbz/query", rawParser, tokenParser, queryInstance)
-app.post("/automate", tokenParser, jsonParser, createAutomation)
+app.post("/automation", tokenParser, jsonParser, createAutomation)
 app.get("/automations", tokenParser, getAutomations)
 app.get("/automation/:id/execute", tokenParser, forceAutomation)
-app.get("/automation/:id/events", tokenParser, getAutomationImportedEvents)
-app.get("/automation/:id/logs", tokenParser, getAutomationLogs)
+app.get("/automation/:id/history", tokenParser, getAutomationHistory)
 app.get("/automation/:id/delete", tokenParser, deleteAutomation)
 app.get("/cron/automations", cronSecretChecker, executeAutomations)
 app.use(mobilizonApiErrorHandler)

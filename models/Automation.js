@@ -88,7 +88,7 @@ export const findAuthorized = async (authorizationId, automationCriterias) => {
         where: {
             ...automationCriterias
         },
-        include: {
+        include: [{
             model: Authorization,
             include: {
                 model: Application,
@@ -96,7 +96,7 @@ export const findAuthorized = async (authorizationId, automationCriterias) => {
                     id: authorization.applicationId
                 }
             } 
-        }
+        }]
     })    
 }
 

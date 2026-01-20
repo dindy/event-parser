@@ -27,6 +27,7 @@ import AutomationLogger from '../libs/AutomationLogger.js'
 import MissingParameter from './exceptions/MissingParameter.js'
 import { findById as findAuthorizationById } from '../models/Authorization.js'
 import InvalidParameter from './exceptions/InvalidParameter.js'
+import { BadRequestError } from '../api/exceptions/BadRequestError.js'
 
 const logger = new AutomationLogger
 
@@ -137,7 +138,7 @@ const getIcsEvents = async url => {
     let mbzEvents = []
 
     try {
-        await logger.info(`Fetching ICS feed from ${url}.`)
+        await logger.info(`Fetching ICS feed.`)
         const abortCtrl = new AbortController();
         setTimeout(() => abortCtrl.abort(), 5_000);
         const events = await ical.async.fromURL(url, { signal: abortCtrl.signal })
@@ -228,7 +229,12 @@ const executeAutomation = async automation => {
         try {
             await saveNewOrModifiedEvent(event, automation)
         } catch (error) {
-            await logger.error(`Could not save event ${event.uid} : ${error.name} : ${error.message}.`)
+            if (error instanceof BadRequestError && error.body?.errors?.length > 0) {
+                const bodyError = error.body.errors[0]
+                await logger.error(`Could not create or update event ${event.uid} : ${bodyError.code} : ${bodyError.message}.`)
+            } else {
+                await logger.error(`Could not create or update event ${event.uid} : ${error.name} : ${error.message}.`)
+            }
             continue
         }
     }
@@ -288,8 +294,8 @@ const checkUserIsAuthorizedToPublishWith = async (user, res, personId, groupId =
 
 export const getAutomations = async (req, res, next) => 
 {   
-    const personId = req.query.personId || null        
-    const groupId = req.query.groupId || null
+    const personId = req.query.person_id || null        
+    const groupId = req.query.group_id || null
     if (!personId && !groupId) throw new InvalidRequest(`No personId or groupId found.`)
     
     await checkUserIsAuthorizedToPublishWith(req.user, res, personId, groupId)
@@ -297,9 +303,10 @@ export const getAutomations = async (req, res, next) =>
     const actorCriteria = {
         [groupId ? 'attributedToId' : 'organizerActorId']: groupId || personId
     }
+    if (!groupId) actorCriteria.attributedToId = null
     const automations = await findAuthorizedAutomations(req.user.authId, actorCriteria)
 
-    res.json(automations.map(automation => ({
+    const r = automations.map(automation => ({
         id: automation.id,
         attributedToId: automation.attributedToId, 
         organizerActorId: automation.organizerActorId, 
@@ -307,8 +314,10 @@ export const getAutomations = async (req, res, next) =>
         type: automation.type, 
         active: automation.active, 
         createdAt: automation.createdAt, 
-        updatedAt: automation.updatedAt, 
-    })))
+        updatedAt: automation.updatedAt
+    })) 
+    
+    res.json(r)
 }
 
 const getAutomationIfAuthorized = async (user, res, automationId) =>
@@ -326,18 +335,12 @@ const getAutomationIfAuthorized = async (user, res, automationId) =>
     return automation
 }
 
-export const getAutomationImportedEvents = async (req, res, next) => 
+export const getAutomationHistory = async (req, res, next) => 
 {
     const automation = await getAutomationIfAuthorized(req.user, res, req.params.id)
     const importedEvents = await automation.getImportedEvents()
-    res.json(importedEvents)
-}
-
-export const getAutomationLogs = async (req, res, next) => 
-{
-    const automation = await getAutomationIfAuthorized(req.user, res, req.params.id)
     const logs = await automation.getAutomationLogs()
-    res.json(logs)
+    res.json({events: importedEvents, logs})
 }
 
 export const forceAutomation = async (req, res, next) => 
@@ -345,7 +348,8 @@ export const forceAutomation = async (req, res, next) =>
     const automation = await getAutomationIfAuthorized(req.user, res, req.params.id)
     await executeAutomation(automation)
     const logs = await automation.getAutomationLogs()
-    res.json(logs)
+    const importedEvents = await automation.getImportedEvents()
+    res.json({events: importedEvents, logs})
 }
 
 export const deleteAutomation = async (req, res, next) => { 

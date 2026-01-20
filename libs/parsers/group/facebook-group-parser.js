@@ -44,12 +44,14 @@ const parse = async (page, metas) => {
             
             const pic = getFirstJsonPath("$..[*].profilePicLarge.uri", json);
             if (pic) {
-                metas.logos.push(await convertUrlToBase64DataUrl(pic));
+                const parsed = await convertUrlToBase64DataUrl(pic)
+                if (parsed) metas.logos.push(parsed);
             }
 
             const cover = getFirstJsonPath("$..[*].cover_photo.photo.image.uri", json);
             if (cover) {
-                metas.banners.push(await convertUrlToBase64DataUrl(cover));
+                const parsed = await convertUrlToBase64DataUrl(cover)
+                if (parsed) metas.banners.push(parsed);
             }
         } catch (e) {
             console.log('Erreur parsing JSON : ', e);

@@ -5,6 +5,7 @@ import { findById as findAuthById } from "../models/Authorization.js"
 import { refresh as refreshAuthorization } from "../models/Authorization.js"
 import MobilizonRefreshTokenError from "./exceptions/MobilizonRefreshTokenError.js"
 
+
 export const updateTokenSession = async (res, auth, domain) => {
 
     // Set access token in cookie
@@ -67,9 +68,12 @@ export const refreshOnExpired = async (
 
         // If access token has expired get new access and refresh tokens from instance, 
         // update DB and cookie then re-issue the request
+        // @TODO : handle concurrent refresh tokens from different requests
+        /* If refresh fails wait until the token in DB change then retry 
+        (a concurrent refresh may be processing) */
         if (error instanceof ExpiredTokenError) {
             
-            console.log('Refresh token')
+            console.log('Expired token')
             accessToken = await refreshAndUpdateAuthorization(domain, authId, res)
             const manager = request(domain, accessToken, ...args)
             return await manager.getData()
@@ -82,7 +86,7 @@ export const refreshOnExpired = async (
 
             // If token has changed update cookie and re-issue the request with token from DB
             if (accessToken !== auth.accessToken) {
-                console.log('Token has been refreshed')
+                console.log('Token has been refreshed from DB')
                 updateTokenSession(res, auth, domain)
                 refreshOnExpired(request, domain, auth.accessToken, authId, ...args)
             

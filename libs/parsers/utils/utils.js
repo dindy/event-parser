@@ -15,10 +15,11 @@ export const convertUrlToBase64 = async url => {
 
 export const convertUrlToBase64DataUrl = async url => {
     try {
-        const image = await convertUrlToBase64DataUrl(url)
+        const image = await convertUrlToBase64(url)
         return "data:" + image.type + ";base64," + image.base64;
     } catch (e) {
         console.log('Erreur sur l\'url : ', url);
+        console.log(e);
         return null;
     }
 }
@@ -48,6 +49,6 @@ export const extractAddressParts = (string) => {
 }
 
 export const debugPage = async (page) => {
-        const content = await page.content();
-        await fs.writeFile(global.appDebugDir + 'page.html', content);
-    }
+    const content = await page.content();
+    await fs.writeFile(global.appDebugDir + 'page.html', content);
+}
