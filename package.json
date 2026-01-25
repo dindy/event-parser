@@ -1,12 +1,13 @@
 {
-  "name": "facebook-scrape",
+  "name": "event-parser",
   "version": "1.0.0",
   "description": "",
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "run": "node --env-file=.env app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "NODE_ENV=dev node server.js",
+    "watch": "NODE_ENV=dev nodemon server.js",
+    "test": "NODE_ENV=test npx mocha -t 5000"
   },
   "author": "",
   "license": "ISC",
@@ -15,6 +16,7 @@
     "body-parser": "^2.2.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
     "eslint": "^7.2.0",
     "eslint-config-airbnb": "^18.2.0",
     "eslint-plugin-import": "^2.22.1",
@@ -38,6 +40,21 @@
     "node-file-logger": "^0.9.5",
     "node-ical": "^0.22.1",
     "puppeteer": "^24.26.0",
-    "sequelize": "^6.37.7"
+    "sequelize": "^6.37.7",
+    "testdouble-chai": "^0.5.0"
+  },
+  "devDependencies": {
+    "chai": "^6.2.2",
+    "chai-as-promised": "^8.0.2",    
+    "@babel/core": "^7.28.6",
+    "@babel/preset-env": "^7.28.6",
+    "babel-jest": "^30.2.0",
+    "cross-env": "^10.1.0",
+    "jest": "^30.2.0",
+    "mocha": "^11.7.5",
+    "mongodb-memory-server": "^11.0.1",
+    "mongoose": "^9.1.4",
+    "supertest": "^7.2.2",
+    "testdouble": "^3.20.2"
   }
 }

@@ -1,6 +1,7 @@
 import FormData from 'form-data'
 import { RequestError, BadRequestError, ExpiredTokenError, NetworkError, AuthError } from "./exceptions/index.js"
 import fs from 'fs/promises'
+import { RefreshTokenError } from './exceptions/RefreshTokenError.js'
 
 const clientName = 'import-mobilizon-events'
 const websiteUrl = 'https://website.mobilizon.webworkers.agency'
@@ -18,6 +19,11 @@ export const handleResponse = async (response) => {
     if (response.status === 200) {
         
         if (body.errors) {
+            
+            if (body.errors[0]?.path[0] && body.errors[0].path[0] === 'refreshToken') {
+                throw new RefreshTokenError(response, body)
+            }
+
             throw new BadRequestError(response, body)
         }
 

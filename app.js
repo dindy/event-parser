@@ -1,3 +1,4 @@
+import './dotenv.js'
 import path from 'path'
 import express from 'express'
 import cors from 'cors'
@@ -28,7 +29,6 @@ global.appRootDir = __dirname
 global.appDebugDir = global.appRootDir + '/debug/'
 
 const app = express()
-const port = 3001
 const jsonParser = bodyParser.json()
 const rawParser = bodyParser.raw({
   inflate: true,
@@ -59,6 +59,5 @@ process.on("unhandledRejection", (err) => {
   console.error("Unhandled Promise Rejection:", err.message)
   process.exit(1)
 })
-app.listen(port, () => {
-  console.log(`Application listening on port ${port}!`)
-})
+
+export default app

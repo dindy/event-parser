@@ -1,5 +1,5 @@
-import { refreshOnExpired, updateTokenSession } from './utils.js'
-
+import { refreshOnExpired } from './utils.js'
+import { updateTokenSession } from './sessionWriter.js'
 import {
     findById as findAppById,
     findByClientId as findAppByClientId,

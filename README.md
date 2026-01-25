@@ -16,16 +16,16 @@ Working on :
 
 # Getting started
 
-Create a .env file (see .env.sample)
+Create `.env.prod`, `.env.dev` and `.env.test` files (see `.env.sample`).
 
 ```
 npm install
-node --env-file=.env app.js
 ```
 
-Or with nodemon :
-
 ```
-npm install
-nodemon --env-file=.env app
+npm run dev
+```
+or
+```
+npm run watch
 ```

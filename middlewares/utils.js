@@ -1,55 +1,26 @@
-import { SignJWT } from 'jose'
 import { ExpiredTokenError, RequestError, AuthError } from "../api/exceptions/index.js"
 import { refreshToken } from "../api/mobilizon.js"
 import { findById as findAuthById } from "../models/Authorization.js"
 import { refresh as refreshAuthorization } from "../models/Authorization.js"
 import MobilizonRefreshTokenError from "./exceptions/MobilizonRefreshTokenError.js"
+import { updateTokenSession } from './sessionWriter.js'
+import { RefreshTokenError } from '../api/exceptions/RefreshTokenError.js'
 
+const sleep = ms => new Promise((resolve) => {
+    setTimeout(resolve, ms);
+})
 
-export const updateTokenSession = async (res, auth, domain) => {
+const dt = str => "'..." + str.substring(str.length - 8) + "'"
 
-    // Set access token in cookie
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-    const token = await new SignJWT({
-        authId: auth.id,
-        mbzUserId: auth.mobilizonUserId,
-        mobilizonAccessToken: auth.accessToken,
-        mobilizonDomain: domain
-    })
-    .setProtectedHeader({ alg: 'HS256' })
-    .setIssuedAt()
-    .setExpirationTime('1 year')
-    .sign(secret);
+export const refreshOnExpired = async(
+    ...args    
+) => await internalRefreshOnExpired(
+    Math.floor(Math.random() * 1000),
+    ...args
+)
 
-    res.cookie('access_token', token, {
-        httpOnly: true,
-        // secure: true, @TODO: Force secure on prod
-        sameSite: 'strict',
-        maxAge: auth.refreshTokenExpiresIn * 1000
-    });
-
-    console.log('New token in cookie');
-    
-}
-
-const refreshAndUpdateAuthorization = async (domain, authId, res) => {
-
-    try {
-        const auth = await findAuthById(authId)   
-        const tokenData = await refreshToken(domain, auth.refreshToken).getData()
-        await refreshAuthorization(auth, tokenData.refreshToken, tokenData.accessToken) 
-        if (res) await updateTokenSession(res, auth, domain)
-        return auth.accessToken
-    } catch (error) {
-        if (error instanceof RequestError) {
-            throw new MobilizonRefreshTokenError(error.message)
-        } else {
-            throw error
-        }
-    }
-}
-
-export const refreshOnExpired = async (
+const internalRefreshOnExpired = async (
+    id,
     request,
     domain,
     accessToken,
@@ -57,50 +28,110 @@ export const refreshOnExpired = async (
     res,
     ...args
 ) => {
-
-    // Try to make the request with the access token from cookie
-    try {
-        const manager = request(domain, accessToken, ...args)
-        return await manager.getData()
     
-    // Catch errors...
-    } catch (error) {
+    // Try to make the request
+    try {
 
-        // If access token has expired get new access and refresh tokens from instance, 
-        // update DB and cookie then re-issue the request
-        // @TODO : handle concurrent refresh tokens from different requests
-        /* If refresh fails wait until the token in DB change then retry 
-        (a concurrent refresh may be processing) */
-        if (error instanceof ExpiredTokenError) {
-            
-            console.log('Expired token')
-            accessToken = await refreshAndUpdateAuthorization(domain, authId, res)
-            const manager = request(domain, accessToken, ...args)
-            return await manager.getData()
+        console.log(id, `Call api with token ${dt(accessToken)}`)
+        return await request(domain, accessToken, ...args).getData()
 
-        // If 401 error check the access token from cookie is the cookie in DB
-        // because maybe the token has changed
-        } else if (error instanceof AuthError) {
+    } catch (error) {    
+
+        // If token has expired
+        if (error instanceof ExpiredTokenError) {            
             
+            console.log(id, `Token ${dt(accessToken)} has expired`)
+            
+            // Check that the access token from cookie is the cookie in DB
+            // because maybe the token has changed
             const auth = await findAuthById(authId)
-
-            // If token has changed update cookie and re-issue the request with token from DB
-            if (accessToken !== auth.accessToken) {
-                console.log('Token has been refreshed from DB')
-                updateTokenSession(res, auth, domain)
-                refreshOnExpired(request, domain, auth.accessToken, authId, ...args)
             
-            // Else this is an unknown problem
+            // If access token has changed
+            if (accessToken !== auth.accessToken) {
+            
+                console.log(id, `Token in cookie ${dt(accessToken)} has been replaced in DB with ${dt(accessToken)}`)
+            
+                // Update the user session
+                updateTokenSession(res, auth, domain)
+            
+                // Update the access token
+                accessToken = auth.accessToken
+            
+            // If there is no new access token in DB
             } else {
-                throw error
+
+                console.log(id, `No new token found in database. Trying to refresh the token ${dt(accessToken)}`)
+
+                // Try to refresh the token
+                try {
+
+                    // Call the Mobilizon API to refresh the token
+                    const tokenData = await refreshToken(domain, auth.refreshToken).getData()
+                    
+                    // Update the authorization in DB
+                    await refreshAuthorization(auth, tokenData.refreshToken, tokenData.accessToken) 
+                    
+                    // Update the user session
+                    if (res) await updateTokenSession(res, auth, domain)
+                    
+                    // Update the access token
+                    console.log(id, `The token ${dt(accessToken)} has been refreshed. New access token is ${dt(tokenData.accessToken)} and new refresh token is ${dt(tokenData.refreshToken)}`)
+                    accessToken = tokenData.accessToken
+
+                } catch (error) {
+
+                    // If refresh token failed, check if a new token is set in database
+                    // every 500 ms until timeout is reached
+                    if (error instanceof RefreshTokenError) {
+
+                        let tokenFromDB = auth.accessToken
+                        const beginMs = (new Date()).getTime()
+                        const timeoutMs = 4 * 1_000
+                        const sleepMs = 500
+
+                        console.log(id, `The token ${dt(accessToken)} could not be refreshed. Watching for a new token in database every ${sleepMs}ms for ${timeoutMs}ms...`)
+                        
+                        while (accessToken === tokenFromDB) {
+                            
+                            // Wait
+                            await sleep(sleepMs)
+
+                            const currentMs = (new Date()).getTime()
+                            const elapsedMs = currentMs - beginMs
+                            const remainingMs = timeoutMs - elapsedMs 
+                            console.log(id, `Looking for a new token in database. Timeout in ${remainingMs}ms`)
+                            
+                            // Exit the loop if timeout has been reached
+                            if (remainingMs <= 0) {
+                                console.log(id, `Timeout reached when trying to refresh token ${dt(accessToken)}`)
+                                throw new MobilizonRefreshTokenError(error.message)
+                            }
+
+                            // Update token value from DB
+                            tokenFromDB = (await findAuthById(authId)).accessToken
+                        }
+
+                        console.log(id, `Token has finally been refreshed by another request. New access token is ${dt(tokenFromDB)}`)
+                        accessToken = tokenFromDB
+
+                    } else {
+
+                        console.log(id, `Unknown error while trying to refresh the token ${dt(accessToken)}`)
+                        throw error
+                    }                    
+                }
             }
-        
+            
+            console.log(id, `Recursive call with token ${dt(accessToken)}`)
+            return internalRefreshOnExpired(id, request, domain, accessToken, authId, res, ...args)
+
         // Ignore aborted request
         } else if (error.name && error.name === 'AbortError') {       
-            console.log('Aborting request');
-        
+            console.log(id, 'Aborting request')
+            
         // Else it's an unknown error, pass to error handler
         } else {       
+            console.log(id, 'Unknown error', error);
             throw error
         }
     } 
