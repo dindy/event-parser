@@ -1,5 +1,5 @@
 import { Sequelize, DataTypes, Model } from 'sequelize'
-import { sequelize } from '../database.js'
+import { sequelize } from '../database/database.js'
 
 export class ImportedEvent extends Model { }
 

@@ -1,5 +1,5 @@
 import { Sequelize, DataTypes, Model, where } from 'sequelize'
-import { sequelize } from '../database.js'
+import { sequelize } from '../database/database.js'
 import { Authorization } from './Authorization.js'
 import { ImportedEvent } from './ImportedEvent.js'
 import { AutomationLog } from './AutomationLog.js'

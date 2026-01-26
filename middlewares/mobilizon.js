@@ -7,8 +7,6 @@ const saveEvent = async (data) => {
 
 export const queryInstance = async (req, res) => {
     
-    console.log('Hit /mbz/query')
-    
     let callback = null
     
     if (req.body && req.body.operationName) {

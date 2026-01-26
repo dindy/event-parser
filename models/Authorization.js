@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import { Sequelize, DataTypes, Model } from 'sequelize'
-import { sequelize } from '../database.js'
+import { sequelize } from '../database/database.js'
 import { Application } from './Application.js'
 
 export class Authorization extends Model {}
