@@ -17,8 +17,8 @@ export const updateTokenSession = async (res, auth, domain) => {
 
     res.cookie('access_token', token, {
         httpOnly: true,
-        // secure: true, @TODO: Force secure on prod
-        sameSite: 'strict',
+        secure: true,
+        sameSite: 'None',
         maxAge: auth.refreshTokenExpiresIn * 1000
     });
 
