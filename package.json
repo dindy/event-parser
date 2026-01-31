@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "type": "module",
-  "main": "index.js",
+  "main": "app.mjs",
   "scripts": {
-    "dev": "NODE_ENV=dev node server.js",
-    "watch": "NODE_ENV=dev nodemon server.js",
+    "dev": "NODE_ENV=dev node server.mjs",
+    "watch": "NODE_ENV=dev nodemon server.mjs",
     "test": "NODE_ENV=test npx mocha -t 5000"
   },
   "author": "",
