@@ -1,120 +1,63 @@
-const path = require('path');
-const express = require("express");
-const log = require('node-file-logger');
-const cors = require('cors');
-const scrapper = require('./scrapper.js');
-const fbParser = require('./parsers/event/facebook-event-parser.js');
-const fbGroupParser = require('./parsers/group/facebook-group-parser.js');
-const instaGroupParser = require('./parsers/group/instagram-group-parser.js');
-const defaultGroupParser = require('./parsers/group/default-group-parser.js');
-const instaParser = require('./parsers/event/instagram-event-parser.js');
-const defaultParser = require('./parsers/event/default-event-parser.js');
-const helloassoParser = require('./parsers/event/helloasso-event-parser.js');
-const shotgunParser = require('./parsers/event/shotgun-event-parser.js');
+import './dotenv.js'
+import path from 'path'
+import express from 'express'
+import cors from 'cors'
+import bodyParser from 'body-parser'
+import cookieParser from 'cookie-parser'
 
-global.appRootDir = path.resolve(__dirname);
-global.appDebugDir = global.appRootDir + '/debug/';
-const app = express();
-app.use(cors());
-const port = 3001;
+import { scrap } from './middlewares/scrapper.js'
+import { register, authorize } from './middlewares/auth.js'
+import { queryInstance } from './middlewares/mobilizon.js'
+import { tokenParser } from './middlewares/tokenParser.js'
+import { fileURLToPath } from 'url'
+import errorHandler from './middlewares/errorHandler.js'
+import mobilizonApiErrorHandler from './middlewares/mobilizonApiErrorHandler.js'
+import {
+  deleteAutomation, 
+  forceAutomation, 
+  createAutomation, 
+  executeAutomations, 
+  getAutomations, 
+  getAutomationHistory
+} from './middlewares/automation.js'
+import { cronSecretChecker } from './middlewares/cronSecretChecker.js'
 
-const scrapEvent = async (url, provider) => {
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
-    let parser = null;
+global.appRootDir = __dirname
+global.appDebugDir = global.appRootDir + '/debug/'
 
-    const metas = {
-      startTimestamp: null,
-      endTimestamp: null,
-      description: null,
-      place: null,
-      ticketsUrl: null,
-      address: null,
-      hosts: [],
-      url: null,
-      online: null,
-      physicalAddress: {
-        description: null,
-        geom: null,
-        locality: null,
-        postalCode: null,
-        street: null,
-        country: null,
-      },
-      og: []
-    };    
-    
-    switch (provider) {
-        case 'facebook':
-            parser = fbParser;
-            break;
-        case 'instagram':
-            parser = instaParser;
-            break;
-        case 'helloasso':
-            parser = helloassoParser;
-            break;
-        case 'shotgun':
-            parser = shotgunParser;
-            break;
-        default:
-            parser = defaultParser;
-            break;
-    }
-    console.log(url);
-    
-    return await scrapper.scrap(url, parser, metas);    
-}
+const app = express()
+const jsonParser = bodyParser.json()
+const rawParser = bodyParser.raw({
+  inflate: true,
+  limit: '1gb',
+  type: '*/*'
+})
 
-const scrapGroup = async (url, provider) => {
+app.use(cookieParser())
+app.use(cors({origin: true, credentials: true}))
+app.get("/scrap", scrap)
+app.get("/auth/register", register)
+app.post("/auth/authorize", jsonParser, authorize)
+app.post("/mbz/query", rawParser, tokenParser, queryInstance)
+app.post("/automation", tokenParser, jsonParser, createAutomation)
+app.get("/automations", tokenParser, getAutomations)
+app.get("/automation/:id/execute", tokenParser, forceAutomation)
+app.get("/automation/:id/history", tokenParser, getAutomationHistory)
+app.get("/automation/:id/delete", tokenParser, deleteAutomation)
+app.get("/cron/automations", cronSecretChecker, executeAutomations)
+app.use(mobilizonApiErrorHandler)
+app.use(errorHandler)
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception:", err.message)
+  process.exit(1) // Exit to prevent an unstable state
+})
+// Handle unhandled promise rejections (async errors outside Express)
+process.on("unhandledRejection", (err) => {
+  console.error("Unhandled Promise Rejection:", err.message)
+  process.exit(1)
+})
 
-    let parser = null;
-    const metas = {
-        logos: [],
-        banners: [],
-        name: null,
-        url: null,
-        description: null,
-        physicalAddress: null
-    }
-    
-    switch (provider) {
-        case 'facebook':
-            parser = fbGroupParser;
-            break;
-        case 'instagram':
-            parser = instaGroupParser;
-            break;
-        default:
-            parser = defaultGroupParser;
-            break;
-    }
-
-    return await scrapper.scrap(url, parser, metas);    
-}
-
-app.get("/scrap", async (req, res) => {
-
-    const query = req.query;
-    const url = query.url;
-    const provider = query.provider;
-    const type = query.type;
-    
-    if (!query.url) return req.reject();
-
-    let buff = new Buffer(url, 'base64');
-    let decodedUrl = buff.toString('ascii');
-
-    log.Info('Request for ' + decodedUrl);
-    let data = null
-    if (type == 'event') {
-        data = await scrapEvent(decodedUrl, provider)
-    } else {
-        data = await scrapGroup(decodedUrl, provider)
-    }
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({data}));
-});
-
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}!`);
-});
+export default app

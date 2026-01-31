@@ -1,6 +1,6 @@
 # Presentation
 
-NodeJS server to parse an event's page metadata from various platforms. Designed for french dates.
+Backend application to parse an event's page metadata from various platforms. Designed for french dates.
 
 Supported platforms and formats :
 * [Facebook](https://www.facebook.com/)
@@ -14,11 +14,45 @@ Supported platforms and formats :
 Working on :
 * Any suggestions ?
 
+The backend also handles automations to import ICS feeds.
+
 # Getting started
 
-Create a .env file (see .env.sample)
-
+Install dependencies with :
 ```
 npm install
-node --env-file=.env app.js
+```
+
+## Production
+
+Create `.env.prod` file (see `.env.sample`)
+
+### Automations
+
+Automations can be executed via a CRON with a `GET` at `/cron/automations`. Example given :
+```
+GET https://domain.com/cron/automations?secret=my-secret
+```
+
+Secret password must be set in .env file.
+
+## Development
+
+Create `.env.dev` file (see `.env.sample`)
+Execute :
+```
+npm run dev
+```
+or
+```
+npm run watch
+```
+
+## Testing
+
+Create `.env.test` file (see `.env.sample`)
+
+Execute :
+```
+npm run test
 ```
