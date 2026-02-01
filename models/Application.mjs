@@ -4,6 +4,9 @@ import { sequelize } from '../database/database.mjs'
 export class Application extends Model {}
 
 Application.init({
+    name: {
+        type: DataTypes.STRING
+    },    
     domain: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -32,11 +35,11 @@ const query = async (sql, params) => {
     }        
 }
 
-export const findByInstance = async (domain) => {
+export const findByInstanceAndName = async (domain, name) => {
 
     return Application.findOne({
         where: {
-            domain
+            domain, name
         },
     })
 }

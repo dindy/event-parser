@@ -3,7 +3,7 @@ import { updateTokenSession } from './sessionWriter.mjs'
 import {
     findById as findAppById,
     findByClientId as findAppByClientId,
-    findByInstance as findAppByInstance,
+    findByInstanceAndName as findAppByInstanceAndName,
     save as saveApp
 } from '../models/Application.mjs' 
 
@@ -34,13 +34,14 @@ export const register = async (req, res, next) => {
     const redirectUri = req.query.redirect_uri
     if (!redirectUri) throw new MissingParameter('redirect_uri')  
     
-    let app = await findAppByInstance(instanceDomain)
+    const appName = process.env.APP_NAME
+    let app = await findAppByInstanceAndName(instanceDomain, appName)
 
     // If no app has already been registered for this mobilizon instance
     if (!app) {
 
         // Create an app on mobilizon server
-        const appData = await registerApplication(instanceDomain, redirectUri)
+        const appData = await registerApplication(instanceDomain, redirectUri, appName)
         
         // Register app in database
         app = await saveApp({ domain: instanceDomain, ...appData })

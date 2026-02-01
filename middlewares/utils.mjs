@@ -49,7 +49,7 @@ const internalRefreshOnExpired = async (
             // If access token has changed
             if (accessToken !== auth.accessToken) {
             
-                console.log(id, `Token in cookie ${dt(accessToken)} has been replaced in DB with ${dt(accessToken)}`)
+                console.log(id, `Token in cookie ${dt(accessToken)} has been replaced in DB with ${dt(auth.accessToken)}`)
             
                 // Update the user session
                 updateTokenSession(res, auth, domain)
