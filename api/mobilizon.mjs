@@ -24,6 +24,10 @@ export const handleResponse = async (response) => {
                 throw new RefreshTokenError(response, body)
             }
 
+            if (body.errors[0]?.code && body.errors[0]?.code == "unauthenticated") {
+                throw new ExpiredTokenError(response, body)
+            }
+
             throw new BadRequestError(response, body)
         }
 
@@ -75,12 +79,12 @@ const request = (url, options = {}, callback = data => data) => {
     }
 }
 
-export const registerApplication = async (instanceDomain, redirectUrl) => await request(
+export const registerApplication = async (instanceDomain, redirectUrl, appName) => await request(
     `https://${instanceDomain}/apps`,
     {
         method: 'POST',
         body: new URLSearchParams({
-            'name': clientName,
+            'name': appName,
             'redirect_uri': redirectUrl,
             'website': websiteUrl,
             'scope': scope
