@@ -9,7 +9,7 @@ import {
 
 import {
     findById as findAuthById,
-    findByUserId as findAuthByUserId,
+    findByMbzUserId as findAuthByMbzUserId,
     findByHash as findAuthByHash,
     createTemp as createTempAuth,
     refresh as refreshAuth,
@@ -79,16 +79,16 @@ export const authorize = async (req, res) => {
         let auth = await createTempAuth(app.id, authData)
         
         // Get the user id from the mobilizon instance
-        const mobilizonIdentityId = await refreshOnExpired(getMobilizonUserId, app.domain, auth.accessToken, auth.id, res)
+        const mobilizonUserId = await refreshOnExpired(getMobilizonUserId, app.domain, auth.accessToken, auth.id, res)
 
         // If we have already an authorization in database 
         // update the authorization else create
-        const existingAuth = await findAuthByUserId(mobilizonIdentityId)
+        const existingAuth = await findAuthByMbzUserId(mobilizonUserId, app.id)
         if (existingAuth) {
             await refreshAuth(existingAuth, auth.refreshToken, auth.accessToken)
             auth = existingAuth
         } else {
-            await saveMobilizonUserId(auth, mobilizonIdentityId)
+            await saveMobilizonUserId(auth, mobilizonUserId)
         }
         
         await updateTokenSession(res, auth, app.domain)

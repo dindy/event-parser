@@ -61,9 +61,15 @@ export const findById = async (id, includeApplication = false) => {
     }
 }
 
-export const findByUserId = async mobilizonUserId => {
+export const findByMbzUserId = async (mobilizonUserId, appId) => {
     return await Authorization.findOne({
         where: { mobilizonUserId },
+        include: {
+            model: Application,
+            where: {
+                id: appId
+            }
+        }
     })
 } 
 
