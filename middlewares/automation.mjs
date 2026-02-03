@@ -28,7 +28,9 @@ import MissingParameter from './exceptions/MissingParameter.mjs'
 import { findById as findAuthorizationById } from '../models/Authorization.mjs'
 import InvalidParameter from './exceptions/InvalidParameter.mjs'
 import { BadRequestError } from '../api/exceptions/BadRequestError.mjs'
-
+import scrapper from '../libs/scrapper.mjs';
+import groupEventsParser from '../libs/parsers/group-events/facebook-group-events-parser.mjs'
+    
 const logger = new AutomationLogger
 
 export const createAutomation = async (req, res, next) => {
@@ -133,14 +135,35 @@ const parseIcsEvent = async icsEvent => {
     return mbzEvent
 }
 
+const getFacebookEvents = async url => { 
+
+    let mbzEvents = []
+    const metas = {
+        url: null,
+        startTime: null
+    }
+
+    try {
+        await logger.info(`Fetching Facebook events.`)
+        const fbGroupEvents = await scrapper.scrap(url, groupEventsParser, metas)
+        console.log(fbGroupEvents)
+        
+    } catch (error) {
+        await logger.error(`Error fetching or parsing data : ${error.name} : ${error.message}.`)
+        return []
+    }
+
+    return []
+}
+
 const getIcsEvents = async url => {
     
     let mbzEvents = []
 
     try {
         await logger.info(`Fetching ICS feed.`)
-        const abortCtrl = new AbortController();
-        setTimeout(() => abortCtrl.abort(), 5_000);
+        const abortCtrl = new AbortController()
+        setTimeout(() => abortCtrl.abort(), 5_000)
         const events = await ical.async.fromURL(url, { signal: abortCtrl.signal })
         
         for (const [_, event] of Object.entries(events)) {
@@ -219,7 +242,9 @@ const executeAutomation = async automation => {
     await logger.info('Launching automation.')
     
     if (automation.type == 'ics') {
-        events = [ ...events, ...await getIcsEvents(automation.url)]
+        events = [...events, ...await getIcsEvents(automation.url)]
+    } else if (automation.type == 'fb') { 
+        events = [...events, ...await getFacebookEvents(automation.url)]
     }
 
     if (events.length === 0) await logger.info(`No event found.`)
