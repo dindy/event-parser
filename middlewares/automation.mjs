@@ -1,6 +1,5 @@
 import ical from 'node-ical'
 import { createHash } from 'node:crypto'
-import mimes from 'mime-db'
 import InvalidJsonBody from './exceptions/InvalidJsonBody.mjs'
 import InvalidJsonProperty from './exceptions/InvalidJsonProperty.mjs'
 import UnknownAutomation from './exceptions/UnknownAutomation.mjs'
@@ -17,7 +16,7 @@ import {
 import AutomationAlreadyExists from './exceptions/AutomationAlreadyExists.mjs'
 import { refreshOnExpired, requestApi } from './utils.mjs'
 import { saveEvent, getIdentitiesAndGroups } from '../api/mobilizon.mjs'
-import { convertUrlToBase64 } from '../libs/parsers/utils/utils.mjs'
+import { convertUrlToBase64, convertBase64DataUrlToBase64 } from '../libs/parsers/utils/utils.mjs'
 import {
     alreadyExists as importedEventAlreadyExists,
     create as createImportedEvent,
@@ -29,7 +28,9 @@ import { findById as findAuthorizationById } from '../models/Authorization.mjs'
 import InvalidParameter from './exceptions/InvalidParameter.mjs'
 import { BadRequestError } from '../api/exceptions/BadRequestError.mjs'
 import scrapper from '../libs/scrapper.mjs';
-import groupEventsParser from '../libs/parsers/group-events/facebook-group-events-parser.mjs'
+import fbGroupEventsParser from '../libs/parsers/group-events/facebook-group-events-parser.mjs'
+import fbEventParser from '../libs/parsers/event/facebook-event-parser.mjs'
+import { getEventModel } from '../libs/parsers/models.mjs'
     
 const logger = new AutomationLogger
 
@@ -122,7 +123,7 @@ const parseIcsEvent = async icsEvent => {
             const parsedImage = await convertUrlToBase64(icsEvent.attach.val)
             mbzEvent.picture = {
                 media: {
-                    name: 'event_banner' + '.' + mimes[parsedImage.type],
+                    name: 'event_banner' + '.' + parsedImage.extension,
                     alt: 'Event banner',
                     file: parsedImage.base64
                 }
@@ -137,23 +138,91 @@ const parseIcsEvent = async icsEvent => {
 
 const getFacebookEvents = async url => { 
 
-    let mbzEvents = []
-    const metas = {
-        url: null,
-        startTime: null
-    }
+    let fbEvents = []
+    let fbGroupEvents = []
 
     try {
-        await logger.info(`Fetching Facebook events.`)
-        const fbGroupEvents = await scrapper.scrap(url, groupEventsParser, metas)
-        console.log(fbGroupEvents)
-        
+        await logger.info(`Fetching facebook group events at ${url}.`)
+        fbGroupEvents = await scrapper.scrap(url, fbGroupEventsParser, [])
+        fbGroupEvents = fbGroupEvents.filter(event => event.startTimestamp * 1000 > (new Date).getTime())
+
     } catch (error) {
-        await logger.error(`Error fetching or parsing data : ${error.name} : ${error.message}.`)
+        await logger.error(`Error fetching facebook group events : ${error.name} : ${error.message}.`)
         return []
     }
 
-    return []
+    for (const fbGroupEvent of fbGroupEvents) {
+
+        try {
+            
+            await logger.info(`Found event ${fbGroupEvent.id}.`)
+            const eventModel = getEventModel()
+            const fbEvent = await scrapper.scrap(fbGroupEvent.url, fbEventParser, eventModel)
+            
+            // Update some events properties to match the mobilizon API
+            const mbzEvent = {
+                title: fbEvent.metas.title,
+                description: fbEvent.metas.description ?
+                    fbEvent.metas.description.replaceAll('\n', '</br>') :
+                    "",
+                beginsOn: (new Date(fbEvent.metas.startTimestamp * 1000)).toJSON(),
+                endsOn: fbEvent.metas.endTimestamp ?
+                    (new Date(fbEvent.metas.startTimestamp * 1000)).toJSON() :
+                    null,
+                onlineAddress: fbEvent.metas.url,
+                /** @TODO : Implement status */
+                // status: icsEvent.status || 'CONFIRMED',
+                // organizer: icsEvent.organizer || null,
+                // tags: icsEvent.categories || [],
+                physicalAddress: fbEvent.metas.physicalAddress,
+                metadata: [],
+                draft: false,
+                uid: fbEvent.metas.url
+            }            
+
+            if (fbEvent.metas.ticketsUrl) {
+                mbzEvent.metadata = [{
+                    key: 'mz:ticket:external_url',
+                    type: 'STRING',
+                    value: fbEvent.metas.ticketsUrl
+                }]
+            }
+
+            const hosts = fbEvent.metas.hosts
+            const getLinkOrJustName = ({name, url}) => url ? `<a href="${url}">${name}</a>` : name
+            if (hosts && hosts.length > 0) {
+                if (hosts.length == 1) {
+                    mbzEvent.description += `<br><p>Organisé par ${getLinkOrJustName(hosts[0])}</p>`
+                } else {
+                    mbzEvent.description += `<br><p>Organisé par : <ul>`
+                    hosts.forEach((host) => {
+                        mbzEvent.description += `<li>${getLinkOrJustName(host)}</li>`
+                    })
+                    mbzEvent.description += `</ul></p>`
+                }
+            }    
+
+            if (fbEvent.images && fbEvent.images.length > 0) {
+                const pictureObject = convertBase64DataUrlToBase64(fbEvent.images[0])
+                
+                mbzEvent.picture = {
+                    media: {
+                        name: 'event_banner' + '.' + pictureObject.extension,
+                        alt: 'Event banner',
+                        file: pictureObject.base64
+                    }
+                }                
+            }
+
+            fbEvents.push(mbzEvent)
+            
+        } catch (error) {
+            await logger.error(`Error fetching facebook event at ${fbGroupEvent.url}: ${error.name} : ${error.message}.`)
+            continue
+        }
+    }
+
+    return fbEvents
 }
 
 const getIcsEvents = async url => {

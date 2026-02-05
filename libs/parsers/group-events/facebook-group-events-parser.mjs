@@ -13,9 +13,20 @@ const parse = async (page, metas) => {
     for (const scriptContent of scripts) {
         try {
             const json = JSON.parse(scriptContent)
-            const events = getJsonPath('$..[*][?@.__typename=="Event"]', json)
-            if (!events || events.length === 0) continue
-            console.log(events);
+            const edges = getJsonPath('$..pageItems.edges', json)
+            const events = edges[0] || []
+
+            for (const event of events) {
+
+                if (event.node?.node?.__typename !== 'Event') continue
+
+                const url = event.node?.node?.url
+                const id = event.node?.id
+                const startTimestamp = event.node?.actions_renderer?.event?.start_timestamp
+                if (url && startTimestamp) {
+                    metas.push({id, url, startTimestamp})
+                }
+            }
             
         } catch (e) {
             console.log('Erreur parsing JSON : ', e);

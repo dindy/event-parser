@@ -1,5 +1,6 @@
 import axios from 'axios';
 import fs from 'fs/promises';
+import mimes from 'mime-db'
 
 export const fetchData = async url => await axios.get(url, { responseType: 'arraybuffer' })
 
@@ -9,8 +10,27 @@ export const convertUrlToBase64 = async url => {
 
     return {
         base64: Buffer.from(response.data).toString('base64'),
-        type: response.headers["content-type"]
+        type: response.headers["content-type"],
+        extension: mimes[response.headers["content-type"]]?.extensions?.[0] || ''
     }
+}
+
+export const convertBase64DataUrlToBase64 = base64DataUrl => { 
+    const dataUrlRegexp = /^data:([^;]+);base64,(.+)$/;
+    const match = dataUrlRegexp.exec(base64DataUrl);
+    
+    if (!match) {
+        throw new Error('Invalid base64 data URL format');
+    }
+    
+    const type = match[1];
+    const base64 = match[2];
+
+    return {
+        base64: base64,
+        type: type,
+        extension: mimes[type]?.extensions?.[0] || ''
+    };
 }
 
 export const convertUrlToBase64DataUrl = async url => {

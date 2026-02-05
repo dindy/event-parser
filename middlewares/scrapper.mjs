@@ -8,31 +8,14 @@ import defaultParser from '../libs/parsers/event/default-event-parser.mjs';
 import helloassoParser from '../libs/parsers/event/helloasso-event-parser.mjs';
 import shotgunParser from '../libs/parsers/event/shotgun-event-parser.mjs';
 import log from 'node-file-logger';
+import {
+    getEventModel,
+    getGroupModel
+} from '../libs/parsers/models.mjs'
 
 const scrapEvent = async (url, provider) => {
 
     let parser = null;
-
-    const metas = {
-      startTimestamp: null,
-      endTimestamp: null,
-      description: null,
-      place: null,
-      ticketsUrl: null,
-      address: null,
-      hosts: [],
-      url: null,
-      online: null,
-      physicalAddress: {
-        description: null,
-        geom: null,
-        locality: null,
-        postalCode: null,
-        street: null,
-        country: null,
-      },
-      og: []
-    };    
     
     switch (provider) {
         case 'facebook':
@@ -52,20 +35,12 @@ const scrapEvent = async (url, provider) => {
             break;
     }
     
-    return await scrapper.scrap(url, parser, metas);    
+    return await scrapper.scrap(url, parser, getEventModel());    
 }
 
 const scrapGroup = async (url, provider) => {
 
     let parser = null;
-    const metas = {
-        logos: [],
-        banners: [],
-        name: null,
-        url: null,
-        description: null,
-        physicalAddress: null
-    }
     
     switch (provider) {
         case 'facebook':
@@ -79,7 +54,7 @@ const scrapGroup = async (url, provider) => {
             break;
     }
 
-    return await scrapper.scrap(url, parser, metas);    
+    return await scrapper.scrap(url, parser, getGroupModel());    
 }
 
 const scrap = async (req, res) => {

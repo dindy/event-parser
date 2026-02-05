@@ -20,11 +20,11 @@ export const handleResponse = async (response) => {
         
         if (body.errors) {
             
-            if (body.errors[0]?.path[0] && body.errors[0].path[0] === 'refreshToken') {
+            if (body.errors?.[0]?.path?.[0] && body.errors?.[0].path?.[0] === 'refreshToken') {
                 throw new RefreshTokenError(response, body)
             }
 
-            if (body.errors[0]?.code && body.errors[0]?.code == "unauthenticated") {
+            if (body.errors?.[0]?.code && body.errors?.[0]?.code == "unauthenticated") {
                 throw new ExpiredTokenError(response, body)
             }
 
