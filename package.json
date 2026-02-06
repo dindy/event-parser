@@ -5,8 +5,8 @@
   "type": "module",
   "main": "app.mjs",
   "scripts": {
-    "dev": "NODE_ENV=dev node server.mjs",
-    "watch": "NODE_ENV=dev nodemon server.mjs",
+    "dev": "DEBUG='puppeteer-cluster:*' NODE_ENV=dev xvfb-run --server-args=\"-screen 0 1280x800x24\" --auto-servernum node server.mjs",
+    "watch": "DEBUG='puppeteer-cluster:*' NODE_ENV=dev xvfb-run --server-args=\"-screen 0 1280x800x24\" --auto-servernum nodemon server.mjs",
     "test": "NODE_ENV=test npx mocha -t 5000"
   },
   "author": "",
@@ -40,8 +40,10 @@
     "node-file-logger": "^0.9.5",
     "node-ical": "^0.22.1",
     "puppeteer": "^24.26.0",
-    "sequelize": "^6.37.7",
-    "testdouble-chai": "^0.5.0"
+    "puppeteer-cluster": "^0.25.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "sequelize": "^6.37.7"
   },
   "devDependencies": {
     "@babel/core": "^7.28.6",
@@ -55,6 +57,7 @@
     "mongodb-memory-server": "^11.0.1",
     "mongoose": "^9.1.4",
     "supertest": "^7.2.2",
-    "testdouble": "^3.20.2"
+    "testdouble": "^3.20.2",
+    "testdouble-chai": "^0.5.0"
   }
 }

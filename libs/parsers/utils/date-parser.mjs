@@ -90,7 +90,7 @@ const parseDatesFromText = (text) => {
         if (foundDates.length > 1) {
             endDateCandidate = foundDates[1];
             if (endDateCandidate < startDateCandidate) {
-                tmpDate = startDateCandidate;
+                const tmpDate = startDateCandidate;
                 startDateCandidate = endDateCandidate;
                 endDateCandidate = tmpDate;
             }
