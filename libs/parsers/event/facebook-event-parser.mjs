@@ -164,11 +164,11 @@ const parse = async (page, metas) => {
     }
 
     // Canonical URL
-    const regExpUrl = /<link rel="canonical" href="([^"]+)"/;
-    const matchesUrl = [...content.match(regExpUrl)];
-    if (matchesUrl) {
-        metas.url = matchesUrl[1];
-    }
+    // const regExpUrl = /<link rel="canonical" href="([^"]+)"/;
+    // const matchesUrl = [...content.match(regExpUrl)];
+    // if (matchesUrl) {
+    //     metas.url = matchesUrl[1];
+    // }
 
     // // Open graph
     // const regExp = /<meta\s[^>]*property=[\""'](og:[a-z]+)[\""']\s[^>]*content=[\""]([^\""]+?)[\""][^>]*>/g
