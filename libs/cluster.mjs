@@ -22,7 +22,7 @@ const cluster = await Cluster.launch({
     maxConcurrency: 2,
     puppeteer,
     puppeteerOptions: {
-        headless: true,
+        headless: false,
         args
     }
 })
