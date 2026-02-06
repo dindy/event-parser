@@ -1,6 +1,10 @@
 # Presentation
 
-Backend application to parse an event's page metadata from various platforms. Designed for french dates.
+Express backend for [mobilizon-event-importer](https://github.com/dindy/mobilizon-event-importer). 
+The app: 
+* acts as a proxy between frontend and Mobilizon instances ;
+* can scrap events data on various platforms ;
+* automate imports (create / update) from ICS feeds and Facebook group events on Mobilizon instances.
 
 Supported platforms and formats :
 * [Facebook](https://www.facebook.com/)
@@ -11,10 +15,7 @@ Supported platforms and formats :
 * [Common meta data](https://metascraper.js.org/)
 * [Eventbrite](https://www.eventbrite.com/) (partial)
 
-Working on :
-* Any suggestions ?
-
-The backend also handles automations to import ICS feeds.
+N.B: Designed for french date format (PR welcome).
 
 # Getting started
 
@@ -69,4 +70,4 @@ Automations can be executed via a CRON with a `GET` at `/cron/automations`. E.G:
 GET https://domain.com/cron/automations?secret=my-secret
 ```
 
-Secret password must be set in .env file.
+Secret password must be set in `.env` file.
