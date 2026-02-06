@@ -14,13 +14,13 @@ const configurePage = async page => {
   }
   
   // const customUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:140.0) Gecko/20100101 Firefox/140.0';
-  const customUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ApplicationleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'; 
+  const customUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'; 
   
   await page.setUserAgent(customUA);
   
   await page.setViewport({
-    width: 800,
-    height: 800,
+    width: Math.floor(1024 + Math.random() * 100),
+    height: Math.floor(768 + Math.random() * 100),
     deviceScaleFactor: 1,
   })
 
