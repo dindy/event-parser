@@ -6,4 +6,4 @@ page.html
 test.json
 stringify_cookies.js
 .env*
-settings.json
+.vscode/settings.json
