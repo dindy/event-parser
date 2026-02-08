@@ -1,4 +1,3 @@
-import ical from 'node-ical'
 import { createHash } from 'node:crypto'
 import InvalidJsonBody from './exceptions/InvalidJsonBody.mjs'
 import InvalidJsonProperty from './exceptions/InvalidJsonProperty.mjs'
@@ -16,22 +15,20 @@ import {
 import AutomationAlreadyExists from './exceptions/AutomationAlreadyExists.mjs'
 import { refreshOnExpired, requestApi } from './utils.mjs'
 import { saveEvent, getIdentitiesAndGroups } from '../api/mobilizon.mjs'
-import { convertUrlToBase64, convertBase64DataUrlToBase64 } from '../libs/parsers/utils/utils.mjs'
+import { convertUrlToBase64, convertBase64DataUrlToBase64 } from '../libs/parsers/web-parsers/utils/utils.mjs'
 import {
     alreadyExists as importedEventAlreadyExists,
     create as createImportedEvent,
     update as updateImportedEvent
 } from '../models/ImportedEvent.mjs'
 import AutomationLogger from '../libs/AutomationLogger.mjs'
-import MissingParameter from './exceptions/MissingParameter.mjs'
-import { findById as findAuthorizationById } from '../models/Authorization.mjs'
-import InvalidParameter from './exceptions/InvalidParameter.mjs'
 import { BadRequestError } from '../api/exceptions/BadRequestError.mjs'
-import scrapper from '../libs/scrapper.mjs';
-import fbGroupEventsParser from '../libs/parsers/group-events/facebook-group-events-parser.mjs'
-import fbEventParser from '../libs/parsers/event/facebook-event-parser.mjs'
-import { getEventModel } from '../libs/parsers/models.mjs'
-    
+import { scrap as scrapPage } from '../libs/scrappers/page-scrapper/scrapper.mjs';
+import { scrap as scrapICS } from '../libs/scrappers/ics-scrapper/scrapper.mjs';
+import fbGroupEventsParser from '../libs/parsers/web-parsers/group-events/facebook-group-events-parser.mjs'
+import fbEventParser from '../libs/parsers/web-parsers/event/facebook-event-parser.mjs'
+import { getEventModel } from '../libs/parsers/web-parsers/models.mjs'
+
 const logger = new AutomationLogger
 
 export const createAutomation = async (req, res, next) => {
@@ -80,181 +77,107 @@ export const createAutomation = async (req, res, next) => {
     res.json(automation)
 }
 
-const parseIcsEvent = async icsEvent => {
-    
-    if (icsEvent.type !== 'VEVENT') return null
-    if (!icsEvent.summary || icsEvent.summary === "") return null
-    
-    await logger.info(`Found event ${icsEvent.uid}.`)
+const convertEventModelToMbzEvent = async (fbEvent, automation) =>
+{   
+    try {
 
-    const mbzEvent = {
-        title: icsEvent.summary,
-        description: icsEvent.description || "",
-        beginsOn: icsEvent.start,
-        endsOn: icsEvent.end || null,
-        onlineAddress: icsEvent.url || icsEvent.uid ? `data:ics:uid:${icsEvent.uid}` : null,
-        status: icsEvent.status || 'CONFIRMED',
-        // organizer: icsEvent.organizer || null,
-        tags: icsEvent.categories || [],
-        physicalAddress: {
-            description: icsEvent.location || '',
-            street: null,
-            locality: null,
-            postalCode: null,
-            country: null,
-            geom: icsEvent.geo ? `${icsEvent.geo.lon};${icsEvent.geo.lat}` : null,
-        },
-        metadata: [],
-        draft: false,
-        options: {
-            showStartTime: icsEvent.datetype == 'date-time',
-            showEndTime: icsEvent.datetype == 'date-time',
-        },
-        uid: icsEvent.uid
-    }
-    mbzEvent.picture = null
-    // @TODO : Handle binary data images 
-    if (
-        icsEvent.attach?.params?.FMTTYPE
-        && icsEvent.attach.params.FMTTYPE.startsWith('image')
-        && icsEvent.attach.val
-    ) {
-        try {
-            const parsedImage = await convertUrlToBase64(icsEvent.attach.val)
+        // Update some events properties to match the mobilizon API
+        const mbzEvent = {
+            title: fbEvent.metas.title,
+            description: fbEvent.metas.description ?
+                fbEvent.metas.description.replaceAll('\n', '</br>') :
+                "",
+            beginsOn: (new Date(fbEvent.metas.startTimestamp * 1000)).toJSON(),
+            endsOn: fbEvent.metas.endTimestamp ?
+                (new Date(fbEvent.metas.startTimestamp * 1000)).toJSON() :
+                null,
+            onlineAddress: fbEvent.metas.url,
+            /** @TODO : Implement status */
+            // status: icsEvent.status || 'CONFIRMED',
+            // organizer: icsEvent.organizer || null,
+            // tags: icsEvent.categories || [],
+            physicalAddress: fbEvent.metas.physicalAddress,
+            metadata: [],
+            draft: false,
+            uid: fbEvent.metas.url
+        }            
+    
+        if (fbEvent.metas.ticketsUrl) {
+            mbzEvent.metadata = [{
+                key: 'mz:ticket:external_url',
+                type: 'STRING',
+                value: fbEvent.metas.ticketsUrl
+            }]
+        }
+    
+        const hosts = fbEvent.metas.hosts
+        const getLinkOrJustName = ({name, url}) => url ? `<a href="${url}">${name}</a>` : name
+        if (hosts && hosts.length > 0) {
+            if (hosts.length == 1) {
+                mbzEvent.description += `<br><p>Organisé par ${getLinkOrJustName(hosts[0])}</p>`
+            } else {
+                mbzEvent.description += `<br><p>Organisé par : <ul>`
+                hosts.forEach((host) => {
+                    mbzEvent.description += `<li>${getLinkOrJustName(host)}</li>`
+                })
+                mbzEvent.description += `</ul></p>`
+            }
+        }    
+    
+        if (fbEvent.images && fbEvent.images.length > 0) {
+            const pictureObject = convertBase64DataUrlToBase64(fbEvent.images[0])
+            
             mbzEvent.picture = {
                 media: {
-                    name: 'event_banner' + '.' + parsedImage.extension,
+                    name: 'event_banner' + '.' + pictureObject.extension,
                     alt: 'Event banner',
-                    file: parsedImage.base64
+                    file: pictureObject.base64
                 }
-            }
-        } catch(error) {
-            await logger.warning(`Could not fetch image ${icsEvent.attach.val} : ${error.name} : ${error.message}.`)
-        }
-    }
+            }                
+        }    
+    
+        return mbzEvent
 
-    return mbzEvent
+    } catch (error) {
+        await logger.error(`Error parsing event ${fbEvent.url}`, automation.id)
+        console.log(error)
+    }
 }
 
-const getFacebookEvents = async url => { 
-
-    let fbEvents = []
+const executeFacebookAutomation = async automation =>
+{
     let fbGroupEvents = []
 
     try {
-        await logger.info(`Fetching facebook group events at ${url}.`)
-        fbGroupEvents = await scrapper.scrap(url, fbGroupEventsParser, [])
-        fbGroupEvents = fbGroupEvents.filter(event => event.startTimestamp * 1000 > (new Date).getTime())
-
-    } catch (error) {
-        await logger.error(`Error fetching facebook group events : ${error.name} : ${error.message}.`)
-        return []
-    }
-
-    for (const fbGroupEvent of fbGroupEvents) {
-
-        try {
-            
-            await logger.info(`Found event ${fbGroupEvent.id}.`)
-            const eventModel = getEventModel()
-            const fbEvent = await scrapper.scrap(fbGroupEvent.url, fbEventParser, eventModel)
-            
-            // Update some events properties to match the mobilizon API
-            const mbzEvent = {
-                title: fbEvent.metas.title,
-                description: fbEvent.metas.description ?
-                    fbEvent.metas.description.replaceAll('\n', '</br>') :
-                    "",
-                beginsOn: (new Date(fbEvent.metas.startTimestamp * 1000)).toJSON(),
-                endsOn: fbEvent.metas.endTimestamp ?
-                    (new Date(fbEvent.metas.startTimestamp * 1000)).toJSON() :
-                    null,
-                onlineAddress: fbEvent.metas.url,
-                /** @TODO : Implement status */
-                // status: icsEvent.status || 'CONFIRMED',
-                // organizer: icsEvent.organizer || null,
-                // tags: icsEvent.categories || [],
-                physicalAddress: fbEvent.metas.physicalAddress,
-                metadata: [],
-                draft: false,
-                uid: fbEvent.metas.url
-            }            
-
-            if (fbEvent.metas.ticketsUrl) {
-                mbzEvent.metadata = [{
-                    key: 'mz:ticket:external_url',
-                    type: 'STRING',
-                    value: fbEvent.metas.ticketsUrl
-                }]
-            }
-
-            const hosts = fbEvent.metas.hosts
-            const getLinkOrJustName = ({name, url}) => url ? `<a href="${url}">${name}</a>` : name
-            if (hosts && hosts.length > 0) {
-                if (hosts.length == 1) {
-                    mbzEvent.description += `<br><p>Organisé par ${getLinkOrJustName(hosts[0])}</p>`
-                } else {
-                    mbzEvent.description += `<br><p>Organisé par : <ul>`
-                    hosts.forEach((host) => {
-                        mbzEvent.description += `<li>${getLinkOrJustName(host)}</li>`
-                    })
-                    mbzEvent.description += `</ul></p>`
-                }
-            }    
-
-            if (fbEvent.images && fbEvent.images.length > 0) {
-                const pictureObject = convertBase64DataUrlToBase64(fbEvent.images[0])
-                
-                mbzEvent.picture = {
-                    media: {
-                        name: 'event_banner' + '.' + pictureObject.extension,
-                        alt: 'Event banner',
-                        file: pictureObject.base64
-                    }
-                }                
-            }
-
-            fbEvents.push(mbzEvent)
-            
-        } catch (error) {
-            await logger.error(`Error fetching facebook event at ${fbGroupEvent.url}: ${error.name} : ${error.message}.`)
-            continue
+        await logger.info(`Fetching facebook group events at ${automation.url}.`, automation.id)
+        fbGroupEvents = await scrapPage(automation.url, fbGroupEventsParser, [])
+        fbGroupEvents = fbGroupEvents.filter(event => event.startTimestamp * 1000 > (new Date).getTime())        
+        if (fbGroupEvents.length > 0) {
+            fbGroupEvents.forEach(async event => await logger.info(`Facebook event found : ${event.url}.`, automation.id))
+        } else {
+            await logger.info(`No Facebook event found.`, automation.id)
         }
-    }
-
-    return fbEvents
-}
-
-const getIcsEvents = async url => {
-    
-    let mbzEvents = []
-
-    try {
-        await logger.info(`Fetching ICS feed.`)
-        const abortCtrl = new AbortController()
-        setTimeout(() => abortCtrl.abort(), 5_000)
-        const events = await ical.async.fromURL(url, { signal: abortCtrl.signal })
         
-        for (const [_, event] of Object.entries(events)) {
-            try {
-                mbzEvents = [...mbzEvents, await parseIcsEvent(event)]
-            } catch (error) {
-                await logger.error(`Unable to import ICS event ${event.uid} : ${error.name} : ${error.message}.`)
-                continue
-            }            
-        }
-
-        return mbzEvents.filter(event => event !== null)
-
     } catch (error) {
-        await logger.error(`Error fetching or parsing data : ${error.name} : ${error.message}.`)
-        return []
+        await logger.error(`Error fetching facebook group events : ${error.name} : ${error.message}.`, automation.id)
+        throw error
     }
-} 
+
+    const promises = fbGroupEvents.map(
+        event => scrapPage(event.url, fbEventParser, getEventModel())
+            .catch(async error => await logger.error(`Error fetching facebook event at ${event.url}: ${error.name} : ${error.message}.`, automation.id))
+            .then(async event => saveNewOrModifiedEvent(
+                await convertEventModelToMbzEvent(event, automation),
+                automation)
+            )
+    )
+
+    return Promise.allSettled(promises)
+}
 
 const saveNewOrModifiedEvent = async (event, automation) => {
     
-    // @TODO: refresh token here to avoid refresh on each request
+    /** @TODO : refresh token here to avoid refresh on each request */
     const authorization = await automation.getAuthorization()
     const application = await authorization.getApplication()
     const eventStr = JSON.stringify(event)
@@ -264,15 +187,15 @@ const saveNewOrModifiedEvent = async (event, automation) => {
     if (alreadyExistingEvent) {        
         
         if (alreadyExistingEvent.hash === hash) {
-            await logger.info(`Event ${event.uid} has not been modified.`);
+            await logger.info(`Event ${event.uid} has not been modified.`, automation.id);
             return
         }
         
-        await logger.info(`Event ${event.uid} has been modified.`);
+        await logger.info(`Event ${event.uid} has been modified.`, automation.id);
         event.id = alreadyExistingEvent.mbzId
         
     } else {
-        await logger.info(`Event ${event.uid} is new.`);
+        await logger.info(`Event ${event.uid} is new.`, automation.id);
     }
     
     const savedMbzEvent = await refreshOnExpired(
@@ -288,67 +211,136 @@ const saveNewOrModifiedEvent = async (event, automation) => {
         }
     ) 
     
-    if (alreadyExistingEvent) {
-        await updateImportedEvent(alreadyExistingEvent, { hash, title: event.title })
-    } else {
-        await createImportedEvent({
-            automationId: automation.id,
-            uid: event.uid,
-            mbzUid: savedMbzEvent.uuid,
-            mbzId: savedMbzEvent.id,
-            hash,
-            title: event.title
-        })
-    } 
-    await logger.success(`Event ${event.uid} has been saved with UUID ${savedMbzEvent.uuid}.`);
+    try {
+        if (alreadyExistingEvent) {
+            await updateImportedEvent(alreadyExistingEvent, { hash, title: event.title })
+        } else {
+            await createImportedEvent({
+                automationId: automation.id,
+                uid: event.uid,
+                mbzUid: savedMbzEvent.uuid,
+                mbzId: savedMbzEvent.id,
+                hash,
+                title: event.title
+            })
+        } 
+    } catch (error) {
+        if (error instanceof BadRequestError && error.body?.errors?.length > 0) {
+            const bodyError = error.body.errors[0]
+            await logger.error(`Could not create or update event ${event.uid} : ${bodyError.code} : ${bodyError.message}.`, automation.id)
+        } else {
+            await logger.error(`Could not create or update event ${event.uid} : ${error.name} : ${error.message}.`, automation.id)
+        }        
+    }
+
+    await logger.success(`Event ${event.uid} has been saved with UUID ${savedMbzEvent.uuid}.`, automation.id);
+}
+
+const parseIcsEvent = async (icsEvent, automation) => {
+    
+    try {
+        if (icsEvent.type !== 'VEVENT') return null
+        if (!icsEvent.summary || icsEvent.summary === "") return null
+        
+        await logger.info(`Found event ${icsEvent.uid}.`, automation.id)
+    
+        const mbzEvent = {
+            title: icsEvent.summary,
+            description: icsEvent.description || "",
+            beginsOn: icsEvent.start,
+            endsOn: icsEvent.end || null,
+            onlineAddress: icsEvent.url || icsEvent.uid ? `data:ics:uid:${icsEvent.uid}` : null,
+            status: icsEvent.status || 'CONFIRMED',
+            // organizer: icsEvent.organizer || null,
+            tags: icsEvent.categories || [],
+            physicalAddress: {
+                description: icsEvent.location || '',
+                street: null,
+                locality: null,
+                postalCode: null,
+                country: null,
+                geom: icsEvent.geo && icsEvent.geo.lat != 0 && icsEvent.geo.lon != 0
+                    ? `${icsEvent.geo.lon};${icsEvent.geo.lat}`
+                    : null,
+            },
+            metadata: [],
+            draft: false,
+            options: {
+                showStartTime: icsEvent.datetype == 'date-time',
+                showEndTime: icsEvent.datetype == 'date-time',
+            },
+            uid: icsEvent.uid
+        }
+        mbzEvent.picture = null
+        /** @TODO : Handle binary data images */ 
+        if (
+            icsEvent.attach?.params?.FMTTYPE
+            && icsEvent.attach.params.FMTTYPE.startsWith('image')
+            && icsEvent.attach.val
+        ) {
+            try {
+                const parsedImage = await convertUrlToBase64(icsEvent.attach.val)
+                mbzEvent.picture = {
+                    media: {
+                        name: 'event_banner' + '.' + parsedImage.extension,
+                        alt: 'Event banner',
+                        file: parsedImage.base64
+                    }
+                }
+            } catch(error) {
+                await logger.warning(`Could not fetch image ${icsEvent.attach.val} : ${error.name} : ${error.message}.`, automation.id)
+            }
+        }
+    
+        return mbzEvent
+
+    } catch (error) {
+        await logger.error(`Error parsing data : ${error.name} : ${error.message}.`, automation.id)
+        return null
+    }
+}
+
+const executeIcsAutomation = async automation =>
+{
+    let events = []
+    
+    await logger.info(`Fetching ICS feed.`, automation.id)
+    
+    try {
+        events = await scrapICS(automation.url)        
+    } catch (error) {
+        await logger.error(`Error fetching or parsing data : ${error.name} : ${error.message}.`, automation.id)
+        throw error
+    }
+    
+    const promises = Object.entries(events).map(
+        ([_, event]) => parseIcsEvent(event, automation)
+            .then(event => event ? saveNewOrModifiedEvent(event, automation) : null)
+    )
+    
+    return Promise.allSettled(promises)
 }
 
 const executeAutomation = async automation => {
-        
-    let events = []
     
-    logger.setAutomationId(automation.id)
-    await logger.info('Launching automation.')
+    await logger.info('Launching automation.', automation.id)
     
     if (automation.type == 'ics') {
-        events = [...events, ...await getIcsEvents(automation.url)]
+        return executeIcsAutomation(automation)
     } else if (automation.type == 'fb') { 
-        events = [...events, ...await getFacebookEvents(automation.url)]
-    }
-
-    if (events.length === 0) await logger.info(`No event found.`)
-
-    for (const event of events)
-    {
-        try {
-            await saveNewOrModifiedEvent(event, automation)
-        } catch (error) {
-            if (error instanceof BadRequestError && error.body?.errors?.length > 0) {
-                const bodyError = error.body.errors[0]
-                await logger.error(`Could not create or update event ${event.uid} : ${bodyError.code} : ${bodyError.message}.`)
-            } else {
-                await logger.error(`Could not create or update event ${event.uid} : ${error.name} : ${error.message}.`)
-            }
-            continue
-        }
+        return executeFacebookAutomation(automation)
     }
 } 
 
 export const executeAutomations = async (req, res, next) => {
 
     const automations = await listActiveAutomations()
-
-    for (const automation of automations)
-    {
-        try {
-            await executeAutomation(automation)    
-        } catch (error) {
-            console.log(error)
-            continue
-        }
-    }
-
-    res.end('Done !')
+    const promises = automations.map(automation => executeAutomation(automation))
+    
+    Promise.allSettled(promises)
+        .then((r) => { console.log(r) })
+        .catch(e => console.log(e))
+        .finally(() => res.end('Done !'))
 }
 
 // Check that the current user's authorization can publish for attributedToId :

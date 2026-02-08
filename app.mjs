@@ -21,7 +21,7 @@ import {
   getAutomationHistory
 } from './middlewares/automation.mjs'
 import { cronSecretChecker } from './middlewares/cronSecretChecker.mjs'
-import cluster from './libs/cluster.mjs'
+import cluster from './libs/scrappers/page-scrapper/cluster.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)

@@ -1,17 +1,17 @@
-import scrapper from '../libs/scrapper.mjs';
-import fbParser from '../libs/parsers/event/facebook-event-parser.mjs';
-import fbGroupParser from '../libs/parsers/group/facebook-group-parser.mjs';
-import instaGroupParser from '../libs/parsers/group/instagram-group-parser.mjs';
-import defaultGroupParser from '../libs/parsers/group/default-group-parser.mjs';
-import instaParser from '../libs/parsers/event/instagram-event-parser.mjs';
-import defaultParser from '../libs/parsers/event/default-event-parser.mjs';
-import helloassoParser from '../libs/parsers/event/helloasso-event-parser.mjs';
-import shotgunParser from '../libs/parsers/event/shotgun-event-parser.mjs';
+import { scrap as pageScrap } from '../libs/scrappers/page-scrapper/scrapper.mjs';
+import fbParser from '../libs/parsers/web-parsers/event/facebook-event-parser.mjs';
+import fbGroupParser from '../libs/parsers/web-parsers/group/facebook-group-parser.mjs';
+import instaGroupParser from '../libs/parsers/web-parsers/group/instagram-group-parser.mjs';
+import defaultGroupParser from '../libs/parsers/web-parsers/group/default-group-parser.mjs';
+import instaParser from '../libs/parsers/web-parsers/event/instagram-event-parser.mjs';
+import defaultParser from '../libs/parsers/web-parsers/event/default-event-parser.mjs';
+import helloassoParser from '../libs/parsers/web-parsers/event/helloasso-event-parser.mjs';
+import shotgunParser from '../libs/parsers/web-parsers/event/shotgun-event-parser.mjs';
 import log from 'node-file-logger';
 import {
     getEventModel,
     getGroupModel
-} from '../libs/parsers/models.mjs'
+} from '../libs/parsers/web-parsers/models.mjs'
 
 const scrapEvent = async (url, provider) => {
 
@@ -35,7 +35,7 @@ const scrapEvent = async (url, provider) => {
             break;
     }
     
-    return await scrapper.scrap(url, parser, getEventModel());    
+    return await pageScrap(url, parser, getEventModel());    
 }
 
 const scrapGroup = async (url, provider) => {
@@ -54,7 +54,7 @@ const scrapGroup = async (url, provider) => {
             break;
     }
 
-    return await scrapper.scrap(url, parser, getGroupModel());    
+    return await pageScrap(url, parser, getGroupModel());    
 }
 
 const scrap = async (req, res) => {

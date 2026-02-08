@@ -46,7 +46,7 @@ const configurePage = async page => {
   return page
 }
 
-const scrap = async (url, parser, metas) =>
+export const scrap = async (url, parser, metas) =>
 {
   return await cluster.execute(url, async ({ page, data }) =>
   {
@@ -57,5 +57,3 @@ const scrap = async (url, parser, metas) =>
     return await parser.parse(page, metas)
   })
 }
-
-export default { scrap }
