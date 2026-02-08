@@ -1,6 +1,10 @@
 # Presentation
 
-Backend application to parse an event's page metadata from various platforms. Designed for french dates.
+Express backend for [mobilizon-event-importer](https://github.com/dindy/mobilizon-event-importer). 
+The app: 
+* acts as a proxy between frontend and Mobilizon instances ;
+* can scrap events data on various platforms ;
+* automate imports (create / update) from ICS feeds and Facebook group events on Mobilizon instances.
 
 Supported platforms and formats :
 * [Facebook](https://www.facebook.com/)
@@ -11,10 +15,7 @@ Supported platforms and formats :
 * [Common meta data](https://metascraper.js.org/)
 * [Eventbrite](https://www.eventbrite.com/) (partial)
 
-Working on :
-* Any suggestions ?
-
-The backend also handles automations to import ICS feeds.
+N.B: Designed for french date format (PR welcome).
 
 # Getting started
 
@@ -25,20 +26,23 @@ npm install
 
 ## Production
 
-Create `.env.prod` file (see `.env.sample`)
+Create `.env.prod` file (see `.env.sample` for documentation).
 
-### Automations
-
-Automations can be executed via a CRON with a `GET` at `/cron/automations`. Example given :
+Launch server with :
 ```
-GET https://domain.com/cron/automations?secret=my-secret
+NODE_ENV=prod node server.mjs
 ```
 
-Secret password must be set in .env file.
+N.B: If you use puppeteer with headless mode disabled on a server with no display hardware you can install [Xvfb](https://en.wikipedia.org/wiki/Xvfb) and launch NodeJS with `xvfb-run`.
+
+E.G:
+```
+NODE_ENV=prod xvfb-run --server-args=\"-screen 0 1280x800x24\" --auto-servernum node server.mjs
+```
 
 ## Development
 
-Create `.env.dev` file (see `.env.sample`)
+Create `.env.dev` file (see `.env.sample` for documentation)
 Execute :
 ```
 npm run dev
@@ -48,6 +52,8 @@ or
 npm run watch
 ```
 
+NodeJS will be launched with `xvfb-run`.
+
 ## Testing
 
 Create `.env.test` file (see `.env.sample`)
@@ -56,3 +62,12 @@ Execute :
 ```
 npm run test
 ```
+
+## Automations
+
+Automations can be executed via a CRON with a `GET` at `/cron/automations`. E.G:
+```
+GET https://domain.com/cron/automations?secret=my-secret
+```
+
+Secret password must be set in `.env` file.
