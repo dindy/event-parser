@@ -52,10 +52,12 @@ export default {
                     const host = getFirstJsonPath("$..['organizer']", graph);
                     const hostName = getFirstJsonPath("$..['name']", host);
                     const hostUrl = getFirstJsonPath("$..['url']", host);
-                    metas.hosts = [{
-                        name: hostName,
-                        url: hostUrl
-                    }];
+                    if (hostName) {
+                        metas.hosts = [{
+                            name: hostName,
+                            url: hostUrl
+                        }];
+                    }
                     const offers = getFirstJsonPath("$..['offers']", graph);
                     if (offers && offers.length > 0) {
                         const offer = offers[0];
