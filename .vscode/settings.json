@@ -1,0 +1,15 @@
+{
+  "linker.performance.maxFilesToScan": 8000,
+  "linker.performance.maxConcurrentFiles": 10,
+  "linker.exclude": [
+      "**/node_modules/**",
+      "**/.git/**",
+      "**/dist/**",
+      "**/build/**"
+  ],
+  "typescript.updateImportsOnFileMove.enabled": "never",
+  "javascript.updateImportsOnFileMove.enabled": "never",
+  "python.analysis.autoImportCompletions": false,
+  "python.analysis.autoSearchPaths": false,
+  "python.analysis.fixAll": []
+}

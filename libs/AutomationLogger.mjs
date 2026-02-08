@@ -4,22 +4,17 @@ export default class AutomationLogger {
 
     automationId = null
 
-    setAutomationId = (id) =>
-    {
-        this.automationId = id
-    }
-
-    log = async (type, message) =>
+    log = async (type, message, automationId) =>
     {    
         await AutomationLog.create({
-            automationId: this.automationId,
+            automationId,
             type,
             message,
         })
     }
 
-    error = async message => await this.log('error', message)
-    success = async message => await this.log('success', message)
-    info = async message => await this.log('info', message)
-    warning = async message => await this.log('warning', message)
+    error = async (...args) => await this.log('error', ...args)
+    success = async (...args) => await this.log('success', ...args)
+    info = async (...args) => await this.log('info', ...args)
+    warning = async (...args) => await this.log('warning', ...args)
 }
