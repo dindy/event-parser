@@ -42,7 +42,8 @@ const parse = async (page, metas) => {
                 metas.name = name;
             }
         } catch (e) {
-            
+            console.log('Erreur parsing JSON : ', e)
+            throw e
         }
     }      
     

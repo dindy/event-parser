@@ -151,7 +151,10 @@ const executeFacebookAutomation = async automation =>
     try {
         await logger.info(`Fetching facebook group events at ${automation.url}.`, automation.id)
         fbGroupEvents = await scrapPage(automation.url, fbGroupEventsParser, [])
-        fbGroupEvents = fbGroupEvents.filter(event => event.startTimestamp * 1000 > (new Date).getTime())        
+        
+        // Treat only future events
+        fbGroupEvents = fbGroupEvents.filter(event => !event.isPast)        
+        
         if (fbGroupEvents.length > 0) {
             fbGroupEvents.forEach(async event => await logger.info(`Facebook event found : ${event.url}.`, automation.id))
         } else {

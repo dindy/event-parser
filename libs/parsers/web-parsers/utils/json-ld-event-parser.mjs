@@ -105,7 +105,8 @@ export default {
                     }
                 }
             } catch (e) {
-                console.log('Erreur parsing JSON : ', e);
+                console.log('Erreur parsing JSON : ', e)
+                throw e
             }
         }
 

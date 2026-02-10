@@ -54,7 +54,8 @@ const parse = async (page, metas) => {
                 if (parsed) metas.banners.push(parsed);
             }
         } catch (e) {
-            console.log('Erreur parsing JSON : ', e);
+            console.log('Erreur parsing JSON : ', e)
+            throw e
         }
 
     };             

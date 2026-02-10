@@ -13,6 +13,7 @@ const parse = async (page) => {
             const json = JSON.parse(scriptContent);
         } catch (e) {
             console.log('Erreur parsing JSON : ', e);
+            throw e            
         }
     }
 

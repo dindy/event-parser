@@ -13,23 +13,51 @@ const parse = async (page, metas) => {
     for (const scriptContent of scripts) {
         try {
             const json = JSON.parse(scriptContent)
-            const edges = getJsonPath('$..pageItems.edges', json)
-            const events = edges[0] || []
 
-            for (const event of events) {
+            let edges = getJsonPath('$..pageItems.edges', json)
 
-                if (event.node?.node?.__typename !== 'Event') continue
+            if (edges && edges.length > 0) {
 
-                const url = event.node?.node?.url
-                const id = event.node?.id
-                const startTimestamp = event.node?.actions_renderer?.event?.start_timestamp
-                if (url && startTimestamp) {
-                    metas.push({id, url, startTimestamp})
+                const events = edges[0] || []
+
+                for (const event of events) {
+    
+                    if (event.node?.node?.__typename !== 'Event') continue
+    
+                    const url = event.node?.node?.url
+                    const id = event.node?.id
+                    const startTimestamp = event.node?.actions_renderer?.event?.start_timestamp
+                    const isPast = startTimestamp ?
+                        startTimestamp * 1000 < (new Date).getTime()
+                        : null
+                    if (url) {
+                        metas.push({id, url, isPast})
+                    }
                 }
+
+            } else {
+
+                edges = getJsonPath('$..upcoming_events.edges', json)
+                
+                if (!edges || !edges[0]) continue
+                
+                for (const edge of edges[0]) { 
+
+                    const event = edge.node
+                    const isPast = event.is_past
+                    const url = event.eventUrl
+                    const id = event.id
+
+                    if (url) {
+                        metas.push({id, url, isPast})
+                    }
+                }
+
             }
             
-        } catch (e) {
-            console.log('Erreur parsing JSON : ', e);
+        } catch (error) {
+            console.log('Erreur parsing JSON : ', error)
+            throw error
         }
     }
 

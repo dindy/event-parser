@@ -101,7 +101,8 @@ const parse = async (page, metas) => {
         }
       }
     } catch (e) {
-      console.log('Erreur parsing JSON : ', e);
+      console.log('Erreur parsing JSON : ', e)
+      throw e
     }
   };
   data.metas = metas;
