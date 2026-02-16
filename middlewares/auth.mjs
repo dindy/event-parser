@@ -97,6 +97,6 @@ export const authorize = async (req, res) => {
 
     // Invalid client id
     } else {
-        res.status(400).end({ message: 'No app found for the given client id' })
+        res.status(400).json({ message: 'No app found for the given client id' })
     }
 }
