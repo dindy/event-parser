@@ -13,8 +13,13 @@ export const getRedirectUri = origin => `https://${origin}/mobilizon/callback`
 
 export const handleResponse = async (response) => {
     
-    const body = await response.json()
-    // console.log(body);
+    let body = null 
+
+    try {
+        body = await response.json()
+    } catch (error) {
+        throw new RequestError('Unknown error', response, null)
+    }
     
     if (response.status === 200) {
         
@@ -55,24 +60,22 @@ export const handleResponse = async (response) => {
 const request = (url, options = {}, callback = data => data) => {
     
     console.log('request ' + url);
-    // console.log(options);
     
     const abortCtrl = new AbortController()
 
     options.signal = abortCtrl.signal
 
-    let request = null
-
-    try {
-        request = fetch(url, options)
-    } catch (error) {
-        throw new NetworkError(url, error)
-    }
+    const request = fetch(url, options)
 
     return {
         abort: () => abortCtrl.abort(),
         getData: async () => {
-            const req = await request
+            let req = null
+            try {
+                req = await request
+            } catch (error) {
+                throw new NetworkError(url, error)
+            }
             const res = await handleResponse(req)
             return callback(res)
         }

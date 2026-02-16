@@ -5,7 +5,7 @@ export default class MobilizonApiError extends AppError {
         super(responseError.message)
         this.name = "MobilizonApiError"
         this.mobilizonApiErrorName = responseError.name
-        if (responseError.body.errors) {
+        if (responseError.body?.errors) {
             this.statusCode = 400
         } else {
             this.statusCode = responseError.response?.status || 500
