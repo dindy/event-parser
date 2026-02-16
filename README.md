@@ -40,6 +40,31 @@ E.G:
 NODE_ENV=prod xvfb-run --server-args=\"-screen 0 1280x800x24\" --auto-servernum node server.mjs
 ```
 
+The app is listening on port `3001` by default.
+
+### Docker
+
+1. Create a directory to define environment variables and store database.
+```
+mkdir your_project_directory
+```
+
+2. Create a `.env.docker` file and define environment variables (see `.env.docker.sample`) except MYSQL variables that are already defined in `docker-compose.yml`.
+```
+cd your_project_directory
+# Copy / paste and customize original .env file
+touch .env 
+```
+
+3. Copy and execute `docker-compose.yml`
+```
+# Copy / paste original docker-compose.yml
+touch docker-compose.yml 
+docker compose up -d
+```
+
+You app is ready !
+
 ## Development
 
 Create `.env.dev` file (see `.env.sample` for documentation)
