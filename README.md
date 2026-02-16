@@ -42,29 +42,6 @@ NODE_ENV=prod xvfb-run --server-args=\"-screen 0 1280x800x24\" --auto-servernum 
 
 The app is listening on port `3001` by default.
 
-### Docker
-
-1. Create a directory to define environment variables and store database.
-```
-mkdir your_project_directory
-```
-
-2. Create a `.env.docker` file and define environment variables (see `.env.docker.sample`) except MYSQL variables that are already defined in `docker-compose.yml`.
-```
-cd your_project_directory
-# Copy / paste and customize original .env file
-touch .env 
-```
-
-3. Copy and execute `docker-compose.yml`
-```
-# Copy / paste original docker-compose.yml
-touch docker-compose.yml 
-docker compose up -d
-```
-
-You app is ready !
-
 ## Development
 
 Create `.env.dev` file (see `.env.sample` for documentation)
@@ -88,6 +65,16 @@ Execute :
 npm run test
 ```
 
+## Migrations
+
+1. Create the database accordingly with your `MYSQL_DB` environment variable.
+
+2. Execute migrations
+Set the right env in NODE_ENV.
+```
+NODE_ENV=dev npx sequelize-cli db:migrate
+```
+
 ## Automations
 
 Automations can be executed via a CRON with a `GET` at `/cron/automations`. E.G:
@@ -96,3 +83,26 @@ GET https://domain.com/cron/automations?secret=my-secret
 ```
 
 Secret password must be set in `.env` file.
+
+## Docker
+
+1. Create a directory to define environment variables and store database.
+```
+mkdir your_project_directory
+```
+
+2. Create a `.env.docker` file and define environment variables (see `.env.docker.sample`).
+```
+cd your_project_directory
+# Copy / paste and customize original .env file
+touch .env 
+```
+
+3. Copy and execute `docker-compose.yml`
+```
+# Copy / paste original docker-compose.yml
+touch docker-compose.yml 
+docker compose up -d
+```
+
+You app is ready !
