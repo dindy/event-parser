@@ -6,4 +6,6 @@ page.html
 test.json
 stringify_cookies.js
 .env*
+!.env.sample
+!.env.docker.sample
 .vscode/settings.json
