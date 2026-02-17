@@ -154,6 +154,9 @@ const parse = async (page, metas) => {
             data.images.push(parsedImage);
         }                   
     }
+
+    // Remove duplicates
+    data.images = [...new Set(data.images)]
     data.metas = metas;
     return data;
 }

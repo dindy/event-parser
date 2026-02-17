@@ -83,7 +83,11 @@ const parse = async (page, metas) => {
             metas.logos.push(parsedImage);
         }            
     }   
-        
+    
+    // Remove duplicates
+    metas.logos = [...new Set(metas.logos)]
+    metas.banners = [...new Set(metas.banners)]
+
     return metas;
 }
 
