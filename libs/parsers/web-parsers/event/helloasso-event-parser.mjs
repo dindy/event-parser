@@ -1,4 +1,4 @@
-import { convertUrlToBase64DataUrl, debugPage } from '../utils/utils.mjs';
+import { convertUrlToBase64DataUrl } from '../utils/utils.mjs';
 import fs from 'fs/promises';
 import defaultParser from './default-event-parser.mjs';
 import { monthTokens } from '../utils/date-parser.mjs';
@@ -6,7 +6,6 @@ import { parseDatesFromText } from '../utils/date-parser.mjs';
 
 const parse = async (page, metas) => {
 
-    debugPage(page);
     const data = {};
     data.images = [];
 

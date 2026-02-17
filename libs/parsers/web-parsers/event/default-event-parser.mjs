@@ -2,11 +2,10 @@
 import metaParser from '../utils/metascrapers/metascraper-default.mjs';
 import jsonLdParser from '../utils/json-ld-event-parser.mjs';
 import { parseDatesFromText } from '../utils/date-parser.mjs';
-import { convertUrlToBase64DataUrl, debugPage } from '../utils/utils.mjs';
+import { convertUrlToBase64DataUrl } from '../utils/utils.mjs';
 
 const parse = async (page, metas) => { 
     
-    debugPage(page);
     const parsed = await metaParser.parse(page);
     metas.description = parsed.description;        
     metas.title = parsed.title;        

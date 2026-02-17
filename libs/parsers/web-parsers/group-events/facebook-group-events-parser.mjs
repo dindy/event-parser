@@ -1,10 +1,7 @@
-import { debugPage } from '../utils/utils.mjs';
 import { getJsonPath, getFirstJsonPath } from '../utils/json-parser.mjs';
 
 const parse = async (page, metas) => {
     
-    debugPage(page)
-
     const scripts = await page.$$eval('script', scripts => scripts
         .filter(script => script.type === "application/json")
         .map(script => script.textContent)

@@ -1,4 +1,4 @@
-import { convertUrlToBase64DataUrl, extractAddressParts, debugPage } from '../utils/utils.mjs';
+import { convertUrlToBase64DataUrl, extractAddressParts } from '../utils/utils.mjs';
 import { getJsonPath, getFirstJsonPath } from '../utils/json-parser.mjs';
 import fs from 'fs/promises';
 import he from 'he';
@@ -6,7 +6,6 @@ import defaultParser from './default-event-parser.mjs';
 
 const parse = async (page, metas) => {
 
-    debugPage(page);
     const data = {};
     data.images = [];
     const content = await page.content();

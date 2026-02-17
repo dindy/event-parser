@@ -1,5 +1,4 @@
 import './dotenv.mjs'
-import path from 'path'
 import express from 'express'
 import cors from 'cors'
 import bodyParser from 'body-parser'
@@ -9,7 +8,6 @@ import { scrap } from './middlewares/scrapper.mjs'
 import { register, authorize } from './middlewares/auth.mjs'
 import { queryInstance } from './middlewares/mobilizon.mjs'
 import { tokenParser } from './middlewares/tokenParser.mjs'
-import { fileURLToPath } from 'url'
 import errorHandler from './middlewares/errorHandler.mjs'
 import mobilizonApiErrorHandler from './middlewares/mobilizonApiErrorHandler.mjs'
 import {
@@ -22,12 +20,6 @@ import {
 } from './middlewares/automation.mjs'
 import { cronSecretChecker } from './middlewares/cronSecretChecker.mjs'
 import cluster from './libs/scrappers/page-scrapper/cluster.mjs'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-
-global.appRootDir = __dirname
-global.appDebugDir = global.appRootDir + '/debug/'
 
 const app = express()
 const jsonParser = bodyParser.json()

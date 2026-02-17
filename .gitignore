@@ -2,7 +2,7 @@ node_modules
 logs
 cookies*
 scripts.html
-page.html
+debug/*
 test.json
 stringify_cookies.js
 .env*

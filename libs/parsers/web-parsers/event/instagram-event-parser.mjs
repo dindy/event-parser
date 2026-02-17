@@ -1,13 +1,12 @@
 // @TODO : Scrap meta en mode robot
 
-import { convertUrlToBase64DataUrl, debugPage } from '../utils/utils.mjs';
+import { convertUrlToBase64DataUrl } from '../utils/utils.mjs';
 import { getJsonPath, getFirstJsonPath } from '../utils/json-parser.mjs';
 import { parseDatesFromText } from '../utils/date-parser.mjs';
 import defaultParser from './default-event-parser.mjs';
 
 const parse = async (page, metas) => {
 
-  debugPage(page);
   const data = {
     images: []
   };

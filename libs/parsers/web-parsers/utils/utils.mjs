@@ -1,6 +1,9 @@
 import axios from 'axios';
 import fs from 'fs/promises';
 import mimes from 'mime-db'
+import { cwd } from 'node:process'
+import path from 'path'
+import crypto from 'node:crypto'
 
 export const fetchData = async url => await axios.get(url, { responseType: 'arraybuffer' })
 
@@ -68,7 +71,13 @@ export const extractAddressParts = (string) => {
         return null;
 }
 
-export const debugPage = async (page) => {
+export const debugPage = async (page) =>
+{
     const content = await page.content();
-    await fs.writeFile(global.appDebugDir + 'page.html', content);
+    const filename = crypto.randomUUID() + '.html'
+    const fullPath = path.join(cwd(), 'debug', `${filename}`)
+    // Don't wait and return filename
+    fs.writeFile(fullPath, content);
+
+    return fullPath
 }

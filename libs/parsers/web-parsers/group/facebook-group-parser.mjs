@@ -1,4 +1,4 @@
-import { convertUrlToBase64DataUrl, extractAddressParts, debugPage } from '../utils/utils.mjs';
+import { convertUrlToBase64DataUrl, extractAddressParts } from '../utils/utils.mjs';
 import { getJsonPath, getFirstJsonPath } from '../utils/json-parser.mjs';
 import fs from 'fs/promises';
 import he from 'he';

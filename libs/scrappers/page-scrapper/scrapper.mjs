@@ -1,4 +1,6 @@
 import cluster from './cluster.mjs'
+import { debugPage } from '../../parsers/web-parsers/utils/utils.mjs'
+import log from 'node-file-logger'
 
 const useProxy = process.env.USE_PROXY === '1' ? true : false;
 const proxyUsername = process.env.PROXY_USERNAME;
@@ -46,6 +48,25 @@ const configurePage = async page => {
   return page
 }
 
+const logScraping = async (page, scraped) =>
+{
+  try {
+    const toDebug = { ...scraped }
+    const imagesKeys = ['logos', 'banners', 'images']
+    for (const key of imagesKeys) {
+      if (!scraped[key]) continue
+      toDebug[key] = []
+      for (const img of scraped[key]) {
+        toDebug[key].push(img.substring(0, 100) + '...')
+      }
+    }
+    const debugPageFullPath = await debugPage(page)
+    log.Debug(`Scrapping done : ${debugPageFullPath} : ${JSON.stringify(toDebug)}`)
+  } catch (error) {
+    console.log('Error while logging ', error);
+  }
+}
+
 export const scrap = async (url, parser, metas) =>
 {
   return await cluster.execute(url, async ({ page, data }) =>
@@ -53,7 +74,11 @@ export const scrap = async (url, parser, metas) =>
     page = await configurePage(page)
     
     await page.goto(data, { waitUntil: 'load', timeout: 0 })
-
-    return await parser.parse(page, metas)
+        
+    const result = await parser.parse(page, metas)
+    
+    await logScraping(page, result)
+    
+    return result
   })
 }
