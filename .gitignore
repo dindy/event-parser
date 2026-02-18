@@ -5,7 +5,7 @@ scripts.html
 debug/*
 test.json
 stringify_cookies.js
-.env*
+.env.*
 !.env.sample
 !.env.docker.sample
 .vscode/settings.json

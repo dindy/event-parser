@@ -25,6 +25,7 @@ EXPOSE 3001
 # Set an environment variable to skip .env file since env variables are set 
 # by docker-compose.yml
 ENV IS_DOCKER=1
+RUN chmod +x docker-startup.sh
 
 # Start the application
 ENTRYPOINT [ "./docker-startup.sh" ]
