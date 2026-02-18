@@ -91,23 +91,23 @@ Secret password must be set in `.env` file.
 mkdir your_project_directory
 ```
 
-2. Create a `.env.docker` file and define environment variables (see `.env.docker.sample`).
+2. Create a `.env` file and define environment variables (see `.env.docker.sample`).
 ```
 cd your_project_directory
 # Copy / paste and customize variables
 touch .env 
 ```
 
-3. Create a `db` directory to persist database
-```
-mkdir db
-```
-
-4. Copy and execute `docker-compose.yml`
+3. Copy and execute `docker-compose.yml`
 ```
 # Copy / paste original docker-compose.yml
 touch docker-compose.yml 
 docker compose up -d
 ```
 
-You app is ready !
+You app is listening on port 3001 by default. Three new directories have been created :
+* `db` to persist mysql database
+* `logs` to store app logs
+* `debug` to store scraped html pages
+
+An instance of phpMyAdmin is also available on port 8081 by default.
