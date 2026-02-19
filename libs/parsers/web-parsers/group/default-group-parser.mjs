@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import metaParser from '../utils/metascrapers/metascraper-default.mjs';
-import jsonLdParser from '../utils/json-ld-event-parser.mjs';
+import jsonLdParser from '../utils/json-ld-group-parser.mjs';
 import { convertUrlToBase64DataUrl } from '../utils/utils.mjs';
 
 const parse = async (page, metas) => { 
@@ -15,20 +15,32 @@ const parse = async (page, metas) => {
     if (parsed.image) {
         const parsedImage = await convertUrlToBase64DataUrl(parsed.image);
         if (parsedImage) {
-            metas.logos.push(parsedImage);
+            metas.banners.push(parsedImage);
         }
     }    
     
     const parsedJsonLd = await jsonLdParser.parse(page);
     
-    if (parsedJsonLd.images && parsedJsonLd.images.length > 0) {
-        
-        for (const src of parsedJsonLd.images) {
-            const parsedImage = await convertUrlToBase64DataUrl(src);
-            if (parsedImage) {
-                metas.logo.push(parsedImage);
-            }                
-        }
+    if (parsedJsonLd.physicalAddress) { 
+        metas.physicalAddress = parsedJsonLd.physicalAddress
+    }        
+    if (parsedJsonLd.name) {
+        metas.name = parsedJsonLd.name
+    }
+    if (parsedJsonLd.url) {
+        metas.url = parsedJsonLd.url
+    }    
+    if (parsedJsonLd.image) {        
+        const parsedImage = await convertUrlToBase64DataUrl(parsedJsonLd.image);
+        if (parsedImage) {
+            metas.banners.push(parsedImage);
+        }                
+    }        
+    if (parsedJsonLd.logo) {        
+        const parsedImage = await convertUrlToBase64DataUrl(parsedJsonLd.logo);
+        if (parsedImage) {
+            metas.logos.push(parsedImage);
+        }                
     }        
 
     return metas;

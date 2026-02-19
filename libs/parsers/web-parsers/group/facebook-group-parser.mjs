@@ -72,7 +72,7 @@ const parse = async (page, metas) => {
         }            
     }        
 
-    // TODO: Keep bigger logo
+    /** @TODO: Keep biggest logo */
     let logos = await page.$$eval(`svg[aria-label="${metas.name}"] image`, images => images
         .map(image => image.getAttribute('xlink:href'))
     );

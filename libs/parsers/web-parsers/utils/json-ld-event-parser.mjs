@@ -63,33 +63,36 @@ export default {
                         const offer = offers[0];
                         metas.ticketsUrl = getFirstJsonPath("$..['url']", offer);
                     }
-                    const startDate = getFirstJsonPath("$..['startDate']", graph);
                     
+                    const startDate = getFirstJsonPath("$..['startDate']", graph);
                     metas.startTimestamp = startDate ? new Date(startDate) / 1000 : null;
                     const endDate = getFirstJsonPath("$..['endDate']", graph);
                     metas.endTimestamp = endDate ? new Date(endDate) / 1000 : null;
+                    
+                    metas.physicalAddress = {}
                     const location = getFirstJsonPath("$..['location']", graph);
                     if (location) {
                         metas.physicalAddress = {
                             description: getFirstJsonPath("$..['name']", location),
                         }
-                        const address = getFirstJsonPath("$..['address']", location);
-                        
-                        if (address && typeof address === 'string') {
-                            const parts = address.split(',').map(el => el.trim());
-                            metas.physicalAddress.street = parts[0];
-                            metas.physicalAddress.postalCode = parts[1].split(/ (.*)/s)[0];
-                            metas.physicalAddress.locality = parts[1].split(/ (.*)/s)[1];
-                        } else {
-                            metas.physicalAddress.locality = getFirstJsonPath("$..['addressLocality']", address);
-                            metas.physicalAddress.postalCode = getFirstJsonPath("$..['postalCode']", address);
-                            metas.physicalAddress.street = getFirstJsonPath("$..['streetAddress']", address);
-                        }
-                        const geo = getFirstJsonPath("$..['geo']", location);
-                        if (geo) {
-                            metas.physicalAddress.geom = `${geo.longitude};${geo.latitude}`;
-                        }
                     }
+                    const address = getFirstJsonPath("$..['address']", graph);
+                    
+                    if (address && typeof address === 'string') {
+                        const parts = address.split(',').map(el => el.trim());
+                        metas.physicalAddress.street = parts[0];
+                        metas.physicalAddress.postalCode = parts[1].split(/ (.*)/s)[0];
+                        metas.physicalAddress.locality = parts[1].split(/ (.*)/s)[1];
+                    } else {
+                        metas.physicalAddress.locality = getFirstJsonPath("$..['addressLocality']", address);
+                        metas.physicalAddress.postalCode = getFirstJsonPath("$..['postalCode']", address);
+                        metas.physicalAddress.street = getFirstJsonPath("$..['streetAddress']", address);
+                    }
+                    const geo = getFirstJsonPath("$..['geo']", graph);
+                    if (geo) {
+                        metas.physicalAddress.geom = `${geo.longitude};${geo.latitude}`;
+                    }
+                    
                     let foundImages = getFirstJsonPath("$..['logo']", graph);
                     
                     if (foundImages) {

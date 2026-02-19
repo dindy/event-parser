@@ -1,6 +1,7 @@
 import { scrap as pageScrap } from '../libs/scrappers/page-scrapper/scrapper.mjs';
 import fbParser from '../libs/parsers/web-parsers/event/facebook-event-parser.mjs';
 import fbGroupParser from '../libs/parsers/web-parsers/group/facebook-group-parser.mjs';
+import helloassoGroupParser from '../libs/parsers/web-parsers/group/helloasso-group-parser.mjs';
 import instaGroupParser from '../libs/parsers/web-parsers/group/instagram-group-parser.mjs';
 import defaultGroupParser from '../libs/parsers/web-parsers/group/default-group-parser.mjs';
 import instaParser from '../libs/parsers/web-parsers/event/instagram-event-parser.mjs';
@@ -48,6 +49,9 @@ const scrapGroup = async (url, provider) => {
             break;
         case 'instagram':
             parser = instaGroupParser;
+            break;
+        case 'helloasso':
+            parser = helloassoGroupParser;
             break;
         default:
             parser = defaultGroupParser;
