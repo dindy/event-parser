@@ -1,27 +1,31 @@
 services:
   event-parser:
-    build: /home/sylvain/projects/event-parser
+    image: dindy88/mobilizon-importer-backend
     env_file: ".env"
     depends_on:
       - mysql
     environment:
-      - MYSQL_HOST=mysql
-      - MYSQL_DATABASE=${MYSQL_DB}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      MYSQL_HOST: mysql
+      MYSQL_DATABASE: ${MYSQL_DB}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
       - "3001:3001"
     restart: unless-stopped
+    volumes:
+      - ./debug:/usr/src/app/debug
+      - ./logs:/usr/src/app/logs
 
   mysql:
     image: mysql:8.0
     restart: unless-stopped
     env_file: ".env"
     environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=${MYSQL_DB}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      MYSQL_ROOT_HOST: '%'
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DB}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
       - "3307:3306"
     volumes:
@@ -30,10 +34,11 @@ services:
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:latest
     restart: always
+    env_file: ".env"
     depends_on:
       - mysql
     environment:
       PMA_HOST: mysql
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     ports:
-      - "8080:80"
+      - "8081:80"
