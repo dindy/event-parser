@@ -15,7 +15,7 @@ const parse = async (page, metas) => {
     if (parsed.image) {
         const parsedImage = await convertUrlToBase64DataUrl(parsed.image);
         if (parsedImage) {
-            metas.banners.push(parsedImage);
+            metas.logos.push(parsedImage);
         }
     }    
     
@@ -29,6 +29,9 @@ const parse = async (page, metas) => {
     }
     if (parsedJsonLd.url) {
         metas.url = parsedJsonLd.url
+    }    
+    if (parsedJsonLd.description) {
+        metas.description = parsedJsonLd.description
     }    
     if (parsedJsonLd.image) {        
         const parsedImage = await convertUrlToBase64DataUrl(parsedJsonLd.image);
