@@ -61,8 +61,6 @@ export const extractPhysicalAddressFromPlace = value => {
             ...physicalAddress ?? {},
             ...extractPhysicalAddressGeomFromObject(value.geo)
         }
-        console.log('physicalAddress', physicalAddress);
-        
     }
 
     return physicalAddress
