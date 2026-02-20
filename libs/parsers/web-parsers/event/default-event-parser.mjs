@@ -43,9 +43,15 @@ const parse = async (page, metas) => {
         }
     }
     
+    images = [...new Set(images)]
+
     return {
         images,
-        metas: Object.assign(metas, parsedJsonLd.metas)
+        metas: {
+            ...metas,
+            ...parsedJsonLd.metas,
+            url: metas.url
+        }
     }
 }
 

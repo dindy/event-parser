@@ -1,4 +1,9 @@
-import { getFirstJsonPath } from './json-parser.mjs';
+import { getFirstJsonPath } from './json-parser.mjs'
+import {
+    extractImageUrl,
+    extractPhysicalAddressFromAddress,
+    extractPhysicalAddressFromLocation
+} from './json-ld-helper.mjs'
 
 const eventTypes = [
     'BusinessEvent',
@@ -70,42 +75,19 @@ export default {
                     metas.endTimestamp = endDate ? new Date(endDate) / 1000 : null;
                     
                     metas.physicalAddress = {}
+                    const address = getFirstJsonPath("$..['address']", graph);
+                    if (address) {
+                        metas.physicalAddress = extractPhysicalAddressFromAddress(address)
+                    }
                     const location = getFirstJsonPath("$..['location']", graph);
                     if (location) {
-                        metas.physicalAddress = {
-                            description: getFirstJsonPath("$..['name']", location),
-                        }
-                    }
-                    const address = getFirstJsonPath("$..['address']", graph);
-                    
-                    if (address && typeof address === 'string') {
-                        const parts = address.split(',').map(el => el.trim());
-                        metas.physicalAddress.street = parts[0];
-                        metas.physicalAddress.postalCode = parts[1].split(/ (.*)/s)[0];
-                        metas.physicalAddress.locality = parts[1].split(/ (.*)/s)[1];
-                    } else {
-                        metas.physicalAddress.locality = getFirstJsonPath("$..['addressLocality']", address);
-                        metas.physicalAddress.postalCode = getFirstJsonPath("$..['postalCode']", address);
-                        metas.physicalAddress.street = getFirstJsonPath("$..['streetAddress']", address);
-                    }
-                    const geo = getFirstJsonPath("$..['geo']", graph);
-                    if (geo) {
-                        metas.physicalAddress.geom = `${geo.longitude};${geo.latitude}`;
+                        metas.physicalAddress = extractPhysicalAddressFromLocation(location)
                     }
                     
-                    let foundImages = getFirstJsonPath("$..['logo']", graph);
-                    
-                    if (foundImages) {
-                        images = [foundImages];
-                    }
-                    foundImages = getFirstJsonPath("$..['image']", graph);
-                    if (foundImages) {
-                        if (Array.isArray(foundImages) && foundImages.length > 0) {
-                            images = foundImages;
-                        } else {
-                            images = [foundImages];
-                        }
-                    }
+                    let foundImage = extractImageUrl(getFirstJsonPath("$..['logo']", graph))
+                    if (foundImage) images = [foundImage]
+                    foundImage = extractImageUrl(getFirstJsonPath("$..['image']", graph))
+                    if (foundImage) images = [foundImage]
                 }
             } catch (e) {
                 console.log('Erreur parsing JSON : ', e)

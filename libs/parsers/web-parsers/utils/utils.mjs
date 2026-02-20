@@ -81,3 +81,14 @@ export const debugPage = async (page) =>
 
     return fullPath
 }
+
+export const isString = value => typeof value === 'string' || value instanceof String;
+
+export const isValidUrl = urlString => {
+    try { 
+        return Boolean(new URL(urlString)); 
+    }
+    catch(e){ 
+        return false; 
+    }
+}

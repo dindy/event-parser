@@ -1,9 +1,17 @@
 import { getFirstJsonPath } from './json-parser.mjs';
+import {
+    extractImageUrl,
+    extractPhysicalAddressFromAddress,
+    extractPhysicalAddressFromLocation,
+    extractPhysicalAddressFromPlace,
+} from './json-ld-helper.mjs';
 
 const groupTypes = [
     'Organization',
     'Group',
-    'LocalBusiness'
+    'LocalBusiness',
+    'EntertainmentBusiness',
+    'Place'
 ]
 
 export default {
@@ -19,25 +27,32 @@ export default {
             try {
                 const json = JSON.parse(scriptContent);
                 if (groupTypes.includes(json['@type'])) {
+
                     group.name = getFirstJsonPath("$..['name']", json);
+                    
+                    group.description = getFirstJsonPath("$..['description']", json);
+                    
                     group.url = getFirstJsonPath("$..['url']", json);
-                    group.image = getFirstJsonPath("$..['image']", json);
-                    group.logo = getFirstJsonPath("$..['logo']", json);
-                    const geo = getFirstJsonPath("$..['geo']", json);
-                    if (geo) {
-                        group.physicalAddress.geom = `${geo.longitude};${geo.latitude}`;
-                    }      
+                    
+                    group.image = extractImageUrl(getFirstJsonPath("$..['image']", json))
+                    
+                    group.logo = extractImageUrl(getFirstJsonPath("$..['logo']", json))
+
+                    group.physicalAddress = {}
+
                     const address = getFirstJsonPath("$..['address']", json);
-                    if (address && typeof address === 'string') {
-                        const parts = address.split(',').map(el => el.trim());
-                        group.physicalAddress.street = parts[0];
-                        group.physicalAddress.postalCode = parts[1].split(/ (.*)/s)[0];
-                        group.physicalAddress.locality = parts[1].split(/ (.*)/s)[1];
-                    } else {
-                        group.physicalAddress.locality = getFirstJsonPath("$..['addressLocality']", json);
-                        group.physicalAddress.postalCode = getFirstJsonPath("$..['postalCode']", json);
-                        group.physicalAddress.street = getFirstJsonPath("$..['streetAddress']", json);
-                    }                    
+                    if (address) {
+                        group.physicalAddress = extractPhysicalAddressFromAddress(address)
+                    }
+
+                    const location = getFirstJsonPath("$..['location']", json);
+                    if (location) {
+                        group.physicalAddress = extractPhysicalAddressFromLocation(location)
+                    }
+
+                    if (json['@type'] == 'Place') {
+                        group.physicalAddress = extractPhysicalAddressFromPlace(json)
+                    }
                 }
             } catch (e) {
                 console.log('Erreur parsing JSON : ', e)
