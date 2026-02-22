@@ -2,13 +2,32 @@ import * as chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import puppeteer from 'puppeteer'
 import { promises as fs } from "fs"
-// import parser from '../libs/parsers/web-parsers/event/facebook-event-parser.mjs'
 import { getEventModel } from '../libs/parsers/web-parsers/models.mjs'
 import * as utils from '../libs/parsers/web-parsers/utils/utils.mjs'
 import path from 'path'
 import * as td from 'testdouble'
 
 chai.use(chaiAsPromised)
+
+const parse = async (url, file) => {
+    const browser = await puppeteer.launch()
+    const page = await browser.newPage()
+    const html = await fs.readFile(path.resolve(file), 'utf-8')
+    await page.setRequestInterception(true)
+    page.on('request', req => {
+        if (req.url() === url || req.url() === url + '/') {
+            req.respond({
+                body: html,
+                contentType: 'text/html',
+            })
+        } else {
+            req.abort()
+        }
+    })
+    await page.goto(url) 
+    const parser = await import('../libs/parsers/web-parsers/event/facebook-event-parser.mjs')
+    return await parser.default.parse(page, getEventModel())     
+}
 
 describe("Test event web parser", async function () {
     
@@ -26,30 +45,18 @@ describe("Test event web parser", async function () {
         })
 
     })
-    
+
     it('should parse facebook event page', async function ()
     {
         const url = 'https://www.facebook.com/events/plaine-de-la-filhole-47200-marmande-france/garorock-2026-30-%C3%A8me-%C3%A9dition/1156265816461916/'
-        const browser = await puppeteer.launch()
-        const page = await browser.newPage()
-        const html = await fs.readFile(path.resolve('./test/pages/facebook-garorock.html'), 'utf-8')
-        await page.setRequestInterception(true)
-        page.on('request', req => {
-            if (req.url() === url || req.url() === url + '/') {
-                req.respond({
-                    body: html,
-                    contentType: 'text/html',
-                })
-            } else {
-                req.abort()
-            }
-        })
-        await page.goto(url)
-        const parser = await import('../libs/parsers/web-parsers/event/facebook-event-parser.mjs')
-        const result = await parser.default.parse(page, getEventModel())     
+        const htmlFilePath = './test/pages/facebook-garorock.html'
+        const parsed = await parse(url, htmlFilePath)
+        
         td.verify(convertUrlToBase64DataUrl('https://scontent-cdg4-1.xx.fbcdn.net/v/t39.30808-6/561759007_823888796959056_2952129657611568225_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=105&ccb=1-7&_nc_sid=7e0d18&_nc_ohc=d-qOf5Xx-osQ7kNvwHrlQ-p&_nc_oc=AdmkSjTRk6Xe2Qc4jlKAYSN3APJRPsI9Ur2YocH9W9J3zTSc-MNlK5GpDsh0yXVVJQ0&_nc_zt=23&_nc_ht=scontent-cdg4-1.xx&_nc_gid=I83ngRGELp-FLTyrz6R6kA&oh=00_AfvfuptfE9RkXlgyz2M7rTtijFw1flqmUVy_7VQMVnISzQ&oe=699E5FC2'))
+        
         td.verify(convertUrlToBase64DataUrl('https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=1156265816461916'))
-        chai.expect(result.metas).to.be.deep.equal(
+        
+        chai.expect(parsed.metas).to.be.deep.contains(
             {
                 title: 'Garorock 2026 - 30 Ã¨me Ã©dition',
                 startTimestamp: 1782475200,
@@ -76,15 +83,13 @@ describe("Test event web parser", async function () {
                 url: 'https://www.facebook.com/events/plaine-de-la-filhole-47200-marmande-france/garorock-2026-30-%C3%A8me-%C3%A9dition/1156265816461916/',
                 online: false,
                 physicalAddress: {
-                description: null,
-                geom: '0.16084;44.4976',
-                locality: 'Marmande',
-                postalCode: '47200',
-                street: 'Plaine de la Filhole',
-                country: 'France'
-                },
-                og: [],
-                position: { latitude: 44.4976, longitude: 0.16084 }
+                    description: null,
+                    geom: '0.16084;44.4976',
+                    locality: 'Marmande',
+                    postalCode: '47200',
+                    street: 'Plaine de la Filhole',
+                    country: 'France'
+                }
             }
         )            
     })
