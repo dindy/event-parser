@@ -45,23 +45,23 @@ describe("Test refreshOnExpired", async function () {
     beforeEach(async function () {
     
         // Replace used functions in dependencies
-        await td.replaceEsm('../api/mobilizon.js', {
+        await td.replaceEsm('../api/mobilizon.mjs', {
             refreshToken
         })        
-        await td.replaceEsm('../models/Authorization.js', {
+        await td.replaceEsm('../models/Authorization.mjs', {
             findById,
             refresh
         })
-        await td.replaceEsm('../api/exceptions/ExpiredTokenError.js', {
+        await td.replaceEsm('../api/exceptions/ExpiredTokenError.mjs', {
             ExpiredTokenError
         })
-        await td.replaceEsm('../api/exceptions/RefreshTokenError.js', {
+        await td.replaceEsm('../api/exceptions/RefreshTokenError.mjs', {
             RefreshTokenError
         })
-        await td.replaceEsm('../middlewares/exceptions/MobilizonRefreshTokenError.js', {
+        await td.replaceEsm('../middlewares/exceptions/MobilizonRefreshTokenError.mjs', {
             default: MobilizonRefreshTokenError
         })
-        await td.replaceEsm('../middlewares/sessionWriter.js', {
+        await td.replaceEsm('../middlewares/sessionWriter.mjs', {
             updateTokenSession: () => null
         })
         td.when(passGetData()).thenResolve({ data: 'data' })
@@ -77,7 +77,7 @@ describe("Test refreshOnExpired", async function () {
             refreshToken: newRefreshToken
         })
         td.when(refreshToken(domain, initialRefreshToken)).thenReturn({getData: refreshTokenGetData})
-        const { refreshOnExpired } = await import('../middlewares/utils.js')
+        const { refreshOnExpired } = await import('../middlewares/utils.mjs')
         const result = await refreshOnExpired(pass, domain, initialAccessToken, authId, res, contentType, body)
         chai.expect(result).to.be.a('object')
         chai.expect(result).to.have.property('data').equal('data')
@@ -92,7 +92,7 @@ describe("Test refreshOnExpired", async function () {
             accessToken: newAccessToken
         })
         
-        const { refreshOnExpired } = await import('../middlewares/utils.js')
+        const { refreshOnExpired } = await import('../middlewares/utils.mjs')
         const result = await refreshOnExpired(pass, domain, initialAccessToken, authId, res, contentType, body)
         chai.expect(result).to.be.a('object')
         chai.expect(result).to.have.property('data').equal('data')
@@ -106,7 +106,7 @@ describe("Test refreshOnExpired", async function () {
         td.when(findById(authId), { times: 2 }).thenResolve(initialAuthObject)
         td.when(refreshToken(domain, initialRefreshToken), { times: 1 }).thenThrow(new RefreshTokenError(null, null))
         
-        const { refreshOnExpired } = await import('../middlewares/utils.js')
+        const { refreshOnExpired } = await import('../middlewares/utils.mjs')
         const result = await refreshOnExpired(pass, domain, initialAccessToken, authId, res, contentType, body)
         chai.expect(result).to.be.a('object')
         chai.expect(result).to.have.property('data').equal('data')        
@@ -117,7 +117,7 @@ describe("Test refreshOnExpired", async function () {
         td.when(findById(authId)).thenResolve(initialAuthObject)
         td.when(refreshToken(domain, initialRefreshToken), { times: 1 }).thenThrow(new RefreshTokenError(null, null))
         
-        const { refreshOnExpired } = await import('../middlewares/utils.js')
+        const { refreshOnExpired } = await import('../middlewares/utils.mjs')
         let exceptionThrown = null
         try {
             await refreshOnExpired(pass, domain, initialAccessToken, authId, res, contentType, body)
