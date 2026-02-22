@@ -1,11 +1,11 @@
 import * as td from 'testdouble'
 import * as chai from 'chai'
-import chaiAsPromised from 'chai-as-promised';
+import chaiAsPromised from 'chai-as-promised'
 import { ExpiredTokenError } from '../api/exceptions/ExpiredTokenError.mjs'
-import { RefreshTokenError } from '../api/exceptions/RefreshTokenError.mjs';
-import MobilizonRefreshTokenError from '../middlewares/exceptions/MobilizonRefreshTokenError.mjs';
+import { RefreshTokenError } from '../api/exceptions/RefreshTokenError.mjs'
+import MobilizonRefreshTokenError from '../middlewares/exceptions/MobilizonRefreshTokenError.mjs'
 
-chai.use(chaiAsPromised);
+chai.use(chaiAsPromised)
 
 describe("Test refreshOnExpired", async function () {
 
