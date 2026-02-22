@@ -9,8 +9,13 @@ import * as td from 'testdouble'
 
 chai.use(chaiAsPromised)
 
-const parse = async (url, file) => {
-    const browser = await puppeteer.launch()
+const browser = await puppeteer.launch()
+
+after(async () => {
+    await browser.close()
+})
+
+const loadPage = async (url, file) => {
     const page = await browser.newPage()
     const html = await fs.readFile(path.resolve(file), 'utf-8')
     await page.setRequestInterception(true)
@@ -25,32 +30,70 @@ const parse = async (url, file) => {
         }
     })
     await page.goto(url) 
-    const parser = await import('../libs/parsers/web-parsers/event/facebook-event-parser.mjs')
-    return await parser.default.parse(page, getEventModel())     
+    return page    
 }
 
 describe("Test event web parser", async function () {
     
     const convertUrlToBase64DataUrl = td.function('Utils.convertUrlToBase64DataUrl')
     
+    this.beforeEach(async function () {
+        await td.replaceEsm('../libs/parsers/web-parsers/utils/utils.mjs', {
+            ...utils,
+            convertUrlToBase64DataUrl
+        })        
+    })
+
     afterEach(function () {
         td.reset()
     })
     
-    beforeEach(async function () {    
-        // Replace used functions in dependencies
-        await td.replaceEsm('../libs/parsers/web-parsers/utils/utils.mjs', {
-            ...utils,
-            convertUrlToBase64DataUrl
-        })
+    it('should parse eventbrite event page', async function ()
+    {
+        const url = 'https://www.eventbrite.fr/e/billets-grande-vente-de-plantes-st-germain-en-laye-1981575849709'
+        const htmlFilePath = './test/pages/eventbrite-plantes.html'
 
+        const page = await loadPage(url, htmlFilePath)
+        const parser = await import('../libs/parsers/web-parsers/event/default-event-parser.mjs')
+        const parsed = await parser.default.parse(page, getEventModel())  
+
+        td.verify(convertUrlToBase64DataUrl('https://www.eventbrite.fr/e/_next/image?url=https%3A%2F%2Fimg.evbuc.com%2Fhttps%253A%252F%252Fcdn.evbuc.com%252Fimages%252F1175834380%252F446654944658%252F1%252Foriginal.20260126-134328%3Fcrop%3Dfocalpoint%26fit%3Dcrop%26w%3D480%26auto%3Dformat%252Ccompress%26q%3D75%26sharp%3D10%26fp-x%3D0.5%26fp-y%3D0.5%26s%3D02e9a642e09e5954fb6fb51dbabbd71a&w=940&q=75'))
+
+        td.verify(convertUrlToBase64DataUrl('https://img.evbuc.com/https%3A%2F%2Fcdn.evbuc.com%2Fimages%2F1175834380%2F446654944658%2F1%2Foriginal.20260126-134328?crop=focalpoint&fit=crop&w=480&auto=format%2Ccompress&q=75&sharp=10&fp-x=0.5&fp-y=0.5&s=02e9a642e09e5954fb6fb51dbabbd71a'))
+
+        chai.expect(parsed.metas).to.be.deep.contains(
+            {
+                title: 'Grande Vente de Plantes - St-Germain-en-Laye',
+                startTimestamp: 1772787600,
+                endTimestamp: 1772985600,
+                description: 'Un événement à deux pas de chez toi !',
+                place: null,
+                ticketsUrl: 'https://www.eventbrite.fr/e/billets-grande-vente-de-plantes-st-germain-en-laye-1981575849709',
+                address: null,
+                hosts: [{
+                    "name": "Plantes pour Tous",
+                    "url": "https://www.eventbrite.fr/o/plantes-pour-tous-30299055052"
+                }],
+                url: 'https://www.eventbrite.fr/e/billets-grande-vente-de-plantes-st-germain-en-laye-1981575849709',
+                online: null,
+                physicalAddress: {
+                    description: 'Centre Commercial Passage Saint-Germain',
+                    locality: 'Saint-Germain-en-Laye',
+                    postalCode: null,
+                    street: '10 Rue de la Salle, 78100 Saint-Germain-en-Laye',
+                    country: 'FR'
+                }
+            }
+        )
     })
 
-    it('should parse facebook event page', async function ()
+    it('should parse facebook garorock event page', async function ()
     {
         const url = 'https://www.facebook.com/events/plaine-de-la-filhole-47200-marmande-france/garorock-2026-30-%C3%A8me-%C3%A9dition/1156265816461916/'
         const htmlFilePath = './test/pages/facebook-garorock.html'
-        const parsed = await parse(url, htmlFilePath)
+        const page = await loadPage(url, htmlFilePath)
+        const parser = await import('../libs/parsers/web-parsers/event/facebook-event-parser.mjs')
+        const parsed = await parser.default.parse(page, getEventModel())         
         
         td.verify(convertUrlToBase64DataUrl('https://scontent-cdg4-1.xx.fbcdn.net/v/t39.30808-6/561759007_823888796959056_2952129657611568225_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=105&ccb=1-7&_nc_sid=7e0d18&_nc_ohc=d-qOf5Xx-osQ7kNvwHrlQ-p&_nc_oc=AdmkSjTRk6Xe2Qc4jlKAYSN3APJRPsI9Ur2YocH9W9J3zTSc-MNlK5GpDsh0yXVVJQ0&_nc_zt=23&_nc_ht=scontent-cdg4-1.xx&_nc_gid=I83ngRGELp-FLTyrz6R6kA&oh=00_AfvfuptfE9RkXlgyz2M7rTtijFw1flqmUVy_7VQMVnISzQ&oe=699E5FC2'))
         
