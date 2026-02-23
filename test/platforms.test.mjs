@@ -1,6 +1,9 @@
 import * as chai from 'chai'
+import chaiString from 'chai-string'
 import request from 'supertest'
 import app from '../app.mjs'
+
+chai.use(chaiString)
 
 const url = btoa(unescape(encodeURIComponent('https://www.facebook.com/events/1367789884993855')))
 const provider = 'facebook'
@@ -23,7 +26,7 @@ describe('Scrap and parse events on every platform', function () {
                 chai.expect(body.data?.metas).to.be.an('object')
                 chai.expect(body.data.images).to.be.an('array')
                 chai.expect(body.data.images[0]).to.be.a('string')
-                chai.expect(body.data.images[0]).to.match(new RegExp('^data:image\/jpeg;base64,\/9j\/4AAQSkZJRgABAQAAAQABAAD\/7QCEUGhvdG9zaG9wIDMuMAA4QklNBAQAAAAAAGgc', 'i'));
+                chai.expect(body.data.images[0]).to.startsWith('data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/7QCEUGhvdG9zaG9wIDMuMAA4QklNBAQAAAAAAGgc', 'i')
                 chai.expect(body.data.metas.hosts).to.be.an('array')
                 chai.expect(body.data.metas.hosts[0]).to.be.an('object')
                 chai.expect(body.data.metas.hosts[0]).to.be.deep.contains(
