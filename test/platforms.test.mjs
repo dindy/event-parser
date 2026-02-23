@@ -7,11 +7,68 @@ chai.use(chaiString)
 
 describe('Scrap and parse events on every platform', function () {
 
+    it('scraps and parses events from instagram reels', function (done) { 
+
+        const url = btoa(unescape(encodeURIComponent('https://www.instagram.com/reel/DU6Bo-XjDMI/')))
+        const provider = 'instagram'
+        const type = 'event'
+
+        request(app)
+            .get(`/scrap?url=${url}&provider=${provider}&type=${type}`)
+            .expect('Content-Type', 'application/json')
+            .expect(200)
+            .end(async function (err, res) {
+                if (err) throw err;
+                const body = res.body
+                chai.expect(body.data?.metas).to.be.an('object')
+                chai.expect(body.data.images).to.be.an('array')
+                chai.expect(body.data.images[0]).to.be.a('string')
+                chai.expect(body.data.images[0]).to.startsWith('data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/7QBsUGhvdG9zaG9wIDMuMAA4QklNBAQAAAAAAFAcAigASkZCTUQwZjAwMDcxNjAxMDAwMGRkMjIwMDAwNDg1MTAwMDA3NDc0MDAwMDFlOTIwMDAwM2RjMzAwMDBlNGY3MDAwMDk3M')
+                chai.expect(body.data.metas).to.be.deep.contains({
+                    title: 'Roulettes Jam Festival sur Instagram: “C’est ce week-end!! 🔥\n' +
+                    '🗓️ Sam 21 et Dim 22 février à Tosse (40) 🤩 des ateliers en journée: Roller Dance, Freestyle et entretien de roulements pour les pratiquants niv débutant ou intermédiaire 🪩2 roller parties ouvertes à tous, inline ou quad, novices ou confirmés, le samedi soir 17h et dimanche après midi 15h => prends tes préventes ! 🔥 Loc de patins sur place (1 carte d’identité par paire louée) 🎁 Des toooooonnes de cadeaux à gagner: des patins, des accessoires, des roues lumineuses… grâce à nos partenaires @impalaskate @nomadeshop_official @luminouswheels et @burdysquadshop 💆‍♀️une chill zone en acces libre tout le week-end pour se détendre et reprendre des forces ! 🎟️ billetterie et inscription ateliers sur www.roulettes40.com et lien en bio ! Ne rate pas cette édition du 1er festival roller quad du Sud Ouest 😍”',
+                    startTimestamp: 1771776000,
+                    endTimestamp: 1771855200,
+                    description: 'C’est ce week-end!! 🔥\n' +
+                    '🗓️ Sam 21 et Dim 22 février à Tosse (40)\n' +
+                    '\n' +
+                    '🤩 des ateliers en journée: Roller Dance, Freestyle et entretien de roulements pour les pratiquants niv débutant ou intermédiaire\n' +
+                    '\n' +
+                    '🪩2 roller parties ouvertes à tous, inline ou quad, novices ou confirmés, le samedi soir 17h et dimanche après midi 15h => prends tes préventes !\n' +
+                    '\n' +
+                    '🔥 Loc de patins sur place (1 carte d’identité par paire louée)\n' +
+                    '\n' +
+                    '🎁 Des toooooonnes de cadeaux à gagner: des patins, des accessoires, des roues lumineuses… grâce à nos partenaires @impalaskate @nomadeshop_official @luminouswheels et @burdysquadshop \n' +
+                    '\n' +
+                    '💆‍♀️une chill zone en acces libre tout le week-end pour se détendre et reprendre des forces !\n' +
+                    '\n' +
+                    '🎟️ billetterie et inscription ateliers sur www.roulettes40.com et lien en bio !\n' +
+                    '\n' +
+                    'Ne rate pas cette édition du 1er festival roller quad du Sud Ouest 😍',
+                    place: null,
+                    ticketsUrl: null,
+                    address: null,
+                    hosts: [],
+                    url: 'https://www.instagram.com/roulettesjamfest/reel/DU6Bo-XjDMI/',
+                    online: null,
+                    physicalAddress: {
+                        description: 'Tosse, Aquitaine, France',
+                        geom: '-1.32893;43.69468',
+                        locality: null,
+                        postalCode: null,
+                        street: null,
+                        country: null
+                    }                
+                })
+                done()
+            })
+    })
+    
     /**
      * `ticketsUrl` is not present on past events 
      * hosts `profile_picture` url change each time (not used anyway)
     */
-   it('scraps and parses events with facebook', function (done) {
+   it('scraps and parses events from facebook', function (done) {
         
         const url = btoa(unescape(encodeURIComponent('https://www.facebook.com/events/1367789884993855')))
         const provider = 'facebook'
@@ -27,17 +84,15 @@ describe('Scrap and parse events on every platform', function () {
                 chai.expect(body.data?.metas).to.be.an('object')
                 chai.expect(body.data.images).to.be.an('array')
                 chai.expect(body.data.images[0]).to.be.a('string')
-                chai.expect(body.data.images[0]).to.startsWith('data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/7QCEUGhvdG9zaG9wIDMuMAA4QklNBAQAAAAAAGgc', 'i')
+                chai.expect(body.data.images[0]).to.startsWith('data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/7QCEUGhvdG9zaG9wIDMuMAA4QklNBAQAAAAAAGgc')
                 chai.expect(body.data.metas.hosts).to.be.an('array')
                 chai.expect(body.data.metas.hosts[0]).to.be.an('object')
-                chai.expect(body.data.metas.hosts[0]).to.be.deep.contains(
-                        {
-                            name: 'Atabal Biarritz',
-                            url: 'https://www.facebook.com/atabalbtz',
-                            id: '100064733044483',
-                            // profile_picture: 'https://scontent-bru2-1.xx.fbcdn.net/v/t39.30808-1/240672120_5092561344092483_87011272227557005_n.png?stp=cp0_dst-png_s40x40&_nc_cat=106&ccb=1-7&_nc_sid=2d3e12&_nc_ohc=XNdzDcDFoPgQ7kNvwEG2tKw&_nc_oc=Adm4HfLrFbXvAzYcermc3q1Qi1JqYj7VyS6RBSyUyAQopkFoPyO2Qj5aubiD0vRm89M&_nc_zt=24&_nc_ht=scontent-bru2-1.xx&_nc_gid=RbghxSNlKnMQ27azyPufjQ&oh=00_AfvWuqLWLzm2GVM3PkJfQPmB--nLzPcr_ZJaESFIirATkw&oe=69A279D0'
-                        } 
-                    )    
+                chai.expect(body.data.metas.hosts[0]).to.be.deep.contains({
+                    name: 'Atabal Biarritz',
+                    url: 'https://www.facebook.com/atabalbtz',
+                    id: '100064733044483',
+                    // profile_picture: 'https://scontent-bru2-1.xx.fbcdn.net/v/t39.30808-1/240672120_5092561344092483_87011272227557005_n.png?stp=cp0_dst-png_s40x40&_nc_cat=106&ccb=1-7&_nc_sid=2d3e12&_nc_ohc=XNdzDcDFoPgQ7kNvwEG2tKw&_nc_oc=Adm4HfLrFbXvAzYcermc3q1Qi1JqYj7VyS6RBSyUyAQopkFoPyO2Qj5aubiD0vRm89M&_nc_zt=24&_nc_ht=scontent-bru2-1.xx&_nc_gid=RbghxSNlKnMQ27azyPufjQ&oh=00_AfvWuqLWLzm2GVM3PkJfQPmB--nLzPcr_ZJaESFIirATkw&oe=69A279D0'
+                })    
                 chai.expect(body.data.metas).to.be.deep.contains({
                     title: 'La Décadence & La Sueur {Djset / Drag Show / Talk} • Musique d’Apéritif ~ Atabal Biarritz',
                     startTimestamp: 1771606800,
