@@ -48,6 +48,43 @@ describe("Test event web parser", async function () {
         td.reset()
     })
     
+    it('should parse stereolab event page', async function ()
+    { 
+        const url = 'https://aeronef.fr/agenda/ditter-gunerkunier'
+        const htmlFilePath = './test/pages/stereolab-ditter-gunerkunier.html'
+
+        const page = await loadPage(url, htmlFilePath)
+        const parser = await import('../libs/parsers/web-parsers/event/default-event-parser.mjs')
+        const parsed = await parser.default.parse(page, getEventModel())  
+        
+        td.verify(convertUrlToBase64DataUrl('https://aeronef.fr/sites/aeronef/files/styles/16x9_1920/public/2025-12/visuel_site.png?h=fbf7a813&itok=fiGsAHLC'))
+        
+        td.verify(convertUrlToBase64DataUrl('https://aeronef.fr/sites/aeronef/files/styles/16x9_1920/public/2025-12/visuel_site.png?h=fbf7a813&itok=fiGsAHLC'))
+
+        chai.expect(parsed.metas).to.be.deep.contains({
+            title: 'DITTER + GÜNER KÜNIER',
+            startTimestamp: 1772305200,
+            endTimestamp: null,
+            description: 'Date soutenue par Liveurope, la première initiative pan-européenne pour soutenir les salles de concerts en matière de promotion d’artistes émergents.',
+            place: null,
+            ticketsUrl: 'https://aeronef.fr/agenda/ditter-gunerkunier',
+            address: null,
+            hosts: [{
+                name: "L'Aéronef",
+                url: 'https://aeronef.fr/laeronef-0'
+            }],
+            url: 'https://aeronef.fr/agenda/ditter-gunerkunier',
+            online: null,
+            physicalAddress: {
+                description: "L'Aéronef",
+                locality: 'Lille',
+                postalCode: '59777',
+                street: 'Avenue Willy Brandt',
+                country: 'FR'
+            }            
+        })
+    })
+    
     it('should parse eventbrite event page', async function ()
     {
         const url = 'https://www.eventbrite.fr/e/billets-grande-vente-de-plantes-st-germain-en-laye-1981575849709'
@@ -61,30 +98,28 @@ describe("Test event web parser", async function () {
 
         td.verify(convertUrlToBase64DataUrl('https://img.evbuc.com/https%3A%2F%2Fcdn.evbuc.com%2Fimages%2F1175834380%2F446654944658%2F1%2Foriginal.20260126-134328?crop=focalpoint&fit=crop&w=480&auto=format%2Ccompress&q=75&sharp=10&fp-x=0.5&fp-y=0.5&s=02e9a642e09e5954fb6fb51dbabbd71a'))
 
-        chai.expect(parsed.metas).to.be.deep.contains(
-            {
-                title: 'Grande Vente de Plantes - St-Germain-en-Laye',
-                startTimestamp: 1772787600,
-                endTimestamp: 1772985600,
-                description: 'Un événement à deux pas de chez toi !',
-                place: null,
-                ticketsUrl: 'https://www.eventbrite.fr/e/billets-grande-vente-de-plantes-st-germain-en-laye-1981575849709',
-                address: null,
-                hosts: [{
-                    "name": "Plantes pour Tous",
-                    "url": "https://www.eventbrite.fr/o/plantes-pour-tous-30299055052"
-                }],
-                url: 'https://www.eventbrite.fr/e/billets-grande-vente-de-plantes-st-germain-en-laye-1981575849709',
-                online: null,
-                physicalAddress: {
-                    description: 'Centre Commercial Passage Saint-Germain',
-                    locality: 'Saint-Germain-en-Laye',
-                    postalCode: null,
-                    street: '10 Rue de la Salle, 78100 Saint-Germain-en-Laye',
-                    country: 'FR'
-                }
+        chai.expect(parsed.metas).to.be.deep.contains({
+            title: 'Grande Vente de Plantes - St-Germain-en-Laye',
+            startTimestamp: 1772787600,
+            endTimestamp: 1772985600,
+            description: 'Un événement à deux pas de chez toi !',
+            place: null,
+            ticketsUrl: 'https://www.eventbrite.fr/e/billets-grande-vente-de-plantes-st-germain-en-laye-1981575849709',
+            address: null,
+            hosts: [{
+                "name": "Plantes pour Tous",
+                "url": "https://www.eventbrite.fr/o/plantes-pour-tous-30299055052"
+            }],
+            url: 'https://www.eventbrite.fr/e/billets-grande-vente-de-plantes-st-germain-en-laye-1981575849709',
+            online: null,
+            physicalAddress: {
+                description: 'Centre Commercial Passage Saint-Germain',
+                locality: 'Saint-Germain-en-Laye',
+                postalCode: null,
+                street: '10 Rue de la Salle, 78100 Saint-Germain-en-Laye',
+                country: 'FR'
             }
-        )
+        })
     })
 
     it('should parse facebook garorock event page', async function ()
