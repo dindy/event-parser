@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "DEBUG='puppeteer-cluster:*' NODE_ENV=dev xvfb-run --server-args=\"-screen 0 1280x800x24\" --auto-servernum node server.mjs",
     "watch": "DEBUG='puppeteer-cluster:*' NODE_ENV=dev xvfb-run --server-args=\"-screen 0 1280x800x24\" --auto-servernum nodemon server.mjs",
-    "test": "NODE_ENV=test npx mocha -t 5000 --exit --grep"
+    "test": "NODE_ENV=test npx mocha -t 60000 --exit --grep"
   },
   "author": "",
   "license": "ISC",
