@@ -5,17 +5,18 @@ import app from '../app.mjs'
 
 chai.use(chaiString)
 
-const url = btoa(unescape(encodeURIComponent('https://www.facebook.com/events/1367789884993855')))
-const provider = 'facebook'
-const type = 'event'
-
 describe('Scrap and parse events on every platform', function () {
 
     /**
      * `ticketsUrl` is not present on past events 
      * hosts `profile_picture` url change each time (not used anyway)
-     */
-    it('scraps and parses events with facebook', function (done) {
+    */
+   it('scraps and parses events with facebook', function (done) {
+        
+        const url = btoa(unescape(encodeURIComponent('https://www.facebook.com/events/1367789884993855')))
+        const provider = 'facebook'
+        const type = 'event'
+        
         request(app)
             .get(`/scrap?url=${url}&provider=${provider}&type=${type}`)
             .expect('Content-Type', 'application/json')
