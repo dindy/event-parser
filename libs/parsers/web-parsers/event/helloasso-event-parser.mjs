@@ -9,13 +9,8 @@ const parse = async (page, metas) => {
     const data = {};
     data.images = [];
 
-    const commonMetas = await defaultParser.parse(page, metas);
-    metas.description = commonMetas.metas.description;
-    metas.url = commonMetas.metas.url;
-    metas.ticketsUrl = commonMetas.metas.url;
-    metas.title = commonMetas.metas.title;
-    metas.startTimestamp = commonMetas.metas.startTimestamp;
-    metas.endTimestamp = commonMetas.metas.endTimestamp;
+    const commonMetas = await defaultParser.parse(page, metas)
+    metas = commonMetas.metas
     data.images = commonMetas.images;
     let finalDescription = "";
 
