@@ -191,7 +191,7 @@ describe("Test event web parser", async function () {
             '🔊 Dub / Sound System en début de soirée Une sélection orientée Dub et Live Micro pour poser l’énergie et installer le groove.\n' +
             '\n' +
             'AFTER 22h/06h\n' +
-            `🖤 Techno &amp; dérivés jusqu’au matin. Une montée progressive vers des esthétiques plus électronique<br><p>C'est gratuit pour toi, tu as été très vif</p> <span data-v-304f9b98="">Ce ticket te donne accès a l'event "DUB TO TECHNO". Penses a faire ton adhesion, elle est gratuite et obligatoire.</span>`,
+            `🖤 Techno &amp; dérivés jusqu’au matin. Une montée progressive vers des esthétiques plus électronique`,
             place: null,
             ticketsUrl: 'https://www.helloasso.com/associations/resonance-euskadi/evenements/dub-to-techno-2',
             address: null,

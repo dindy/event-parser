@@ -33,19 +33,19 @@ const parse = async (page, metas) => {
         finalDescription += descriptions[0];
     }
 
-    const priceTitleArray = await page.$$eval('.tier-item-description__title', priceTitleArray => priceTitleArray
-        .map(priceTitle => '<br><p>' + priceTitle.textContent.replace(/\n/g, '').trim() + '</p>')
-    );
-    if (priceTitleArray && priceTitleArray.length > 0) {
-        finalDescription += priceTitleArray[0];
-    }        
+    // const priceTitleArray = await page.$$eval('.tier-item-description__title', priceTitleArray => priceTitleArray
+    //     .map(priceTitle => '<br><p>' + priceTitle.textContent.replace(/\n/g, '').trim() + '</p>')
+    // );
+    // if (priceTitleArray && priceTitleArray.length > 0) {
+    //     finalDescription += priceTitleArray[0];
+    // }        
 
-    const priceDescriptionArray = await page.$$eval('.tier-item-description__description', priceDescriptionArray => priceDescriptionArray
-        .map(priceDescription => priceDescription.innerHTML)
-    );
-    if (priceDescriptionArray && priceDescriptionArray.length > 0) {
-        finalDescription += ' ' + priceDescriptionArray[0];
-    }  
+    // const priceDescriptionArray = await page.$$eval('.tier-item-description__description', priceDescriptionArray => priceDescriptionArray
+    //     .map(priceDescription => priceDescription.innerHTML)
+    // );
+    // if (priceDescriptionArray && priceDescriptionArray.length > 0) {
+    //     finalDescription += ' ' + priceDescriptionArray[0];
+    // }  
 
     if (finalDescription != "") {
         metas.description = finalDescription;
