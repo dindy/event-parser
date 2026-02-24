@@ -134,41 +134,82 @@ describe("Test event web parser", async function () {
         
         td.verify(convertUrlToBase64DataUrl('https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=1156265816461916'))
         
-        chai.expect(parsed.metas).to.be.deep.contains(
-            {
-                title: 'Garorock 2026 - 30 Ã¨me Ã©dition',
-                startTimestamp: 1782475200,
-                endTimestamp: 1782683100,
-                description: '𝐒𝐀𝐕𝐄 𝐓𝐇𝐄 𝐃𝐀𝐓𝐄 🎂\n' +
-                '\n' +
-                'RDV les 26.27 et 28 Juin 2026 sur LA plaine de la Filhole de Marmande, pour fêter cette 30ème édition ensemble ! 🥳\n' +
-                '\n' +
-                'Les pass Super Early seront disponibles le 04.11 !\n' +
-                '\n' +
-                'La 30ème c’est l’occasion de changer de look ⚡️\n' +
-                'Ambiance électrique, sauvage, un mélange de contrastes qui rend hommage à l’ADN originel du festival. 🔥\n' +
-                '\n' +
-                'On n’allait pas vous lâcher comme ça 😏',
-                place: 'Plaine de la Filhole, 47200 Marmande, France',
-                ticketsUrl: null,
-                address: 'Plaine de la Filhole, 47200 Marmande, France',
-                hosts: [{
-                    id: "100080138283606",
-                    name: "Garorock Festival",
-                    profile_picture: "https://scontent-cdg4-2.xx.fbcdn.net/v/t39.30808-1/564589405_823815970299672_1411978063116078749_n.jpg?stp=c289.274.1500.1500a_cp0_dst-jpg_s40x40_tt6&_nc_cat=107&ccb=1-7&_nc_sid=2d3e12&_nc_ohc=iVcfIeNh5P4Q7kNvwHxF5-Z&_nc_oc=AdnCXYiIeMZqTweZR0prbQqAx5V-W0G0X1K_JRybbIy5civxm3RFt778wt_kTiBP238&_nc_zt=24&_nc_ht=scontent-cdg4-2.xx&_nc_gid=oeB91p5Wy16XCrJNVixw1A&oh=00_Afu6M5j2qaic_fyYcq8GKIOnry-EvglePLwykeCRuDMpMw&oe=699E64F7",
-                    url: "https://www.facebook.com/festival.garorock"
-                }],
-                url: 'https://www.facebook.com/events/plaine-de-la-filhole-47200-marmande-france/garorock-2026-30-%C3%A8me-%C3%A9dition/1156265816461916/',
-                online: false,
-                physicalAddress: {
-                    description: null,
-                    geom: '0.16084;44.4976',
-                    locality: 'Marmande',
-                    postalCode: '47200',
-                    street: 'Plaine de la Filhole',
-                    country: 'France'
-                }
+        chai.expect(parsed.metas).to.be.deep.contains({
+            title: 'Garorock 2026 - 30 Ã¨me Ã©dition',
+            startTimestamp: 1782475200,
+            endTimestamp: 1782683100,
+            description: '𝐒𝐀𝐕𝐄 𝐓𝐇𝐄 𝐃𝐀𝐓𝐄 🎂\n' +
+            '\n' +
+            'RDV les 26.27 et 28 Juin 2026 sur LA plaine de la Filhole de Marmande, pour fêter cette 30ème édition ensemble ! 🥳\n' +
+            '\n' +
+            'Les pass Super Early seront disponibles le 04.11 !\n' +
+            '\n' +
+            'La 30ème c’est l’occasion de changer de look ⚡️\n' +
+            'Ambiance électrique, sauvage, un mélange de contrastes qui rend hommage à l’ADN originel du festival. 🔥\n' +
+            '\n' +
+            'On n’allait pas vous lâcher comme ça 😏',
+            place: 'Plaine de la Filhole, 47200 Marmande, France',
+            ticketsUrl: null,
+            address: 'Plaine de la Filhole, 47200 Marmande, France',
+            hosts: [{
+                id: "100080138283606",
+                name: "Garorock Festival",
+                profile_picture: "https://scontent-cdg4-2.xx.fbcdn.net/v/t39.30808-1/564589405_823815970299672_1411978063116078749_n.jpg?stp=c289.274.1500.1500a_cp0_dst-jpg_s40x40_tt6&_nc_cat=107&ccb=1-7&_nc_sid=2d3e12&_nc_ohc=iVcfIeNh5P4Q7kNvwHxF5-Z&_nc_oc=AdnCXYiIeMZqTweZR0prbQqAx5V-W0G0X1K_JRybbIy5civxm3RFt778wt_kTiBP238&_nc_zt=24&_nc_ht=scontent-cdg4-2.xx&_nc_gid=oeB91p5Wy16XCrJNVixw1A&oh=00_Afu6M5j2qaic_fyYcq8GKIOnry-EvglePLwykeCRuDMpMw&oe=699E64F7",
+                url: "https://www.facebook.com/festival.garorock"
+            }],
+            url: 'https://www.facebook.com/events/plaine-de-la-filhole-47200-marmande-france/garorock-2026-30-%C3%A8me-%C3%A9dition/1156265816461916/',
+            online: false,
+            physicalAddress: {
+                description: null,
+                geom: '0.16084;44.4976',
+                locality: 'Marmande',
+                postalCode: '47200',
+                street: 'Plaine de la Filhole',
+                country: 'France'
             }
-        )            
+        })            
+    })
+
+    it('should parse hello asso dub to techno event page', async function () { 
+        const url = 'https://www.helloasso.com/associations/resonance-euskadi/evenements/dub-to-techno-2?utm_source=ig&utm_medium=social&utm_content=link_in_bio'
+        const htmlFilePath = './test/pages/helloasso-dubtotechno.html'
+        const page = await loadPage(url, htmlFilePath)
+        const parser = await import('../libs/parsers/web-parsers/event/helloasso-event-parser.mjs')
+        const parsed = await parser.default.parse(page, getEventModel())
+
+        td.verify(convertUrlToBase64DataUrl('https://cdn.helloasso.com/img/photos/evenements/croppedimage-84dcad365ba3474cb0eb7eb5b61950fd.png?resize=fit:500:360'))
+        td.verify(convertUrlToBase64DataUrl('https://cdn.helloasso.com/img/photos/evenements/croppedimage-84dcad365ba3474cb0eb7eb5b61950fd.png?resize=fit:500:360'))
+        td.verify(convertUrlToBase64DataUrl('https://cdn.helloasso.com/img/photos/evenements/croppedimage-44c7d46fe4eb494089e46966c15889b8.png?resize=fill:1920:250'))
+
+        chai.expect(parsed.metas).to.be.deep.contains({
+            title: 'DUB TO TECHNO #2',
+            startTimestamp: 0,
+            endTimestamp: 0,
+            description: 'RESONANCE : DUB TO TECHNO II 🐍 Le format revient à l’Amestoya pour une nouvelle édition. 12h de son, en indoor 🐍  AU PROGRAMME : La soirée s’articule en deux temps, sans rupture, dans un même espace.\n' +
+            '\n' +
+            'GRATUIT 17h/22h\n' +
+            '🔊 Dub / Sound System en début de soirée Une sélection orientée Dub et Live Micro pour poser l’énergie et installer le groove.\n' +
+            '\n' +
+            'AFTER 22h/06h\n' +
+            `🖤 Techno &amp; dérivés jusqu’au matin. Une montée progressive vers des esthétiques plus électronique<br><p>C'est gratuit pour toi, tu as été très vif</p> <span data-v-304f9b98="">Ce ticket te donne accès a l'event "DUB TO TECHNO". Penses a faire ton adhesion, elle est gratuite et obligatoire.</span>`,
+            place: null,
+            ticketsUrl: 'https://www.helloasso.com/associations/resonance-euskadi/evenements/dub-to-techno-2',
+            address: null,
+            hosts: [ 
+                {
+                    name: 'Resonance Euskadi',
+                    url: 'https://www.helloasso.com/associations/resonance-euskadi'
+                }
+            ],
+            url: 'https://www.helloasso.com/associations/resonance-euskadi/evenements/dub-to-techno-2',
+            online: null,
+            physicalAddress: {
+                description: 'Salle Amestoya',
+                locality: 'Bayonne',
+                postalCode: '64100',
+                street: '14 Avenue Benjamin Gomez',
+                country: 'FRA'
+            }            
+        })
     })
 })
