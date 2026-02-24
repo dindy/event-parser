@@ -11,6 +11,11 @@ const parse = async (page, metas) => {
 
     const commonMetas = await defaultParser.parse(page, metas)
     metas = commonMetas.metas
+
+    if (commonMetas.metas.url && !commonMetas.metas?.ticketsUrl) {
+        metas.ticketsUrl = commonMetas.metas.url
+    }
+
     data.images = commonMetas.images;
     let finalDescription = "";
 
