@@ -51,8 +51,9 @@ const internalRefreshOnExpired = async (
             
                 console.log(id, `Token in cookie ${dt(accessToken)} has been replaced in DB with ${dt(auth.accessToken)}`)
             
-                // Update the user session
-                updateTokenSession(res, auth, domain)
+                // Update the user session 
+                // (there is no user session if the request comes from automation)
+                if (res) updateTokenSession(res, auth, domain)
             
                 // Update the access token
                 accessToken = auth.accessToken
@@ -72,6 +73,7 @@ const internalRefreshOnExpired = async (
                     await refreshAuthorization(auth, tokenData.refreshToken, tokenData.accessToken) 
                     
                     // Update the user session
+                    // (there is no user session if the request comes from automation)
                     if (res) await updateTokenSession(res, auth, domain)
                     
                     // Update the access token
