@@ -111,3 +111,9 @@ You app is listening on port 3001 by default. Three new directories have been cr
 * `debug` to store scraped html pages
 
 An instance of phpMyAdmin is also available on port 8081 by default.
+
+# @TODO
+
+* Parse <meta name="geo.region" content="ch-be">. See https://www.bibliobiel.ch/de/aktuelles/
+* Parse <meta name="geo.placename" content="Dufourstrasse 26, 2500 Biel/Bienne">. See https://www.bibliobiel.ch/de/aktuelles/
+* Parse ics event attachment as url. See https://culturoscope-enrich.strukturart.workers.dev/
