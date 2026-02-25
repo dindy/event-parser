@@ -15,7 +15,7 @@ import {
 import AutomationAlreadyExists from './exceptions/AutomationAlreadyExists.mjs'
 import { refreshOnExpired, requestApi } from './utils.mjs'
 import { saveEvent, getIdentitiesAndGroups } from '../api/mobilizon.mjs'
-import { convertUrlToBase64, convertBase64DataUrlToBase64 } from '../libs/parsers/web-parsers/utils/utils.mjs'
+import { convertUrlToBase64, convertBase64DataUrlToBase64, isValidUrl } from '../libs/parsers/web-parsers/utils/utils.mjs'
 import {
     alreadyExists as importedEventAlreadyExists,
     create as createImportedEvent,
@@ -27,6 +27,7 @@ import { scrap as scrapPage } from '../libs/scrappers/page-scrapper/scrapper.mjs
 import { scrap as scrapICS } from '../libs/scrappers/ics-scrapper/scrapper.mjs';
 import fbGroupEventsParser from '../libs/parsers/web-parsers/group-events/facebook-group-events-parser.mjs'
 import fbEventParser from '../libs/parsers/web-parsers/event/facebook-event-parser.mjs'
+import defaultEventParser from '../libs/parsers/web-parsers/event/default-event-parser.mjs'
 import { getEventModel } from '../libs/parsers/web-parsers/models.mjs'
 
 const logger = new AutomationLogger
@@ -101,7 +102,11 @@ const convertEventModelToMbzEvent = async (fbEvent, automation) =>
             draft: false,
             uid: fbEvent.metas.url
         }            
-    
+        
+        if (mbzEvent.endsOn && mbzEvent.endsOn <= mbzEvent.beginsOn) {
+            mbzEvent.endsOn = null
+        }
+
         if (fbEvent.metas.ticketsUrl) {
             mbzEvent.metadata = [{
                 key: 'mz:ticket:external_url',
@@ -239,6 +244,76 @@ const saveNewOrModifiedEvent = async (event, automation) => {
     await logger.success(`Event ${event.uid} has been saved with UUID ${savedMbzEvent.uuid}.`, automation.id);
 }
 
+const mergeIcsEventAndWebEvent = (icsEvent, webEvent) =>
+{
+    const mergedEvent = icsEvent
+
+    // If beginsOn is set we are pretty sure we have parsed an event
+    // and data are reliable
+    if (webEvent.beginsOn)
+    {
+        // Keep web URL if defined
+        if (webEvent.onlineAddress) {
+            mergedEvent.onlineAddress = webEvent.onlineAddress
+        }
+        
+        // Keep web name if defined
+        if (webEvent.title) {
+            mergedEvent.title = webEvent.title
+        }
+        // Keep longest description
+        if (webEvent.description) {
+            if (!mergedEvent.description || (webEvent.description.length > mergedEvent.description.length)) {
+                mergedEvent.description = webEvent.description
+            }
+        }
+        // Keep web picture if defined
+        if (webEvent.picture) {
+            mergedEvent.picture = webEvent.picture
+        }
+        // Keep physical address from web if defined
+        if (webEvent.physicalAddress.description) {
+            mergedEvent.physicalAddress.description = webEvent.physicalAddress.description
+        }
+        if (webEvent.physicalAddress.geom) {
+            mergedEvent.physicalAddress.geom = webEvent.physicalAddress.geom
+        }
+        if (webEvent.physicalAddress.locality) {
+            mergedEvent.physicalAddress.locality = webEvent.physicalAddress.locality
+        }
+        if (webEvent.physicalAddress.postalCode) {
+            mergedEvent.physicalAddress.postalCode = webEvent.physicalAddress.postalCode
+        }
+        if (webEvent.physicalAddress.street) {
+            mergedEvent.physicalAddress.street = webEvent.physicalAddress.street
+        }
+        if (webEvent.physicalAddress.country) {
+            mergedEvent.physicalAddress.country = webEvent.physicalAddress.country
+        }
+        
+        mergedEvent.ticketsUrl = webEvent.ticketsUrl
+    }
+
+    return mergedEvent
+}
+
+const completeIcsEventFromWeb = async (eventUrl, mbzEventFromIcs, automation) => {
+
+    await logger.info(`Fetch more data about ics event ${mbzEventFromIcs.uid} from ${eventUrl}`, automation.id)
+
+    try {
+        const eventModelFromWeb = await scrapPage(eventUrl, defaultEventParser, getEventModel())
+        const mbzEventFromWeb = await convertEventModelToMbzEvent(eventModelFromWeb, automation)
+        if (mbzEventFromWeb) {
+            mbzEventFromIcs = mergeIcsEventAndWebEvent(mbzEventFromIcs, mbzEventFromWeb)
+        }
+        return mbzEventFromIcs
+    } catch (error) {
+        await logger.warning(`Could not retrieve more data about ics event ${mbzEventFromIcs.uid} from ${eventUrl} : ${error.name} : ${error.message}`, automation.id)
+        return mbzEvent
+    }
+}
+
 const parseIcsEvent = async (icsEvent, automation) => {
     
     try {
@@ -274,8 +349,14 @@ const parseIcsEvent = async (icsEvent, automation) => {
             },
             uid: icsEvent.uid
         }
+
+        if (mbzEvent.endsOn && mbzEvent.endsOn <= mbzEvent.beginsOn) {
+            mbzEvent.endsOn = null
+        }
+
         mbzEvent.picture = null
         /** @TODO : Handle binary data images */ 
+        /** @TODO : Handle raw url */ 
         if (
             icsEvent.attach?.params?.FMTTYPE
             && icsEvent.attach.params.FMTTYPE.startsWith('image')
@@ -294,7 +375,11 @@ const parseIcsEvent = async (icsEvent, automation) => {
                 await logger.warning(`Could not fetch image ${icsEvent.attach.val} : ${error.name} : ${error.message}.`, automation.id)
             }
         }
-    
+        
+        if (icsEvent.url && isValidUrl(icsEvent.url)) {
+            return await completeIcsEventFromWeb(icsEvent.url, mbzEvent, automation)
+        }
+
         return mbzEvent
 
     } catch (error) {
