@@ -257,8 +257,8 @@ const mergeIcsEventAndWebEvent = (icsEvent, webEvent) =>
             mergedEvent.onlineAddress = webEvent.onlineAddress
         }
         
-        // Keep web name if defined
-        if (webEvent.title) {
+        // Keep ics name if defined
+        if (!mergedEvent.title && webEvent.title) {
             mergedEvent.title = webEvent.title
         }
         // Keep longest description
@@ -267,8 +267,8 @@ const mergeIcsEventAndWebEvent = (icsEvent, webEvent) =>
                 mergedEvent.description = webEvent.description
             }
         }
-        // Keep web picture if defined
-        if (webEvent.picture) {
+        // Keep ics picture if defined
+        if (!mergedEvent.picture && webEvent.picture) {
             mergedEvent.picture = webEvent.picture
         }
         // Keep physical address from web if defined
