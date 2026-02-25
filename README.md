@@ -116,4 +116,5 @@ An instance of phpMyAdmin is also available on port 8081 by default.
 
 * Parse <meta name="geo.region" content="ch-be">. See https://www.bibliobiel.ch/de/aktuelles/
 * Parse <meta name="geo.placename" content="Dufourstrasse 26, 2500 Biel/Bienne">. See https://www.bibliobiel.ch/de/aktuelles/
-* Parse ics event attachment as url. See https://culturoscope-enrich.strukturart.workers.dev/
+* Limit automation logs returned by the API
+* Implement log level configuration
