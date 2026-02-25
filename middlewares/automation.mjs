@@ -310,7 +310,7 @@ const completeIcsEventFromWeb = async (eventUrl, mbzEventFromIcs, automation) =>
         return mbzEventFromIcs
     } catch (error) {
         await logger.warning(`Could not retrieve more data about ics event ${mbzEventFromIcs.uid} from ${eventUrl} : ${error.name} : ${error.message}`, automation.id)
-        return mbzEvent
+        return mbzEventFromIcs
     }
 }
 
@@ -355,20 +355,24 @@ const parseIcsEvent = async (icsEvent, automation) => {
         }
 
         mbzEvent.picture = null
-        /** @TODO : Handle binary data images */ 
-        /** @TODO : Handle raw url */ 
+        /** @TODO : Handle binary data images */
+        // If there is a value that is a url and type is image or not specified
+        const val = icsEvent.attach?.val
+        const type = icsEvent.attach?.params?.FMTTYPE
         if (
-            icsEvent.attach?.params?.FMTTYPE
-            && icsEvent.attach.params.FMTTYPE.startsWith('image')
-            && icsEvent.attach.val
+            val
+            && isValidUrl(val)
+            && ((type && type.startsWith('image')) || (!type))
         ) {
             try {
-                const parsedImage = await convertUrlToBase64(icsEvent.attach.val)
-                mbzEvent.picture = {
-                    media: {
-                        name: 'event_banner' + '.' + parsedImage.extension,
-                        alt: 'Event banner',
-                        file: parsedImage.base64
+                const parsedImage = await convertUrlToBase64(val)
+                if (parsedImage && parsedImage.extension.startsWith('image')) {
+                    mbzEvent.picture = {
+                        media: {
+                            name: 'event_banner' + '.' + parsedImage.extension,
+                            alt: 'Event banner',
+                            file: parsedImage.base64
+                        }
                     }
                 }
             } catch(error) {
@@ -398,7 +402,6 @@ const executeIcsAutomation = async automation =>
         events = await scrapICS(automation.url)        
     } catch (error) {
         await logger.error(`Error fetching or parsing data : ${error.name} : ${error.message}.`, automation.id)
-        throw error
     }
     
     const promises = Object.entries(events).map(
