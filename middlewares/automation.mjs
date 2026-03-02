@@ -21,7 +21,7 @@ import {
     create as createImportedEvent,
     update as updateImportedEvent
 } from '../models/ImportedEvent.mjs'
-import AutomationLogger from '../libs/AutomationLogger.mjs'
+import logger from '../libs/AutomationLogger.mjs'
 import { BadRequestError } from '../api/exceptions/BadRequestError.mjs'
 import { scrap as scrapPage } from '../libs/scrappers/page-scrapper/scrapper.mjs';
 import { scrap as scrapICS } from '../libs/scrappers/ics-scrapper/scrapper.mjs';
@@ -29,8 +29,6 @@ import fbGroupEventsParser from '../libs/parsers/web-parsers/group-events/facebo
 import fbEventParser from '../libs/parsers/web-parsers/event/facebook-event-parser.mjs'
 import defaultEventParser from '../libs/parsers/web-parsers/event/default-event-parser.mjs'
 import { getEventModel } from '../libs/parsers/web-parsers/models.mjs'
-
-const logger = new AutomationLogger
 
 export const createAutomation = async (req, res, next) => {
 
@@ -297,7 +295,7 @@ const mergeIcsEventAndWebEvent = (icsEvent, webEvent) =>
     return mergedEvent
 }
 
-const completeIcsEventFromWeb = async (eventUrl, mbzEventFromIcs, automation) => {
+export const completeIcsEventFromWeb = async (eventUrl, mbzEventFromIcs, automation) => {
 
     await logger.info(`Fetch more data about ics event ${mbzEventFromIcs.uid} from ${eventUrl}`, automation.id)
 
@@ -314,7 +312,7 @@ const completeIcsEventFromWeb = async (eventUrl, mbzEventFromIcs, automation) =>
     }
 }
 
-const parseIcsEvent = async (icsEvent, automation) => {
+export const parseIcsEvent = async (icsEvent, automation) => {
     
     try {
         if (icsEvent.type !== 'VEVENT') return null
@@ -357,7 +355,7 @@ const parseIcsEvent = async (icsEvent, automation) => {
         mbzEvent.picture = null
         /** @TODO : Handle binary data images */
         // If there is a value that is a url and type is image or not specified
-        const val = icsEvent.attach?.val
+        const val = icsEvent.attach?.val || icsEvent.attach
         const type = icsEvent.attach?.params?.FMTTYPE
         if (
             val
@@ -366,7 +364,7 @@ const parseIcsEvent = async (icsEvent, automation) => {
         ) {
             try {
                 const parsedImage = await convertUrlToBase64(val)
-                if (parsedImage && parsedImage.extension.startsWith('image')) {
+                if (parsedImage && parsedImage.type.startsWith('image')) {
                     mbzEvent.picture = {
                         media: {
                             name: 'event_banner' + '.' + parsedImage.extension,

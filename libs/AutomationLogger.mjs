@@ -1,8 +1,6 @@
 import { AutomationLog } from "../models/AutomationLog.mjs"
 
-export default class AutomationLogger {
-
-    automationId = null
+class AutomationLogger {
 
     log = async (type, message, automationId) =>
     {    
@@ -18,3 +16,5 @@ export default class AutomationLogger {
     info = async (...args) => await this.log('info', ...args)
     warning = async (...args) => await this.log('warning', ...args)
 }
+
+export default new AutomationLogger

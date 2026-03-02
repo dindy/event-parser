@@ -1,0 +1,35 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//demosphere.net//NONSGML kigkonsult.se iCalcreator 2.22.1//
+METHOD:PUBLISH
+X-WR-CALNAME:Démosphère Toulouse
+X-WR-CALDESC:L'agenda toulousain militant et participatif
+X-WR-RELCALID:b55e92583f5c1790808d3ba873c695f7
+X-WR-TIMEZONE:Europe/Paris
+BEGIN:VEVENT
+UID:https://toulouse.demosphere.net/rv/34469
+DTSTAMP:20260226T140000Z
+DESCRIPTION:plus d'infos sur : https://toulouse.demosphere.net/rv/34469
+DTSTART:20260226T140000Z
+DTEND:20260226T150000Z
+ATTACH;FMTTYPE=image/jpg:https://domain.com/image.png
+GEO:00;0
+CLASS:PUBLIC
+LOCATION:Toulouse  31100\, \nCRAS \n39\, rue Gamelin 31100 TOULOUSE \nMétro
+  Fontaine Lestang
+SUMMARY:Permanence du CRAS Mardi et Jeudi
+URL:https://toulouse.demosphere.net/rv/34469
+END:VEVENT
+BEGIN:VEVENT
+UID:https://toulouse.demosphere.net/rv/34171
+DTSTAMP:20260226T150000Z
+DESCRIPTION:plus d'infos sur : https://toulouse.demosphere.net/rv/34171
+DTSTART:20260226T150000Z
+DTEND:20260226T160000Z
+GEO:37.386013;-122.082932
+ATTACH:https://domain.com/image.png
+LOCATION:Toulouse 31000\, \nL'Impasse \n1 impasse Lapujade
+SUMMARY:Le placard brûle : permanence de la bibliothèque
+URL:https://toulouse.demosphere.net/rv/34171
+END:VEVENT
+END:VCALENDAR

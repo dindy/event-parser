@@ -7,13 +7,15 @@
   "scripts": {
     "dev": "DEBUG='puppeteer-cluster:*' NODE_ENV=dev xvfb-run --server-args=\"-screen 0 1280x800x24\" --auto-servernum node server.mjs",
     "watch": "DEBUG='puppeteer-cluster:*' NODE_ENV=dev xvfb-run --server-args=\"-screen 0 1280x800x24\" --auto-servernum nodemon server.mjs",
-    "test": "NODE_ENV=test npx mocha -t 60000 --exit --grep"
+    "test-grep": "NODE_ENV=test npx mocha -t 60000 --exit --grep",
+    "test": "NODE_ENV=test npx mocha -t 60000 --exit"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "axios": "^1.12.2",
     "body-parser": "^2.2.1",
+    "chai-datetime": "^1.8.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
