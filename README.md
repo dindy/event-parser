@@ -114,7 +114,8 @@ An instance of phpMyAdmin is also available on port 8081 by default.
 
 # @TODO
 
-* Parse <meta name="geo.region" content="ch-be">. See https://www.bibliobiel.ch/de/aktuelles/
-* Parse <meta name="geo.placename" content="Dufourstrasse 26, 2500 Biel/Bienne">. See https://www.bibliobiel.ch/de/aktuelles/
+* Parse `<meta name="geo.region" content="ch-be">`. [See here](https://www.bibliobiel.ch/de/aktuelles/)
+* Parse `<meta name="geo.placename" content="Dufourstrasse 26, 2500 Biel/Bienne">`. [See here](https://www.bibliobiel.ch/de/aktuelles/)
 * Limit automation logs returned by the API
 * Implement log level configuration
+* Load all fb events by scrolling page to bottom ?
