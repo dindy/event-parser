@@ -20,6 +20,7 @@ import {
 } from './middlewares/automation.mjs'
 import { cronSecretChecker } from './middlewares/cronSecretChecker.mjs'
 import cluster from './libs/scrappers/page-scrapper/cluster.mjs'
+import { cleanUpLogs } from './middlewares/maintenance.mjs'
 
 const app = express()
 const jsonParser = bodyParser.json()
@@ -41,6 +42,7 @@ app.get("/automation/:id/execute", tokenParser, forceAutomation)
 app.get("/automation/:id/history", tokenParser, getAutomationHistory)
 app.get("/automation/:id/delete", tokenParser, deleteAutomation)
 app.get("/cron/automations", cronSecretChecker, executeAutomations)
+app.get("/cron/maintenance", cronSecretChecker, cleanUpLogs)
 app.use(mobilizonApiErrorHandler)
 app.use(errorHandler)
 process.on("uncaughtException", (err) => {
