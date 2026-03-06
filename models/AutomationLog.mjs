@@ -18,7 +18,7 @@ AutomationLog.init({
     },
 }, {
     sequelize,
-    modelName: 'AutomationLog',   
+    modelName: 'automationLog',   
 })
 
 /**

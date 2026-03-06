@@ -2,7 +2,7 @@
 /** @type {import('sequelize-cli').Migration} */
 export default {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Applications', {
+    await queryInterface.createTable('applications', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -34,7 +34,7 @@ export default {
           type: Sequelize.STRING,
       }        
     });
-    await queryInterface.createTable('Authorizations', {
+    await queryInterface.createTable('authorizations', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -82,7 +82,7 @@ export default {
           allowNull: false,        
       }      
     });
-    await queryInterface.createTable('Automations', {    
+    await queryInterface.createTable('automations', {    
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -123,7 +123,7 @@ export default {
           defaultValue: true
       },         
     });
-    await queryInterface.createTable('AutomationLogs', {    
+    await queryInterface.createTable('automationLogs', {    
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -151,7 +151,7 @@ export default {
           allowNull: false,
       },      
     });
-    await queryInterface.createTable('ImportedEvents', {    
+    await queryInterface.createTable('importedEvents', {    
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -193,10 +193,10 @@ export default {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Applications');
-    await queryInterface.dropTable('Authorizations');
-    await queryInterface.dropTable('Automations');
-    await queryInterface.dropTable('AutomationLogs');
-    await queryInterface.dropTable('ImportedEvents');
+    await queryInterface.dropTable('applications');
+    await queryInterface.dropTable('authorizations');
+    await queryInterface.dropTable('automations');
+    await queryInterface.dropTable('automationLogs');
+    await queryInterface.dropTable('importedEvents');
   }
 };

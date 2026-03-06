@@ -22,7 +22,7 @@ Application.init({
     }    
 }, {
     sequelize,
-    modelName: 'Application',   
+    modelName: 'application',   
 })
 
 const query = async (sql, params) => {

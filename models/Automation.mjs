@@ -34,7 +34,7 @@ Automation.init({
         defaultValue: true
     },    
 }, {
-    modelName: 'Automation',
+    modelName: 'automation',
     hooks: {
         beforeDestroy: async (automation, options) => {
             await AutomationLog.destroy({ where: { automationId: automation.id } })
@@ -52,19 +52,17 @@ ImportedEvent.belongsTo(Automation)
 
 export const exists = async (authorizationId, automationCriterias) => {
     
-    const authorization = await Authorization.findOne({ where: { id: authorizationId } })
-    
     return await Automation.findOne({
         where: {
-            ...automationCriterias
+            ...automationCriterias,
+            authorizationId
         },
         include: {
+            required: true,
             model: Authorization,
             include: {
+                required: true,
                 model: Application,
-                where: {
-                    id: authorization.applicationId
-                }
             } 
         }
     })
@@ -82,21 +80,19 @@ export const listActive = async () => await Automation.findAll({
 
 export const findAuthorized = async (authorizationId, automationCriterias) => {
 
-    const authorization = await Authorization.findOne({ where: { id: authorizationId } })
-    
     return await Automation.findAll({
         where: {
-            ...automationCriterias
+            ...automationCriterias,
+            authorizationId
         },
-        include: [{
+        include: {
+            required: true,
             model: Authorization,
             include: {
+                required: true,
                 model: Application,
-                where: {
-                    id: authorization.applicationId
-                }
             } 
-        }]
+        }
     })    
 }
 

@@ -40,7 +40,7 @@ Authorization.init({
     }
 }, {
     sequelize,
-    modelName: 'Authorization',   
+    modelName: 'authorization',   
 })
 
 Authorization.belongsTo(Application)

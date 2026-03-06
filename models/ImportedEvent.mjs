@@ -30,7 +30,7 @@ ImportedEvent.init({
     }
 }, {
     sequelize,
-    modelName: 'ImportedEvent',
+    modelName: 'importedEvent',
 })    
 
 export const alreadyExists = async (automationId, uid) => await ImportedEvent.findOne({
