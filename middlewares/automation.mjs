@@ -77,29 +77,29 @@ export const createAutomation = async (req, res, next) => {
     res.json(automation)
 }
 
-const convertEventModelToMbzEvent = async (fbEvent, automation) =>
+const convertEventModelToMbzEvent = async (modelEvent, automation) =>
 {   
     try {
 
         // Update some events properties to match the mobilizon API
         const mbzEvent = {
-            title: fbEvent.metas.title,
-            description: fbEvent.metas.description ?
-                fbEvent.metas.description.replaceAll('\n', '</br>') :
+            title: modelEvent.metas.title,
+            description: modelEvent.metas.description ?
+                modelEvent.metas.description.replaceAll('\n', '</br>') :
                 "",
-            beginsOn: (new Date(fbEvent.metas.startTimestamp * 1000)).toJSON(),
-            endsOn: fbEvent.metas.endTimestamp ?
-                (new Date(fbEvent.metas.startTimestamp * 1000)).toJSON() :
+            beginsOn: (new Date(modelEvent.metas.startTimestamp * 1000)).toJSON(),
+            endsOn: modelEvent.metas.endTimestamp ?
+                (new Date(modelEvent.metas.startTimestamp * 1000)).toJSON() :
                 null,
-            onlineAddress: fbEvent.metas.url,
+            onlineAddress: modelEvent.metas.url,
             /** @TODO : Implement status */
             // status: icsEvent.status || 'CONFIRMED',
             // organizer: icsEvent.organizer || null,
             // tags: icsEvent.categories || [],
-            physicalAddress: fbEvent.metas.physicalAddress,
+            physicalAddress: modelEvent.metas.physicalAddress,
             metadata: [],
             draft: false,
-            uid: fbEvent.metas.url
+            uid: modelEvent.metas.url
         }            
         
         if (mbzEvent.endsOn && mbzEvent.endsOn <= mbzEvent.beginsOn) {
@@ -112,15 +112,15 @@ const convertEventModelToMbzEvent = async (fbEvent, automation) =>
             // hideOrganizerWhenGroupEvent: false,
         }
 
-        if (fbEvent.metas.ticketsUrl) {
+        if (modelEvent.metas.ticketsUrl) {
             mbzEvent.metadata = [{
                 key: 'mz:ticket:external_url',
                 type: 'STRING',
-                value: fbEvent.metas.ticketsUrl
+                value: modelEvent.metas.ticketsUrl
             }]
         }
     
-        const hosts = fbEvent.metas.hosts
+        const hosts = modelEvent.metas.hosts
         const getLinkOrJustName = ({name, url}) => url ? `<a href="${url}">${name}</a>` : name
         if (hosts && hosts.length > 0) {
             if (hosts.length == 1) {
@@ -134,8 +134,8 @@ const convertEventModelToMbzEvent = async (fbEvent, automation) =>
             }
         }    
     
-        if (fbEvent.images && fbEvent.images.length > 0) {
-            const pictureObject = convertBase64DataUrlToBase64(fbEvent.images[0])
+        if (modelEvent.images && modelEvent.images.length > 0) {
+            const pictureObject = convertBase64DataUrlToBase64(modelEvent.images[0])
             
             mbzEvent.picture = {
                 media: {
@@ -149,7 +149,7 @@ const convertEventModelToMbzEvent = async (fbEvent, automation) =>
         return mbzEvent
 
     } catch (error) {
-        await logger.error(`Error parsing event ${fbEvent.url}`, automation.id)
+        await logger.error(`Error parsing event ${modelEvent.url}`, automation.id)
         console.log(error)
     }
 }
