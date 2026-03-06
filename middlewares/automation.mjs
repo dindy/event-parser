@@ -362,6 +362,11 @@ export const parseIcsEvent = async (icsEvent, automation) => {
             mbzEvent.endsOn = null
         }
 
+        // See https://www.rfc-editor.org/rfc/rfc5545#section-3.8.1.3
+        if (icsEvent.class && icsEvent.class.toUpperCase() !== 'PUBLIC') { 
+            mbzEvent.visibility = 'UNLISTED'
+        }
+
         mbzEvent.picture = null
         /** @TODO : Handle binary data images */
         // If there is a value that is a url and type is image or not specified
