@@ -38,10 +38,6 @@ describe('Test Automation', () => {
         })
     })
 
-    after(async () => {
-        await sequelize.close()
-    })
-
     it('should return only the matching automation for a given authorization', async () => {
 
 
