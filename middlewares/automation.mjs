@@ -108,8 +108,8 @@ const convertEventModelToMbzEvent = async (fbEvent, automation) =>
 
         mbzEvent.options = {
             showRemainingAttendeeCapacity: false,
+            hideNumberOfParticipants: true,                
             // hideOrganizerWhenGroupEvent: false,
-            hideNumberOfParticipants: true                
         }
 
         if (fbEvent.metas.ticketsUrl) {
@@ -351,6 +351,9 @@ export const parseIcsEvent = async (icsEvent, automation) => {
             options: {
                 showStartTime: icsEvent.datetype == 'date-time',
                 showEndTime: icsEvent.datetype == 'date-time',
+                showRemainingAttendeeCapacity: false,
+                hideNumberOfParticipants: true,             
+                // hideOrganizerWhenGroupEvent: false,
             },
             uid: icsEvent.uid
         }
