@@ -29,6 +29,7 @@ import fbGroupEventsParser from '../libs/parsers/web-parsers/group-events/facebo
 import fbEventParser from '../libs/parsers/web-parsers/event/facebook-event-parser.mjs'
 import defaultEventParser from '../libs/parsers/web-parsers/event/default-event-parser.mjs'
 import { getEventModel } from '../libs/parsers/web-parsers/models.mjs'
+import { getLogsByAutomationId } from '../models/AutomationLog.mjs'
 
 export const createAutomation = async (req, res, next) => {
 
@@ -514,8 +515,8 @@ export const getAutomationHistory = async (req, res, next) =>
 {
     const automation = await getAutomationIfAuthorized(req.user, res, req.params.id)
     const importedEvents = await automation.getImportedEvents()
-    const logs = await automation.getAutomationLogs()
-    res.json({events: importedEvents, logs})
+    const logs = await getLogsByAutomationId(automation.id, 1, 100)
+    res.json({events: importedEvents, logs: logs.rows})
 }
 
 export const forceAutomation = async (req, res, next) => 
