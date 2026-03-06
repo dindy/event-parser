@@ -515,7 +515,7 @@ export const getAutomationHistory = async (req, res, next) =>
 {
     const automation = await getAutomationIfAuthorized(req.user, res, req.params.id)
     const importedEvents = await automation.getImportedEvents()
-    const logs = await getLogsByAutomationId(automation.id, 1, 100)
+    const logs = await getLogsByAutomationId(automation.id, 1, 250)
     res.json({events: importedEvents, logs: logs.rows})
 }
 
