@@ -16,7 +16,8 @@ import {
   createAutomation, 
   executeAutomations, 
   getAutomations, 
-  getAutomationHistory
+  getAutomationLogs,
+  getAutomationEvents
 } from './middlewares/automation.mjs'
 import { cronSecretChecker } from './middlewares/cronSecretChecker.mjs'
 import cluster from './libs/scrappers/page-scrapper/cluster.mjs'
@@ -39,7 +40,8 @@ app.post("/mbz/query", rawParser, tokenParser, queryInstance)
 app.post("/automation", tokenParser, jsonParser, createAutomation)
 app.get("/automations", tokenParser, getAutomations)
 app.get("/automation/:id/execute", tokenParser, forceAutomation)
-app.get("/automation/:id/history", tokenParser, getAutomationHistory)
+app.get("/automation/:id/events", tokenParser, getAutomationEvents)
+app.get("/automation/:id/logs", tokenParser, getAutomationLogs)
 app.get("/automation/:id/delete", tokenParser, deleteAutomation)
 app.get("/cron/automations", cronSecretChecker, executeAutomations)
 app.get("/cron/maintenance", cronSecretChecker, cleanUpLogs)

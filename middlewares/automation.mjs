@@ -525,21 +525,34 @@ const getAutomationIfAuthorized = async (user, res, automationId) =>
     return automation
 }
 
-export const getAutomationHistory = async (req, res, next) => 
+export const getAutomationEvents = async (req, res, next) => 
 {
     const automation = await getAutomationIfAuthorized(req.user, res, req.params.id)
     const importedEvents = await automation.getImportedEvents()
-    const logs = await getLogsByAutomationId(automation.id, 1, 250)
-    res.json({events: importedEvents, logs: logs.rows})
+    res.json({data: importedEvents})
+}
+
+export const getAutomationLogs = async (req, res, next) => 
+{
+    const page = parseInt(req.query.page) || 1
+    const pageSize = parseInt(req.query.page_size) || 250
+    const automation = await getAutomationIfAuthorized(req.user, res, req.params.id)
+    const logs = await getLogsByAutomationId(automation.id, page, pageSize)
+    res.json({ data: logs.rows, total: logs.count, page, pageSize })
 }
 
 export const forceAutomation = async (req, res, next) => 
 {
+    const page = 1
+    const pageSize = 250
     const automation = await getAutomationIfAuthorized(req.user, res, req.params.id)
     await executeAutomation(automation)
-    const logs = await automation.getAutomationLogs()
+    const logs = await getLogsByAutomationId(automation.id, page, pageSize)
     const importedEvents = await automation.getImportedEvents()
-    res.json({events: importedEvents, logs})
+    res.json({
+        events: { data: importedEvents },
+        logs: { data: logs.rows, total: logs.count, page, pageSize }
+    })
 }
 
 export const deleteAutomation = async (req, res, next) => { 
