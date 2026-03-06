@@ -106,6 +106,12 @@ const convertEventModelToMbzEvent = async (fbEvent, automation) =>
             mbzEvent.endsOn = null
         }
 
+        mbzEvent.options = {
+            showRemainingAttendeeCapacity: false,
+            // hideOrganizerWhenGroupEvent: false,
+            hideNumberOfParticipants: true                
+        }
+
         if (fbEvent.metas.ticketsUrl) {
             mbzEvent.metadata = [{
                 key: 'mz:ticket:external_url',
