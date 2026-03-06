@@ -14,7 +14,7 @@ DTSTART:20260226T140000Z
 DTEND:20260226T150000Z
 ATTACH;FMTTYPE=image/jpg:https://domain.com/image.png
 GEO:00;0
-CLASS:PUBLIC
+CLASS:PRIVATE
 LOCATION:Toulouse  31100\, \nCRAS \n39\, rue Gamelin 31100 TOULOUSE \nMétro
   Fontaine Lestang
 SUMMARY:Permanence du CRAS Mardi et Jeudi

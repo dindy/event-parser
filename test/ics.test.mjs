@@ -57,7 +57,6 @@ describe("Test event ics parser", async function () {
             mbzEvents.push(await parseIcsEvent(icsEvent, automation))
         }
         
-        /** @TODO: check dates and picture that is not set... */
         chai.expect(mbzEvents[0].picture.media.file).to.be.eq(media.base64)
         chai.expect(new Date(mbzEvents[0].beginsOn)).to.equalDate(new Date('2026-02-26T14:00:00.000Z'))
         chai.expect(new Date(mbzEvents[0].endsOn)).to.equalDate(new Date('2026-02-26T15:00:00.000Z'))
@@ -67,6 +66,7 @@ describe("Test event ics parser", async function () {
             onlineAddress: 'data:ics:uid:https://toulouse.demosphere.net/rv/34469',
             status: 'CONFIRMED',
             tags: [],
+            visibility: 'UNLISTED',
             physicalAddress: {
                 description: 'Toulouse  31100, \n' +
                     'CRAS \n' +
@@ -80,7 +80,12 @@ describe("Test event ics parser", async function () {
             },
             metadata: [],
             draft: false,
-            options: { showStartTime: true, showEndTime: true },
+            options: {
+                showStartTime: true,
+                showEndTime: true,
+                hideNumberOfParticipants: true,
+                showRemainingAttendeeCapacity: false,                
+            },
             uid: 'https://toulouse.demosphere.net/rv/34469',
         })
 
@@ -103,7 +108,12 @@ describe("Test event ics parser", async function () {
             },
             metadata: [],
             draft: false,
-            options: { showStartTime: true, showEndTime: true },
+            options: {
+                showStartTime: true,
+                showEndTime: true,
+                hideNumberOfParticipants: true,
+                showRemainingAttendeeCapacity: false,
+            },
             uid: 'https://toulouse.demosphere.net/rv/34171',
         })
 
