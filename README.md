@@ -119,3 +119,6 @@ An instance of phpMyAdmin is also available on port 8081 by default.
 * Limit automation logs returned by the API
 * Implement log level configuration
 * Load all fb events by scrolling page to bottom ?
+* Implement event status (see [EventStatusType](https://schema.org/EventStatusType))
+* Implement online event (see [EventAttendanceModeEnumeration](https://schema.org/EventAttendanceModeEnumeration))
+* Implement array of images in ld+json scripts

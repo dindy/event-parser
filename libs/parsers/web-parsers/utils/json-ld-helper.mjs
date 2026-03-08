@@ -1,5 +1,6 @@
 import { isString, isValidUrl, extractAddressParts } from "./utils.mjs"
 
+/** @TODO value can be an array */
 export const extractImageUrl = value => {
     
     if (!value) return null
