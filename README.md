@@ -122,3 +122,4 @@ An instance of phpMyAdmin is also available on port 8081 by default.
 * Implement event status (see [EventStatusType](https://schema.org/EventStatusType))
 * Implement online event (see [EventAttendanceModeEnumeration](https://schema.org/EventAttendanceModeEnumeration))
 * Implement array of images in ld+json scripts
+* Set number of puppeteer instances running simultaneously configurable
