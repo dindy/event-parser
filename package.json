@@ -8,7 +8,8 @@
     "dev": "DEBUG='puppeteer-cluster:*' NODE_ENV=dev xvfb-run --server-args=\"-screen 0 1280x800x24\" --auto-servernum node server.mjs",
     "watch": "DEBUG='puppeteer-cluster:*' NODE_ENV=dev xvfb-run --server-args=\"-screen 0 1280x800x24\" --auto-servernum nodemon server.mjs",
     "test-grep": "export $(cat .env.test | xargs) && NODE_ENV=test npx mocha -t 60000 --exit --grep",
-    "test": "export $(cat .env.test | xargs) && NODE_ENV=test npx mocha -t 60000 --exit"
+    "test": "export $(cat .env.test | xargs) && NODE_ENV=test npx mocha -t 60000 --exit",
+    "test-built-in": "export $(cat .env.test | xargs) && NODE_ENV=test node --test --experimental-test-module-mocks 'test/automation.test.mjs'"
   },
   "author": "",
   "license": "ISC",
