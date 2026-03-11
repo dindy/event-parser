@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto'
+import crypto from 'node:crypto'
 import InvalidJsonBody from './exceptions/InvalidJsonBody.mjs'
 import InvalidJsonProperty from './exceptions/InvalidJsonProperty.mjs'
 import UnknownAutomation from './exceptions/UnknownAutomation.mjs'
@@ -30,6 +30,8 @@ import fbEventParser from '../libs/parsers/web-parsers/event/facebook-event-pars
 import defaultEventParser from '../libs/parsers/web-parsers/event/default-event-parser.mjs'
 import { getEventModel } from '../libs/parsers/web-parsers/models.mjs'
 import { getLogsByAutomationId } from '../models/AutomationLog.mjs'
+
+const { createHash } = crypto
 
 export const createAutomation = async (req, res, next) => {
 
@@ -188,41 +190,33 @@ const executeFacebookAutomation = async automation =>
     return Promise.allSettled(promises)
 }
 
-const saveNewOrModifiedEvent = async (event, automation) => {
+export const saveNewOrModifiedEvent = async (event, automation) => {
     
     /** @TODO : refresh token here to avoid refresh on each request */
     const authorization = await automation.getAuthorization()
     const application = await authorization.getApplication()
     const eventStr = JSON.stringify(event)
     const hash = createHash('sha256').update(eventStr).digest('hex')
+
     const alreadyExistingEvent = await importedEventAlreadyExists(automation.id, event.uid)
     
-    if (alreadyExistingEvent) {        
-        
+    if (alreadyExistingEvent)
+    {            
         if (alreadyExistingEvent.hash === hash) {
             await logger.info(`Event ${event.uid} has not been modified.`, automation.id);
             return
         }
-        
         await logger.info(`Event ${event.uid} has been modified.`, automation.id);
         event.id = alreadyExistingEvent.mbzId
-        
-    } else {
+    }
+    else
+    {
         await logger.info(`Event ${event.uid} is new.`, automation.id);
     }
     
-    const savedMbzEvent = await refreshOnExpired(
-        saveEvent,
-        application.domain,
-        authorization.accessToken,
-        authorization.id,
-        null,
-        {
-            ...event, 
-            attributedToId: automation.attributedToId,
-            organizerActorId: automation.organizerActorId,            
-        }
-    ) 
+    const savedMbzEvent = await saveEventOnMobilizon(event, application, authorization, automation)
+
+    if (!savedMbzEvent) return
     
     try {
         if (alreadyExistingEvent) {
@@ -238,15 +232,40 @@ const saveNewOrModifiedEvent = async (event, automation) => {
             })
         } 
     } catch (error) {
-        if (error instanceof BadRequestError && error.body?.errors?.length > 0) {
-            const bodyError = error.body.errors[0]
-            await logger.error(`Could not create or update event ${event.uid} : ${bodyError.code} : ${bodyError.message}.`, automation.id)
-        } else {
-            await logger.error(`Could not create or update event ${event.uid} : ${error.name} : ${error.message}.`, automation.id)
-        }        
+        await logger.error(`Could not ${alreadyExistingEvent ? 'update' : 'create'} imported event for event ${event.uid} : ${error.name} : ${error.message}.`, automation.id)
+        return
     }
 
     await logger.success(`Event ${event.uid} has been saved with UUID ${savedMbzEvent.uuid}.`, automation.id);
+}
+
+const saveEventOnMobilizon = async (event, application, authorization, automation) =>
+{ 
+    try {
+        return await refreshOnExpired(
+            saveEvent,
+            application.domain,
+            authorization.accessToken,
+            authorization.id,
+            null,
+            {
+                ...event,
+                attributedToId: automation.attributedToId,
+                organizerActorId: automation.organizerActorId,
+            }
+        )
+    } catch (error) { 
+        
+        let mbzErrorText = null
+
+        if (error instanceof BadRequestError && error.body?.errors?.length > 0) {
+            mbzErrorText = JSON.stringify(error.body.errors)
+        }
+        
+        await logger.error(`Could not ${event.id ? 'update' : 'create'} event ${event.uid} on Mobilizon server : ${error.name} : ${error.message}${mbzErrorText ? ` : ${mbzErrorText}` : ``}.`, automation.id) 
+    }
+
+    return null
 }
 
 const mergeIcsEventAndWebEvent = (icsEvent, webEvent) =>
