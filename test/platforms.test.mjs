@@ -2,12 +2,13 @@ import * as chai from 'chai'
 import chaiString from 'chai-string'
 import request from 'supertest'
 import app from '../app.mjs'
+import { test, it } from 'node:test'
 
 chai.use(chaiString)
 
-describe('Scrap and parse events on every platform', function () {
+test('Scrap and parse events on every platform', function () {
 
-    it('scraps and parses events from instagram reels', function (done) { 
+    it('scraps and parses events from instagram reels', function () { 
 
         const url = btoa(unescape(encodeURIComponent('https://www.instagram.com/reel/DU6Bo-XjDMI/')))
         const provider = 'instagram'
@@ -60,7 +61,6 @@ describe('Scrap and parse events on every platform', function () {
                         country: null
                     }                
                 })
-                done()
             })
     })
     
@@ -68,7 +68,7 @@ describe('Scrap and parse events on every platform', function () {
      * `ticketsUrl` is not present on past events 
      * hosts `profile_picture` url change each time (not used anyway)
     */
-   it('scraps and parses events from facebook', function (done) {
+   it('scraps and parses events from facebook', function () {
         
         const url = btoa(unescape(encodeURIComponent('https://www.facebook.com/events/1367789884993855')))
         const provider = 'facebook'
@@ -182,8 +182,6 @@ describe('Scrap and parse events on every platform', function () {
                         country: 'France'
                     },
                 })
-                done()
             })
-    
     })
 })

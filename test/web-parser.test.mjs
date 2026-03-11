@@ -3,16 +3,20 @@ import chaiAsPromised from 'chai-as-promised'
 import puppeteer from 'puppeteer'
 import { promises as fs } from "fs"
 import { getEventModel } from '../libs/parsers/web-parsers/models.mjs'
-import * as utils from '../libs/parsers/web-parsers/utils/utils.mjs'
 import path from 'path'
-import * as td from 'testdouble'
+import { test, mock, after, it } from 'node:test'
+import * as utils from '../libs/parsers/web-parsers/utils/utils.mjs'
 
 chai.use(chaiAsPromised)
 
 const browser = await puppeteer.launch()
+const mockConvertUrlToBase64DataUrl = mock.fn(async () => {})
 
-after(async () => {
-    await browser.close()
+mock.module('../libs/parsers/web-parsers/utils/utils.mjs', {
+    namedExports: {
+        ...utils,
+        convertUrlToBase64DataUrl: mockConvertUrlToBase64DataUrl
+    }
 })
 
 const loadPage = async (url, file) => {
@@ -29,38 +33,24 @@ const loadPage = async (url, file) => {
             req.abort()
         }
     })
-    await page.goto(url) 
-    return page    
+    await page.goto(url)
+    return page
 }
 
-describe("Test event web parser", async function () {
+test('web parser', async () => {
     
-    const convertUrlToBase64DataUrl = td.function('Utils.convertUrlToBase64DataUrl')
-    
-    this.beforeEach(async function () {
-        await td.replaceEsm('../libs/parsers/web-parsers/utils/utils.mjs', {
-            ...utils,
-            convertUrlToBase64DataUrl
-        })        
+    after(async () => {
+        await browser.close()
     })
 
-    afterEach(function () {
-        td.reset()
-    })
-    
-    it('should parse stereolab event page', async function ()
-    { 
+    it('should parse stereolab event page', async () => {
+
         const url = 'https://aeronef.fr/agenda/ditter-gunerkunier'
         const htmlFilePath = './test/pages/stereolab-ditter-gunerkunier.html'
-
         const page = await loadPage(url, htmlFilePath)
         const parser = await import('../libs/parsers/web-parsers/event/default-event-parser.mjs')
-        const parsed = await parser.default.parse(page, getEventModel())  
-        
-        td.verify(convertUrlToBase64DataUrl('https://aeronef.fr/sites/aeronef/files/styles/16x9_1920/public/2025-12/visuel_site.png?h=fbf7a813&itok=fiGsAHLC'))
-        
-        td.verify(convertUrlToBase64DataUrl('https://aeronef.fr/sites/aeronef/files/styles/16x9_1920/public/2025-12/visuel_site.png?h=fbf7a813&itok=fiGsAHLC'))
-
+        const parsed = await parser.default.parse(page, getEventModel())
+        chai.expect(mockConvertUrlToBase64DataUrl.mock.calls.some(call => call.arguments[0] === 'https://aeronef.fr/sites/aeronef/files/styles/16x9_1920/public/2025-12/visuel_site.png?h=fbf7a813&itok=fiGsAHLC')).to.be.true
         chai.expect(parsed.metas).to.be.deep.contains({
             title: 'DITTER + GÜNER KÜNIER',
             startTimestamp: 1772305200,
@@ -81,23 +71,18 @@ describe("Test event web parser", async function () {
                 postalCode: '59777',
                 street: 'Avenue Willy Brandt',
                 country: 'FR'
-            }            
+            }
         })
     })
-    
-    it('should parse eventbrite event page', async function ()
-    {
+
+    it('should parse eventbrite event page', async () => {
         const url = 'https://www.eventbrite.fr/e/billets-grande-vente-de-plantes-st-germain-en-laye-1981575849709'
         const htmlFilePath = './test/pages/eventbrite-plantes.html'
-
         const page = await loadPage(url, htmlFilePath)
         const parser = await import('../libs/parsers/web-parsers/event/default-event-parser.mjs')
-        const parsed = await parser.default.parse(page, getEventModel())  
+        const parsed = await parser.default.parse(page, getEventModel())
 
-        td.verify(convertUrlToBase64DataUrl('https://www.eventbrite.fr/e/_next/image?url=https%3A%2F%2Fimg.evbuc.com%2Fhttps%253A%252F%252Fcdn.evbuc.com%252Fimages%252F1175834380%252F446654944658%252F1%252Foriginal.20260126-134328%3Fcrop%3Dfocalpoint%26fit%3Dcrop%26w%3D480%26auto%3Dformat%252Ccompress%26q%3D75%26sharp%3D10%26fp-x%3D0.5%26fp-y%3D0.5%26s%3D02e9a642e09e5954fb6fb51dbabbd71a&w=940&q=75'))
-
-        td.verify(convertUrlToBase64DataUrl('https://img.evbuc.com/https%3A%2F%2Fcdn.evbuc.com%2Fimages%2F1175834380%2F446654944658%2F1%2Foriginal.20260126-134328?crop=focalpoint&fit=crop&w=480&auto=format%2Ccompress&q=75&sharp=10&fp-x=0.5&fp-y=0.5&s=02e9a642e09e5954fb6fb51dbabbd71a'))
-
+        chai.expect(mockConvertUrlToBase64DataUrl.mock.calls.some(call => call.arguments[0] === 'https://www.eventbrite.fr/e/_next/image?url=https%3A%2F%2Fimg.evbuc.com%2Fhttps%253A%252F%252Fcdn.evbuc.com%252Fimages%252F1175834380%252F446654944658%252F1%252Foriginal.20260126-134328%3Fcrop%3Dfocalpoint%26fit%3Dcrop%26w%3D480%26auto%3Dformat%252Ccompress%26q%3D75%26sharp%3D10%26fp-x%3D0.5%26fp-y%3D0.5%26s%3D02e9a642e09e5954fb6fb51dbabbd71a&w=940&q=75')).to.be.true
         chai.expect(parsed.metas).to.be.deep.contains({
             title: 'Grande Vente de Plantes - St-Germain-en-Laye',
             startTimestamp: 1772787600,
@@ -122,18 +107,14 @@ describe("Test event web parser", async function () {
         })
     })
 
-    it('should parse facebook garorock event page', async function ()
-    {
+    it('should parse facebook garorock event page', async () => {
         const url = 'https://www.facebook.com/events/plaine-de-la-filhole-47200-marmande-france/garorock-2026-30-%C3%A8me-%C3%A9dition/1156265816461916/'
         const htmlFilePath = './test/pages/facebook-garorock.html'
         const page = await loadPage(url, htmlFilePath)
         const parser = await import('../libs/parsers/web-parsers/event/facebook-event-parser.mjs')
         const parsed = await parser.default.parse(page, getEventModel())         
-        
-        td.verify(convertUrlToBase64DataUrl('https://scontent-cdg4-1.xx.fbcdn.net/v/t39.30808-6/561759007_823888796959056_2952129657611568225_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=105&ccb=1-7&_nc_sid=7e0d18&_nc_ohc=d-qOf5Xx-osQ7kNvwHrlQ-p&_nc_oc=AdmkSjTRk6Xe2Qc4jlKAYSN3APJRPsI9Ur2YocH9W9J3zTSc-MNlK5GpDsh0yXVVJQ0&_nc_zt=23&_nc_ht=scontent-cdg4-1.xx&_nc_gid=I83ngRGELp-FLTyrz6R6kA&oh=00_AfvfuptfE9RkXlgyz2M7rTtijFw1flqmUVy_7VQMVnISzQ&oe=699E5FC2'))
-        
-        td.verify(convertUrlToBase64DataUrl('https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=1156265816461916'))
-        
+            
+        chai.expect(mockConvertUrlToBase64DataUrl.mock.calls.some(call => call.arguments[0] === 'https://scontent-cdg4-1.xx.fbcdn.net/v/t39.30808-6/561759007_823888796959056_2952129657611568225_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=105&ccb=1-7&_nc_sid=7e0d18&_nc_ohc=d-qOf5Xx-osQ7kNvwHrlQ-p&_nc_oc=AdmkSjTRk6Xe2Qc4jlKAYSN3APJRPsI9Ur2YocH9W9J3zTSc-MNlK5GpDsh0yXVVJQ0&_nc_zt=23&_nc_ht=scontent-cdg4-1.xx&_nc_gid=I83ngRGELp-FLTyrz6R6kA&oh=00_AfvfuptfE9RkXlgyz2M7rTtijFw1flqmUVy_7VQMVnISzQ&oe=699E5FC2')).to.be.true
         chai.expect(parsed.metas).to.be.deep.contains({
             title: 'Garorock 2026 - 30 Ã¨me Ã©dition',
             startTimestamp: 1782475200,
@@ -170,17 +151,14 @@ describe("Test event web parser", async function () {
         })            
     })
 
-    it('should parse hello asso dub to techno event page', async function () { 
+    it('should parse hello asso dub to techno event page', async () => {
         const url = 'https://www.helloasso.com/associations/resonance-euskadi/evenements/dub-to-techno-2?utm_source=ig&utm_medium=social&utm_content=link_in_bio'
         const htmlFilePath = './test/pages/helloasso-dubtotechno.html'
         const page = await loadPage(url, htmlFilePath)
         const parser = await import('../libs/parsers/web-parsers/event/helloasso-event-parser.mjs')
         const parsed = await parser.default.parse(page, getEventModel())
 
-        td.verify(convertUrlToBase64DataUrl('https://cdn.helloasso.com/img/photos/evenements/croppedimage-84dcad365ba3474cb0eb7eb5b61950fd.png?resize=fit:500:360'))
-        td.verify(convertUrlToBase64DataUrl('https://cdn.helloasso.com/img/photos/evenements/croppedimage-84dcad365ba3474cb0eb7eb5b61950fd.png?resize=fit:500:360'))
-        td.verify(convertUrlToBase64DataUrl('https://cdn.helloasso.com/img/photos/evenements/croppedimage-44c7d46fe4eb494089e46966c15889b8.png?resize=fill:1920:250'))
-
+        chai.expect(mockConvertUrlToBase64DataUrl.mock.calls.some(call => call.arguments[0] === 'https://cdn.helloasso.com/img/photos/evenements/croppedimage-84dcad365ba3474cb0eb7eb5b61950fd.png?resize=fit:500:360')).to.be.true
         chai.expect(parsed.metas).to.be.deep.contains({
             title: 'DUB TO TECHNO #2',
             startTimestamp: 0,

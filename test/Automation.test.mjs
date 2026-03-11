@@ -1,15 +1,23 @@
+import { test, before, it, after } from 'node:test'
 import { sequelize } from '../database/database.mjs'
 import { Application } from '../models/Application.mjs'
 import { Authorization } from '../models/Authorization.mjs'
 import { Automation, findAuthorized, exists } from '../models/Automation.mjs'
 import { expect } from 'chai'
 
-describe('Test Automation', () => {
+test('Test Automation', () => {
     
     let app1, app2, auth1, auth2, automation1, automation2
 
+    after(async () => {
+        sequelize.close()
+    })
+
     before(async () => {
-        await sequelize.sync({ force: true })
+
+		await sequelize.query('SET FOREIGN_KEY_CHECKS = 0')
+		await sequelize.sync({ force: true })
+		await sequelize.query('SET FOREIGN_KEY_CHECKS = 1')
 
         // Create two applications
         app1 = await Application.create({ name: 'App1', domain: 'example1.com' })
@@ -39,7 +47,6 @@ describe('Test Automation', () => {
     })
 
     it('should return only the matching automation for a given authorization', async () => {
-
 
         // Use findAuthorized to get the matching automation
         const result = await findAuthorized(auth1.id, { attributedToId: 1, organizerActorId: 2 })

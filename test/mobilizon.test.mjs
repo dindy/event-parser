@@ -1,4 +1,5 @@
-import * as td from 'testdouble'
+// import * as td from 'testdouble'
+import { test, mock, afterEach, beforeEach, it } from 'node:test'
 import * as chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import { ExpiredTokenError } from '../api/exceptions/ExpiredTokenError.mjs'
@@ -7,7 +8,7 @@ import MobilizonRefreshTokenError from '../middlewares/exceptions/MobilizonRefre
 
 chai.use(chaiAsPromised)
 
-describe("Test refreshOnExpired", async function () {
+test("Test refreshOnExpired", async function () {
 
     // Fake data
     const domain = 'my.domain'
@@ -21,13 +22,12 @@ describe("Test refreshOnExpired", async function () {
     const body = 'body'
 
     // Double functions
-    const refreshTokenGetData = td.func()
-    const refreshToken = td.function('Mobilizon API refreshToken')
-    const passGetData = td.func()
-    const pass = td.function('Mobilizon API pass')
-    const findById = td.func('Authorization.findById')
-    const refresh = td.function('Authorization.refresh')
-    const any = td.matchers.anything
+    const refreshTokenGetData = mock.fn()
+    const refreshToken = mock.fn()
+    const passGetData = mock.fn(async () => ({ data: 'data' }))
+    const pass = mock.fn()
+    const findById = mock.fn()
+    const refresh = mock.fn()
     const initialAuthObject = {
         accessToken: initialAccessToken,
         refreshToken: initialRefreshToken
@@ -39,85 +39,131 @@ describe("Test refreshOnExpired", async function () {
 
     // Reset double data after each test
     afterEach(function () {
-        td.reset()
+        refresh.mock.resetCalls()
+        refreshToken.mock.resetCalls()
+        findById.mock.resetCalls()
+        pass.mock.resetCalls()
+        passGetData.mock.resetCalls()
+        refreshTokenGetData.mock.resetCalls()
     })
-
-    beforeEach(async function () {
     
-        // Replace used functions in dependencies
-        await td.replaceEsm('../api/mobilizon.mjs', {
+    // Replace used functions in dependencies
+    mock.module('../api/mobilizon.mjs', {
+        namedExports: {
             refreshToken
-        })        
-        await td.replaceEsm('../models/Authorization.mjs', {
+        }
+    })
+    mock.module('../models/Authorization.mjs', {
+        namedExports: {
             findById,
             refresh
-        })
-        await td.replaceEsm('../api/exceptions/ExpiredTokenError.mjs', {
-            ExpiredTokenError
-        })
-        await td.replaceEsm('../api/exceptions/RefreshTokenError.mjs', {
-            RefreshTokenError
-        })
-        await td.replaceEsm('../middlewares/exceptions/MobilizonRefreshTokenError.mjs', {
-            default: MobilizonRefreshTokenError
-        })
-        await td.replaceEsm('../middlewares/sessionWriter.mjs', {
-            updateTokenSession: () => null
-        })
-        td.when(passGetData()).thenResolve({ data: 'data' })
-        td.when(pass(domain, initialAccessToken, contentType, body)).thenThrow(new ExpiredTokenError(null, null))
-        td.when(pass(domain, newAccessToken, contentType, body)).thenReturn({ getData: passGetData })         
+        }
     })
+    mock.module('../api/exceptions/ExpiredTokenError.mjs', {
+        namedExports: {
+            ExpiredTokenError
+        }
+    })
+    mock.module('../api/exceptions/RefreshTokenError.mjs', {
+        namedExports: {
+            RefreshTokenError
+        }
+    })
+    mock.module('../middlewares/exceptions/MobilizonRefreshTokenError.mjs', {
+        defaultExport: MobilizonRefreshTokenError
+    })
+    mock.module('../middlewares/sessionWriter.mjs', {
+        namedExports: {
+            updateTokenSession: () => null
+        }
+    })
+    pass.mock.mockImplementation((domain, accessToken, contentType, body) =>
+    {    
+        if (accessToken === initialAccessToken) {
+            throw new ExpiredTokenError(null, null)
+        } else if (accessToken === newAccessToken) {
+            return { getData: passGetData }
+        }
+    })        
 
-    it("should refresh token when is no longer valid", async function () { 
+    const { refreshOnExpired } = await import('../middlewares/utils.mjs')
 
-        td.when(findById(authId)).thenResolve(initialAuthObject)    
-        td.when(refreshTokenGetData()).thenResolve({
-            accessToken: newAccessToken,
-            refreshToken: newRefreshToken
+    it("should refresh token when is no longer valid", async function ()
+    { 
+        findById.mock.mockImplementation(async (id) => {
+            if (id === authId) {
+                return initialAuthObject
+            }
         })
-        td.when(refreshToken(domain, initialRefreshToken)).thenReturn({getData: refreshTokenGetData})
-        const { refreshOnExpired } = await import('../middlewares/utils.mjs')
+        refreshTokenGetData.mock.mockImplementation(async () => {
+            return {
+                accessToken: newAccessToken,
+                refreshToken: newRefreshToken
+            }
+        })
+        refreshToken.mock.mockImplementation((domain, refreshToken) => {
+            if (domain === domain && refreshToken === initialRefreshToken) {
+                return { getData: refreshTokenGetData }
+            }
+        })
         const result = await refreshOnExpired(pass, domain, initialAccessToken, authId, res, contentType, body)
         chai.expect(result).to.be.a('object')
         chai.expect(result).to.have.property('data').equal('data')
-        td.verify(refresh(initialAuthObject, newRefreshToken, newAccessToken))
+        chai.expect(refresh.mock.calls.length).to.equal(1)
+        chai.expect(refresh.mock.calls[0].arguments[0]).to.equal(initialAuthObject)
+        chai.expect(refresh.mock.calls[0].arguments[1]).to.equal(newRefreshToken)
+        chai.expect(refresh.mock.calls[0].arguments[2]).to.equal(newAccessToken)
     })
     
     it("should use the new access token from database when there is one", async function () {
 
-        // The access token in db has changed
-        td.when(findById(authId)).thenResolve({
-            id: 1,
-            accessToken: newAccessToken
+        findById.mock.mockImplementation(async (id) => {
+            if (id === authId) {
+                return {
+                    id: 1,
+                    accessToken: newAccessToken
+                }
+            }
         })
         
-        const { refreshOnExpired } = await import('../middlewares/utils.mjs')
         const result = await refreshOnExpired(pass, domain, initialAccessToken, authId, res, contentType, body)
         chai.expect(result).to.be.a('object')
         chai.expect(result).to.have.property('data').equal('data')
-        td.verify(refreshToken(any(), any()), { times: 0 })
-        td.verify(refresh(any(), any(), any()), { times: 0 })
+        chai.expect(refreshToken.mock.calls.length).to.equal(0)
+        chai.expect(refresh.mock.calls.length).to.equal(0)
     })
 
     it('should wait for the current refresh token operation to finish instead of launching a new one', async function () {
         
-        td.when(findById(authId)).thenResolve(newAuthObject)
-        td.when(findById(authId), { times: 2 }).thenResolve(initialAuthObject)
-        td.when(refreshToken(domain, initialRefreshToken), { times: 1 }).thenThrow(new RefreshTokenError(null, null))
-        
+        findById.mock.mockImplementationOnce(async (id) => initialAuthObject, 0)
+        findById.mock.mockImplementationOnce(async (id) => initialAuthObject, 1)
+        findById.mock.mockImplementationOnce(async (id) => newAuthObject, 2)
+        refreshToken.mock.mockImplementationOnce((domain, refreshToken) => {
+            if (domain === domain && refreshToken === initialRefreshToken) {
+                throw new RefreshTokenError(null, null)
+            }
+        }, 0)
         const { refreshOnExpired } = await import('../middlewares/utils.mjs')
         const result = await refreshOnExpired(pass, domain, initialAccessToken, authId, res, contentType, body)
         chai.expect(result).to.be.a('object')
         chai.expect(result).to.have.property('data').equal('data')        
-        td.verify(refresh(any(), any(), any()), { times: 0 })
+        chai.expect(refresh.mock.calls.length).to.equal(0)
     })
 
     it('should throw a exception if no new token is found in database when the timeout is reached', async function () {
-        td.when(findById(authId)).thenResolve(initialAuthObject)
-        td.when(refreshToken(domain, initialRefreshToken), { times: 1 }).thenThrow(new RefreshTokenError(null, null))
         
-        const { refreshOnExpired } = await import('../middlewares/utils.mjs')
+        findById.mock.mockImplementation(async (id) => {
+            if (id === authId) {
+                return initialAuthObject
+            }
+        })
+
+        refreshToken.mock.mockImplementationOnce((domain, refreshToken) => {
+            if (domain === domain && refreshToken === initialRefreshToken) {
+                throw new RefreshTokenError(null, null)
+            }
+        }, 0)
+        
         let exceptionThrown = null
         try {
             await refreshOnExpired(pass, domain, initialAccessToken, authId, res, contentType, body)
@@ -125,6 +171,6 @@ describe("Test refreshOnExpired", async function () {
             exceptionThrown = exception
         }
         chai.expect(exceptionThrown).to.be.instanceOf(MobilizonRefreshTokenError)
-        td.verify(refresh(any(), any(), any()), { times: 0 })        
+        chai.expect(refresh.mock.calls.length).to.equal(0)       
     })
 })
