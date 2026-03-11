@@ -351,7 +351,7 @@ export const parseIcsEvent = async (icsEvent, automation) => {
             description: icsEvent.description || "",
             beginsOn: icsEvent.start,
             endsOn: icsEvent.end || null,
-            onlineAddress: icsEvent.url || icsEvent.uid ? `data:ics:uid:${icsEvent.uid}` : null,
+            onlineAddress: icsEvent.url || (icsEvent.uid ? `data:ics:uid:${icsEvent.uid}` : null),
             status: icsEvent.status || 'CONFIRMED',
             // organizer: icsEvent.organizer || null,
             tags: icsEvent.categories || [],
