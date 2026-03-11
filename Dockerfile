@@ -1,5 +1,5 @@
 # Use official Node.js LTS image
-FROM node:22-slim
+FROM node:24-slim
 
 # Install xvfb and chrome dependencies
 RUN apt-get update && \
