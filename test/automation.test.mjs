@@ -107,13 +107,14 @@ test('should parse and convert ics events to Mobilizon events', async () => {
     for (const icsEvent of eventList) {
         mbzEvents.push(await parseIcsEvent(icsEvent, automation));
     }
+console.log(mbzEvents[2]);
 
     assert.strictEqual(mbzEvents[0].picture.media.file, 'mockbase64');
     assert.strictEqual(new Date(mbzEvents[0].beginsOn).toISOString(), '2026-02-26T14:00:00.000Z');
     assert.strictEqual(new Date(mbzEvents[0].endsOn).toISOString(), '2026-02-26T15:00:00.000Z');
     assert.deepStrictEqual(mbzEvents[0].title, 'Permanence du CRAS Mardi et Jeudi');
     assert.deepStrictEqual(mbzEvents[0].description, "plus d'infos sur : https://toulouse.demosphere.net/rv/34469");
-    assert.deepStrictEqual(mbzEvents[0].onlineAddress, 'data:ics:uid:https://toulouse.demosphere.net/rv/34469');
+    assert.deepStrictEqual(mbzEvents[0].onlineAddress, 'https://toulouse.demosphere.net/rv/34469');
     assert.deepStrictEqual(mbzEvents[0].status, 'CONFIRMED');
     assert.deepStrictEqual(mbzEvents[0].tags, []);
     assert.deepStrictEqual(mbzEvents[0].visibility, 'UNLISTED');
@@ -126,7 +127,7 @@ test('should parse and convert ics events to Mobilizon events', async () => {
     assert.strictEqual(new Date(mbzEvents[1].endsOn).toISOString(), '2026-02-26T16:00:00.000Z');
     assert.deepStrictEqual(mbzEvents[1].title, 'Le placard brûle : permanence de la bibliothèque');
     assert.deepStrictEqual(mbzEvents[1].description, "plus d'infos sur : https://toulouse.demosphere.net/rv/34171");
-    assert.deepStrictEqual(mbzEvents[1].onlineAddress, 'data:ics:uid:https://toulouse.demosphere.net/rv/34171');
+    assert.deepStrictEqual(mbzEvents[1].onlineAddress, 'https://toulouse.demosphere.net/rv/34171');
     assert.deepStrictEqual(mbzEvents[1].status, 'CONFIRMED');
     assert.deepStrictEqual(mbzEvents[1].tags, []);
     assert.deepStrictEqual(mbzEvents[1].metadata, []);
@@ -137,7 +138,7 @@ test('should parse and convert ics events to Mobilizon events', async () => {
         // Verify logger.info called for each event
         assert(mockLogger.info.mock.calls.some(call => call.arguments[0].includes(e.uid) && call.arguments[1] === automation.id));
         // Verify scrap called for events with valid URL
-        if (e.url) {
+        if (e.url) {            
             assert(mockScrap.mock.calls.some(call => call.arguments[0] === e.url));
         }
     }
