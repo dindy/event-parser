@@ -171,7 +171,7 @@ export default {
           allowNull: false,
       },
       uid: {
-          type: Sequelize.STRING,
+          type: Sequelize.STRING(1023),
           allowNull: false,
       },
       mbzUid: {
