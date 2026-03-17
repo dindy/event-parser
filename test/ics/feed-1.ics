@@ -32,4 +32,44 @@ LOCATION:Toulouse 31000\, \nL'Impasse \n1 impasse Lapujade
 SUMMARY:Le placard brûle : permanence de la bibliothèque
 URL:https://toulouse.demosphere.net/rv/34171
 END:VEVENT
+BEGIN:VEVENT
+DTSTAMP;TZID=Europe/Paris:20260202T120134
+UID:34480@agendadulibre.org
+DTSTART;TZID=Europe/Paris:20260617T183000
+DTEND;TZID=Europe/Paris:20260617T203000
+DESCRIPTION:Discussion entre contributeurs.trices viennois.es du projet OSM
+  et acteurs intéressés.\n\n\n\nToute personne intéressée par OpenStree
+ tMap peut s'intégrer à cette rencontre\, tout particulièrement les déb
+ utant.e.s qui souhaiteraient des conseils pour se lancer.\n\n**Lieu de ré
+ union: MJC de Vienne\, 2 Rue Florentin Laurent\, 38200 Vienne - à partir
+  de 18h30**\n\n
+GEO:45.5206;4.86803
+LOCATION:MJC de Vienne\, 2 rue Florentin Laurent\, Vienne\, Auvergne-Rhône
+ -Alpes\, France
+ORGANIZER:mailto:vienne@openstreetmap.fr
+SEQUENCE:2
+SUMMARY:OpenStreetMap\, rencontre mensuelle
+URL;VALUE=URI:https://wiki.openstreetmap.org/wiki/FR:Vienne_(Isère)
+CATEGORIES:osm
+CATEGORIES:openstreetmap
+CATEGORIES:rencontre-mensuelle
+CATEGORIES:contributeurs
+CATEGORIES:données-ouvertes
+CATEGORIES:discussion
+CATEGORIES:logiciels-libres
+TEST:test
+X-ALT-DESC;FMTTYPE=text/html:<div class="description">\n<p>Discussion entre
+  contributeurs.trices viennois.es du projet OSM et acteurs intéressés.</
+ p>\n<p><img style="float: right\;" src="https://s2.qwant.com/thumbr/474x23
+ 7/7/7/fca5b608e140ed07e6089f09341b22a99f4f3d3503fbb17333026ad13450be/th.jp
+ g?u=https%3A%2F%2Ftse3.mm.bing.net%2Fth%3Fid%3DOIP.EgvZ6EJLCSRUBIbw3aLdRwH
+ aDt%26pid%3DApi&amp\;q=0&amp\;b=1&amp\;p=0&amp\;a=0" width="266" height="1
+ 33"></p>\n<p>Toute personne intéressée par OpenStreetMap peut s'intégre
+ r à cette rencontre\, tout particulièrement les débutant.e.s qui souhai
+ teraient des conseils pour se lancer.</p>\n<p><strong>Lieu de réunion<spa
+ n class="finePre">:</span> MJC de Vienne\, <span itemprop="streetAddress">
+ 2 Rue Florentin Laurent</span>\, <span itemprop="postalCode">38200</span>
+  <span itemprop="addressLocality">Vienne</span> - à partir de 18h30</str
+ ong></p>\n</div>
+END:VEVENT
 END:VCALENDAR

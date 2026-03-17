@@ -351,7 +351,6 @@ export const parseIcsEvent = async (icsEvent, automation) => {
             description: icsEvent.description || "",
             beginsOn: icsEvent.start,
             endsOn: icsEvent.end || null,
-            onlineAddress: icsEvent.url || (icsEvent.uid ? `data:ics:uid:${icsEvent.uid}` : null),
             status: icsEvent.status || 'CONFIRMED',
             // organizer: icsEvent.organizer || null,
             tags: icsEvent.categories || [],
@@ -375,6 +374,23 @@ export const parseIcsEvent = async (icsEvent, automation) => {
                 // hideOrganizerWhenGroupEvent: false,
             },
             uid: icsEvent.uid
+        }
+
+        // Try to get URL from ICS
+        const url = icsEvent.url?.val || icsEvent.url
+        if (url)
+        {
+            // Whatever the type of the URL we check that it is valid
+            if (isValidUrl(url)) {
+                mbzEvent.onlineAddress = url
+            } else {
+                await logger.warning(`Invalid URL found in event ${icsEvent.uid} : ${url}.`, automation.id)
+            }
+        }
+        
+        // If no URL try to use UID as URL
+        if (!mbzEvent.onlineAddress) {
+            mbzEvent.onlineAddress = icsEvent.uid ? `data:ics:uid:${icsEvent.uid}` : null
         }
 
         if (mbzEvent.endsOn && mbzEvent.endsOn <= mbzEvent.beginsOn) {
@@ -412,8 +428,8 @@ export const parseIcsEvent = async (icsEvent, automation) => {
             }
         }
         
-        if (icsEvent.url && isValidUrl(icsEvent.url)) {
-            return await completeIcsEventFromWeb(icsEvent.url, mbzEvent, automation)
+        if (url && isValidUrl(url)) {
+            return await completeIcsEventFromWeb(url, mbzEvent, automation)
         }
 
         return mbzEvent

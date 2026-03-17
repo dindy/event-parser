@@ -107,7 +107,6 @@ test('should parse and convert ics events to Mobilizon events', async () => {
     for (const icsEvent of eventList) {
         mbzEvents.push(await parseIcsEvent(icsEvent, automation));
     }
-console.log(mbzEvents[2]);
 
     assert.strictEqual(mbzEvents[0].picture.media.file, 'mockbase64');
     assert.strictEqual(new Date(mbzEvents[0].beginsOn).toISOString(), '2026-02-26T14:00:00.000Z');
@@ -134,12 +133,15 @@ console.log(mbzEvents[2]);
     assert.deepStrictEqual(mbzEvents[1].draft, false);
     assert.deepStrictEqual(mbzEvents[1].uid, 'https://toulouse.demosphere.net/rv/34171');
 
+    assert.deepStrictEqual(mbzEvents[2].onlineAddress, 'https://wiki.openstreetmap.org/wiki/FR:Vienne_(Isère)')
+
     for (const e of eventList) {
         // Verify logger.info called for each event
         assert(mockLogger.info.mock.calls.some(call => call.arguments[0].includes(e.uid) && call.arguments[1] === automation.id));
         // Verify scrap called for events with valid URL
-        if (e.url) {            
-            assert(mockScrap.mock.calls.some(call => call.arguments[0] === e.url));
+        if (e.url) {     
+            const url = e.url.val || e.url;
+            assert(mockScrap.mock.calls.some(call => call.arguments[0] === url));
         }
     }
 });
