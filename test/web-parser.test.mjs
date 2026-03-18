@@ -57,7 +57,32 @@ test('web parser', async () => {
             endTimestamp: null,
             description: 'Date soutenue par Liveurope, la première initiative pan-européenne pour soutenir les salles de concerts en matière de promotion d’artistes émergents.',
             place: null,
-            ticketsUrl: 'https://aeronef.fr/agenda/ditter-gunerkunier',
+            ticketsUrl: null,
+            offers: [{
+                name: "Guichet Soir",
+                url: "https://aeronef.fr/agenda/ditter-gunerkunier"
+            }, {
+                name: "Tarif guichet",
+                url: "https://aeronef.fr/agenda/ditter-gunerkunier"
+            }, {
+                name: "Tarif -18 ans ",
+                url: "https://aeronef.fr/agenda/ditter-gunerkunier"
+            }, {
+                name: "Tarif étudiant·es",
+                url: "https://aeronef.fr/agenda/ditter-gunerkunier"
+            }, {
+                name: "Tarif Pro",
+                url: "https://aeronef.fr/agenda/ditter-gunerkunier"
+            }, {
+                name: "Gratuit ABO SOIR",
+                url: "https://aeronef.fr/agenda/ditter-gunerkunier"
+            }, {
+                name: "Gratuit abonné·e",
+                url: "https://aeronef.fr/agenda/ditter-gunerkunier"
+            }, {
+                name: "Invitation",
+                url: "https://aeronef.fr/agenda/ditter-gunerkunier"
+            }],
             address: null,
             hosts: [{
                 name: "L'Aéronef",
@@ -149,6 +174,30 @@ test('web parser', async () => {
                 country: 'France'
             }
         })            
+    })
+
+    it('should parse ticket url in structured data', async () => { 
+        const url = 'https://random-event.com'
+        const htmlFilePath = './test/pages/no-platform-just-structured-data.html'
+        const page = await loadPage(url, htmlFilePath)
+        const parser = await import('../libs/parsers/web-parsers/event/default-event-parser.mjs')
+        const parsed = await parser.default.parse(page, getEventModel())
+        chai.expect(parsed.metas).to.be.deep.contains({
+            ticketsUrl: 'https://www.helloasso.com/associations/resonance-euskadi/evenements/dub-to-techno-2',
+            offers: [{
+                url: 'https://www.helloasso.com/associations/resonance-euskadi/evenements/dub-to-techno-2',
+                name: "C'est gratuit pour toi, tu as été très vif"
+            }, {
+                url: 'https://www.helloasso.com/associations/resonance-euskadi/evenements/dub-to-techno-2',
+                name: "EARLY TICKETS"
+            }, {
+                url: 'https://www.helloasso.com/associations/resonance-euskadi/evenements/dub-to-techno-2',
+                name: "REGULAR TICKETS"
+            }, {
+                url: 'https://www.helloasso.com/associations/resonance-euskadi/evenements/dub-to-techno-2',
+                name: "LAST TICKETS"
+            }]
+        })
     })
 
     it('should parse hello asso dub to techno event page', async () => {

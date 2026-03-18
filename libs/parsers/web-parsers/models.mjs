@@ -5,6 +5,7 @@ export const getEventModel = () => ({
     description: null,
     place: null,
     ticketsUrl: null,
+    offers: [],
     address: null,
     hosts: [],
     url: null,

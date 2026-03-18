@@ -1,4 +1,4 @@
-import { getFirstJsonPath } from './json-parser.mjs'
+import { getFirstJsonPath, getJsonPath } from './json-parser.mjs'
 import {
     extractImageUrl,
     extractPhysicalAddressFromAddress,
@@ -50,10 +50,18 @@ export default {
                     }
                 }
 
-                if (graph) {
+                if (graph)
+                {
+                    /** url */
                     metas.url = getFirstJsonPath("$..['url']", graph);
+                    
+                    /** description */
                     metas.description = getFirstJsonPath("$..['description']", graph);
+                    
+                    /** title */
                     metas.title = getFirstJsonPath("$..['name']", graph);
+                    
+                    /** hosts */
                     const host = getFirstJsonPath("$..['organizer']", graph);
                     const hostName = getFirstJsonPath("$..['name']", host);
                     const hostUrl = getFirstJsonPath("$..['url']", host);
@@ -63,17 +71,38 @@ export default {
                             url: hostUrl
                         }];
                     }
-                    const offers = getFirstJsonPath("$..['offers']", graph);
-                    if (offers && offers.length > 0) {
-                        const offer = offers[0];
-                        metas.ticketsUrl = getFirstJsonPath("$..['url']", offer);
-                    }
                     
+                    /** ticketsUrl and offers */
+                    const mapOffer = offer => ({
+                        url: getFirstJsonPath("$..['url']", offer),
+                        // price: getFirstJsonPath("$..['price']", offer),
+                        // priceCurrency: getFirstJsonPath("$..['priceCurrency']", offer),
+                        // availability: getFirstJsonPath("$..['availability']", offer),
+                        name: getFirstJsonPath("$..['name']", offer),
+                    })
+                    const aggregateOffers = getFirstJsonPath("$..[?(@['@type']=='AggregateOffer')]", graph);
+                    if (aggregateOffers && aggregateOffers.url) {
+                        metas.ticketsUrl = getFirstJsonPath("$..['url']", aggregateOffers)
+                        const offers = getFirstJsonPath("$..offers", aggregateOffers)
+                        if (offers && offers.length > 0) {
+                            metas.offers = offers.map(mapOffer)
+                        }
+                    } else {
+                        const offers = getJsonPath("$..[?(@['@type']=='Offer')]", graph)
+                        if (offers && offers.length > 0) {
+                            metas.offers = offers.map(mapOffer)
+                        }
+                    }
+
+                    /** startTimestamp */
                     const startDate = getFirstJsonPath("$..['startDate']", graph);
                     metas.startTimestamp = startDate ? new Date(startDate) / 1000 : null;
+                    
+                    /** endTimestamp */
                     const endDate = getFirstJsonPath("$..['endDate']", graph);
                     metas.endTimestamp = endDate ? new Date(endDate) / 1000 : null;
                     
+                    /** physicalAddress */
                     metas.physicalAddress = {}
                     const address = getFirstJsonPath("$..['address']", graph);
                     if (address) {
@@ -84,6 +113,7 @@ export default {
                         metas.physicalAddress = extractPhysicalAddressFromLocation(location)
                     }
                     
+                    /** images */
                     let foundImage = extractImageUrl(getFirstJsonPath("$..['logo']", graph))
                     if (foundImage) images = [foundImage]
                     foundImage = extractImageUrl(getFirstJsonPath("$..['image']", graph))

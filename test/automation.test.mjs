@@ -28,6 +28,7 @@ const mockAutomation = {
     })
 }
 const mockRefreshOnExpired = mock.fn(async () => null)
+const mockConvertBase64DataUrlToBase64 = mock.fn(() => ({ base64: 'mockbase64', extension: 'jpg', type: 'image/jpg' }))
 
 mock.module('node:crypto', {
     namedExports: {
@@ -77,7 +78,7 @@ mock.module('../libs/parsers/web-parsers/utils/utils.mjs', {
         isStringUrl: () => null,
         isValidUrl,
         extractAddressParts: () => null,
-        convertBase64DataUrlToBase64: () => null
+        convertBase64DataUrlToBase64: mockConvertBase64DataUrlToBase64
     }
 });
 mock.module('../libs/scrappers/page-scrapper/scrapper.mjs', {
@@ -281,3 +282,81 @@ test('saveNewOrModifiedEvent', async () => {
         )
     })
 })
+
+test('convertEventModelToMbzEvent sets all properties correctly', async () => {
+    const { convertEventModelToMbzEvent } = await import('../middlewares/automation.mjs');
+    const fakeModelEvent = {
+        metas: {
+            title: 'Test Event',
+            description: 'This is a test event.',
+            startTimestamp: 1700000000,
+            endTimestamp: 1700007200,
+            url: 'https://example.com/event',
+            physicalAddress: {
+                description: '123 Test St',
+                street: 'Test St',
+                locality: 'Testville',
+                postalCode: '12345',
+                country: 'Testland',
+                geom: '1.23;4.56'
+            },
+            ticketsUrl: 'https://example.com/tickets/global',
+            offers: [
+                {
+                    url: 'https://example.com/tickets',
+                    name: 'General Admission'
+                }, {
+                    url: 'https://example.com/tickets2',
+                    name: 'Personal Admission'
+                },
+            ],
+            hosts: [
+                { name: 'Host One', url: 'https://hostone.com' },
+                { name: 'Host Two', url: null }
+            ]
+        },
+        images: [
+            'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA' // fake base64
+        ]
+    };
+    const fakeAutomation = { id: 1 };
+    let event = await convertEventModelToMbzEvent(fakeModelEvent, fakeAutomation);
+    
+    assert.strictEqual(event.title, 'Test Event');
+    assert.ok(event.description.includes('This is a test event.'));
+    assert.ok(event.description.includes('Organisé par'));
+    assert.strictEqual(event.beginsOn, new Date(fakeModelEvent.metas.startTimestamp * 1000).toJSON());
+    assert.strictEqual(event.endsOn, new Date(fakeModelEvent.metas.endTimestamp * 1000).toJSON());
+    assert.strictEqual(event.onlineAddress, 'https://example.com/event');
+    assert.deepStrictEqual(event.physicalAddress, fakeModelEvent.metas.physicalAddress);
+    assert.strictEqual(event.metadata.length, 2);
+    assert.strictEqual(event.metadata[0].key, 'mz:ticket:external_url');
+    assert.strictEqual(event.metadata[0].value, 'https://example.com/tickets');
+    assert.strictEqual(event.metadata[0].title, 'General Admission');
+    assert.strictEqual(event.metadata[0].type, 'STRING');
+    assert.strictEqual(event.metadata[1].key, 'mz:ticket:external_url');
+    assert.strictEqual(event.metadata[1].value, 'https://example.com/tickets2');
+    assert.strictEqual(event.metadata[1].title, 'Personal Admission');
+    assert.strictEqual(event.metadata[1].type, 'STRING');    
+    assert.strictEqual(event.draft, false);
+    assert.strictEqual(event.uid, 'https://example.com/event');
+    assert.deepStrictEqual(event.options, {
+        showRemainingAttendeeCapacity: false,
+        hideNumberOfParticipants: true
+    });
+    assert.ok(event.picture);
+    assert.deepStrictEqual(event.picture.media, {
+      name: 'event_banner.jpg',
+      alt: 'Event banner',
+      file: 'mockbase64'
+    })        
+    assert.strictEqual(event.picture.media.alt, 'Event banner');
+
+    fakeModelEvent.metas.offers = [];
+    event = await convertEventModelToMbzEvent(fakeModelEvent, fakeAutomation);   
+    assert.strictEqual(event.metadata.length, 1)
+    assert.strictEqual(event.metadata[0].key, 'mz:ticket:external_url');
+    assert.strictEqual(event.metadata[0].value, 'https://example.com/tickets/global');
+    assert.strictEqual(event.metadata[0].title, undefined);
+    assert.strictEqual(event.metadata[0].type, 'STRING');    
+});

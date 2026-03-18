@@ -79,7 +79,7 @@ export const createAutomation = async (req, res, next) => {
     res.json(automation)
 }
 
-const convertEventModelToMbzEvent = async (modelEvent, automation) =>
+export const convertEventModelToMbzEvent = async (modelEvent, automation) =>
 {   
     try {
 
@@ -91,7 +91,7 @@ const convertEventModelToMbzEvent = async (modelEvent, automation) =>
                 "",
             beginsOn: (new Date(modelEvent.metas.startTimestamp * 1000)).toJSON(),
             endsOn: modelEvent.metas.endTimestamp ?
-                (new Date(modelEvent.metas.startTimestamp * 1000)).toJSON() :
+                (new Date(modelEvent.metas.endTimestamp * 1000)).toJSON() :
                 null,
             onlineAddress: modelEvent.metas.url,
             /** @TODO : Implement status */
@@ -114,7 +114,19 @@ const convertEventModelToMbzEvent = async (modelEvent, automation) =>
             // hideOrganizerWhenGroupEvent: false,
         }
 
-        if (modelEvent.metas.ticketsUrl) {
+        // Offers have priority over ticketsUrl as they are more precise 
+        // and can contain several offers with different URLs, 
+        // while ticketsUrl is global for the event
+        if (modelEvent.metas.offers.length > 0) {
+            modelEvent.metas.offers.forEach((offer, index) => {
+                mbzEvent.metadata.push({
+                    key: 'mz:ticket:external_url',
+                    value: offer.url,
+                    title: offer.name || null,
+                    type: 'STRING'
+                })
+            })
+        } else if (modelEvent.metas.ticketsUrl) {
             mbzEvent.metadata = [{
                 key: 'mz:ticket:external_url',
                 type: 'STRING',
@@ -316,6 +328,8 @@ const mergeIcsEventAndWebEvent = (icsEvent, webEvent) =>
         }
         
         mergedEvent.ticketsUrl = webEvent.ticketsUrl
+
+        mergedEvent.metadata = webEvent.metadata
     }
 
     return mergedEvent
