@@ -5,8 +5,8 @@
   "type": "module",
   "main": "app.mjs",
   "scripts": {
-    "dev": "DEBUG='puppeteer-cluster:*' NODE_ENV=dev xvfb-run --server-args=\"-screen 0 1280x800x24\" --auto-servernum node server.mjs",
-    "watch": "DEBUG='puppeteer-cluster:*' NODE_ENV=dev xvfb-run --server-args=\"-screen 0 1280x800x24\" --auto-servernum nodemon server.mjs",
+    "dev": "export $(cat .env.dev | xargs) && DEBUG='puppeteer-cluster:*' NODE_ENV=dev xvfb-run --server-args=\"-screen 0 1280x800x24\" --auto-servernum node server.mjs",
+    "watch": "export $(cat .env.dev | xargs) && DEBUG='puppeteer-cluster:*' NODE_ENV=dev xvfb-run --server-args=\"-screen 0 1280x800x24\" --auto-servernum nodemon server.mjs",
     "test": "export $(cat .env.test | xargs) && NODE_ENV=test node --test --test-force-exit --experimental-test-module-mocks --test-concurrency=1"
   },
   "author": "",
