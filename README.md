@@ -120,6 +120,9 @@ An instance of phpMyAdmin is also available on port 8081 by default.
 * Implement log level configuration
 * Load all fb events by scrolling page to bottom ?
 * Implement event status (see [EventStatusType](https://schema.org/EventStatusType))
+* Implement event status in iCal events
 * Implement online event (see [EventAttendanceModeEnumeration](https://schema.org/EventAttendanceModeEnumeration))
 * Implement array of images in ld+json scripts
 * Set number of puppeteer instances running simultaneously configurable
+* What to do with imported events but deleted from Mobilizon server ?
+* Don't update old ics events 
