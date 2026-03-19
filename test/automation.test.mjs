@@ -1,9 +1,13 @@
 import ical from 'node-ical';
-import path from 'path';
+import path, { parse } from 'path';
 import { test, mock, afterEach, it } from 'node:test'
 import assert from 'assert'
 import { BadRequestError } from '../api/exceptions/BadRequestError.mjs'
 import { isValidUrl } from '../libs/parsers/web-parsers/utils/utils.mjs';
+import { url } from 'inspector';
+import { stat } from 'fs';
+import { type } from 'os';
+import { start } from 'repl';
 
 const mockLogger = {
     info: mock.fn(async () => {}),
@@ -29,6 +33,7 @@ const mockAutomation = {
 }
 const mockRefreshOnExpired = mock.fn(async () => null)
 const mockConvertBase64DataUrlToBase64 = mock.fn(() => ({ base64: 'mockbase64', extension: 'jpg', type: 'image/jpg' }))
+const mockScrapIcs = mock.fn(async () => null)
 
 mock.module('node:crypto', {
     namedExports: {
@@ -81,6 +86,11 @@ mock.module('../libs/parsers/web-parsers/utils/utils.mjs', {
         convertBase64DataUrlToBase64: mockConvertBase64DataUrlToBase64
     }
 });
+mock.module('../libs/scrappers/ics-scrapper/scrapper.mjs', {
+    namedExports: {
+        scrap: mockScrapIcs
+    }
+})
 mock.module('../libs/scrappers/page-scrapper/scrapper.mjs', {
     namedExports: {
         scrap: mockScrap
@@ -360,3 +370,39 @@ test('convertEventModelToMbzEvent sets all properties correctly', async () => {
     assert.strictEqual(event.metadata[0].title, undefined);
     assert.strictEqual(event.metadata[0].type, 'STRING');    
 });
+
+test('executeIcsAutomation', async () => {
+    const { executeIcsAutomation } = await import('../middlewares/automation.mjs')
+    const event1 = {
+        type: 'VEVENT',
+        summary: 'summary',
+        description: 'description',
+        start: new Date('2326-02-26T14:00:00.000Z'),
+        end: new Date('2326-02-26T15:00:00.000Z'),
+        url: null,
+        uid: 'event-uid',
+        status: 'CONFIRMED',
+        categories: ['category1', 'category2'],
+        location: 'location',
+        geo: { lat: 1.23, lon: 4.56 },
+        datetype: 'date-time',
+        class: 'PUBLIC',
+        image: 'https://example.com/image.jpg',
+    }
+    const event2 = { ...event1, uid: 'event-uid-2', type: 'OTHERVALUE' }
+    const event3 = { ...event1, uid: 'event-uid-3', start: new Date('2024-02-26T14:00:00.000Z') }
+    mockScrapIcs.mock.mockImplementationOnce(async () => ([event1, event2, event3]))
+    mockRefreshOnExpired.mock.mockImplementation(async () => ({ uuid: 'uuid', id: 42 }))
+    const automation = {
+        id: 'test-automation',
+        url: 'https://example.com/calendar.ics',
+        getAuthorization: async () => ({ getApplication: async () => ({}) }),
+    }
+
+    const results = await executeIcsAutomation(automation);
+    console.log(results);
+    
+    assert.strictEqual(results.length, 3)
+    assert.strictEqual(results[1].value, null)    
+    assert.strictEqual(results[2].value, null)    
+})

@@ -454,7 +454,7 @@ export const parseIcsEvent = async (icsEvent, automation) => {
     }
 }
 
-const executeIcsAutomation = async automation =>
+export const executeIcsAutomation = async automation =>
 {
     let events = []
     
@@ -468,7 +468,12 @@ const executeIcsAutomation = async automation =>
     
     const promises = Object.entries(events).map(
         ([_, event]) => parseIcsEvent(event, automation)
-            .then(event => event ? saveNewOrModifiedEvent(event, automation) : null)
+            .then(event => {
+                // Only future events
+                return event && event.beginsOn.getTime() >= (new Date()).getTime()
+                    ? saveNewOrModifiedEvent(event, automation)
+                    : null
+            })
     )
     
     return Promise.allSettled(promises)
