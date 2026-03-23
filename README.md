@@ -86,6 +86,8 @@ Secret password must be set in `.env` file.
 
 ## Docker
 
+### Docker compose
+
 1. Create a directory to define environment variables and store database.
 ```
 mkdir your_project_directory
@@ -112,6 +114,13 @@ You app is listening on port 3001 by default. Three new directories have been cr
 
 An instance of phpMyAdmin is also available on port 8081 by default.
 
+### Build image
+
+```shell
+docker build -t dindy88/mobilizon-importer-backend .
+docker push dindy88/mobilizon-importer-backend
+```
+
 # @TODO
 
 * Parse `<meta name="geo.region" content="ch-be">`. [See here](https://www.bibliobiel.ch/de/aktuelles/)
@@ -126,3 +135,4 @@ An instance of phpMyAdmin is also available on port 8081 by default.
 * Set number of puppeteer instances running simultaneously configurable
 * What to do with imported events but deleted from Mobilizon server ?
 * Don't update old ics events 
+* Handle automation execution separatly for each automation (display next execution timer) 
