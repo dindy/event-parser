@@ -470,7 +470,7 @@ export const executeIcsAutomation = async automation =>
         ([_, event]) => parseIcsEvent(event, automation)
             .then(event => {
                 // Only future events
-                return event && event.beginsOn.getTime() >= (new Date()).getTime()
+                return event && event.endsOn.getTime() >= (new Date()).getTime()
                     ? saveNewOrModifiedEvent(event, automation)
                     : null
             })

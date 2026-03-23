@@ -390,7 +390,7 @@ test('executeIcsAutomation', async () => {
         image: 'https://example.com/image.jpg',
     }
     const event2 = { ...event1, uid: 'event-uid-2', type: 'OTHERVALUE' }
-    const event3 = { ...event1, uid: 'event-uid-3', start: new Date('2024-02-26T14:00:00.000Z') }
+    const event3 = { ...event1, uid: 'event-uid-3', start: new Date('2024-02-26T14:00:00.000Z'), end: new Date('2024-02-26T15:00:00.000Z') }
     mockScrapIcs.mock.mockImplementationOnce(async () => ([event1, event2, event3]))
     mockRefreshOnExpired.mock.mockImplementation(async () => ({ uuid: 'uuid', id: 42 }))
     const automation = {
@@ -400,7 +400,6 @@ test('executeIcsAutomation', async () => {
     }
 
     const results = await executeIcsAutomation(automation);
-    console.log(results);
     
     assert.strictEqual(results.length, 3)
     assert.strictEqual(results[1].value, null)    
