@@ -12,8 +12,8 @@ Supported platforms and formats :
 * [HelloAsso](https://www.helloasso.com/)
 * [Dice](https://dice.fm/)
 * [Shotgun](https://shotgun.live/)
+* [Eventbrite](https://www.eventbrite.com/)
 * [Common meta data](https://metascraper.js.org/)
-* [Eventbrite](https://www.eventbrite.com/) (partial)
 
 N.B: Designed for french date format (PR welcome).
 
@@ -121,11 +121,10 @@ docker build -t dindy88/mobilizon-importer-backend .
 docker push dindy88/mobilizon-importer-backend
 ```
 
-# @TODO
+# TO DO list
 
-* Parse `<meta name="geo.region" content="ch-be">`. [See here](https://www.bibliobiel.ch/de/aktuelles/)
-* Parse `<meta name="geo.placename" content="Dufourstrasse 26, 2500 Biel/Bienne">`. [See here](https://www.bibliobiel.ch/de/aktuelles/)
-* Limit automation logs returned by the API
+* Parse meta `geo.region`. E.G: `<meta name="geo.region" content="ch-be">`. [See here](https://www.bibliobiel.ch/de/aktuelles/)
+* Parse meta `geo.placename`. E.G: `<meta name="geo.placename" content="Dufourstrasse 26, 2500 Biel/Bienne">`. [See here](https://www.bibliobiel.ch/de/aktuelles/)
 * Implement log level configuration
 * Load all fb events by scrolling page to bottom ?
 * Implement event status (see [EventStatusType](https://schema.org/EventStatusType))
@@ -134,5 +133,6 @@ docker push dindy88/mobilizon-importer-backend
 * Implement array of images in ld+json scripts
 * Set number of puppeteer instances running simultaneously configurable
 * What to do with imported events but deleted from Mobilizon server ?
-* Don't update old ics events 
-* Handle automation execution separatly for each automation (display next execution timer) 
+* Handle automation execution separatly for each automation (display next execution timer)
+* Share out automation events fetching to prevent ban 
+* Use Linked Data as core event model with Schema.org vocabulary
