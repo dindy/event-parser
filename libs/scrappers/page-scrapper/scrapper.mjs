@@ -60,8 +60,8 @@ const logScraping = async (page, scraped) =>
         toDebug[key].push(img.substring(0, 100) + '...')
       }
     }
-    const debugPageFullPath = await debugPage(page)
-    log.Debug(`Scrapping done : ${debugPageFullPath} : ${JSON.stringify(toDebug)}`)
+    // const debugPageFullPath = await debugPage(page)
+    log.Debug(`Scrapping done : ${JSON.stringify(toDebug)}`)
   } catch (error) {
     console.log('Error while logging ', error);
   }
