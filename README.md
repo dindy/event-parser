@@ -13,6 +13,7 @@ Supported platforms and formats :
 * [Dice](https://dice.fm/)
 * [Shotgun](https://shotgun.live/)
 * [Eventbrite](https://www.eventbrite.com/)
+* [Meetup](https://www.meetup.com/)
 * [Common meta data](https://metascraper.js.org/)
 
 N.B: Designed for french date format (PR welcome).
