@@ -130,9 +130,10 @@ docker push dindy88/mobilizon-importer-backend
 * Implement event status (see [EventStatusType](https://schema.org/EventStatusType))
 * Implement event status in iCal events
 * Implement online event (see [EventAttendanceModeEnumeration](https://schema.org/EventAttendanceModeEnumeration))
-* Implement array of images in ld+json scripts
 * Set number of puppeteer instances running simultaneously configurable
 * What to do with imported events but deleted from Mobilizon server ?
 * Handle automation execution separatly for each automation (display next execution timer)
 * Share out automation events fetching to prevent ban 
 * Use Linked Data as core event model with Schema.org vocabulary
+* Delete all debug files
+* Use available X-ALT-DESC;FMTTYPE=text/html instead of DESCRIPTION

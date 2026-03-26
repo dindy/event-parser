@@ -106,18 +106,27 @@ export default {
                     metas.physicalAddress = {}
                     const address = getFirstJsonPath("$..['address']", graph);
                     if (address) {
-                        metas.physicalAddress = extractPhysicalAddressFromAddress(address)
+                        const extractedPhysicalAddress = extractPhysicalAddressFromAddress(address)
+                        if (extractedPhysicalAddress) {
+                            metas.physicalAddress = extractedPhysicalAddress
+                        }
                     }
                     const location = getFirstJsonPath("$..['location']", graph);
                     if (location) {
-                        metas.physicalAddress = extractPhysicalAddressFromLocation(location)
+                        const extractedPhysicalAddress = extractPhysicalAddressFromLocation(location)
+                        if (extractedPhysicalAddress) {
+                            metas.physicalAddress = {
+                                ...metas.physicalAddress,
+                                ...extractedPhysicalAddress
+                            }
+                        }
                     }
                     
                     /** images */
                     let foundImage = extractImageUrl(getFirstJsonPath("$..['logo']", graph))
-                    if (foundImage) images = [foundImage]
+                    if (foundImage) images = Array.isArray(foundImage) ? foundImage : [foundImage]
                     foundImage = extractImageUrl(getFirstJsonPath("$..['image']", graph))
-                    if (foundImage) images = [foundImage]
+                    if (foundImage) images = Array.isArray(foundImage) ? foundImage : [foundImage]
                 }
             } catch (e) {
                 console.log('Erreur parsing JSON : ', e)

@@ -1,0 +1,143 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:icalendar-ruby
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VTIMEZONE
+TZID:Europe/Paris
+BEGIN:DAYLIGHT
+DTSTART:20260329T030000
+TZOFFSETFROM:+0100
+TZOFFSETTO:+0200
+RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=3
+TZNAME:CEST
+END:DAYLIGHT
+BEGIN:STANDARD
+DTSTART:20251026T020000
+TZOFFSETFROM:+0200
+TZOFFSETTO:+0100
+RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=10
+TZNAME:CET
+END:STANDARD
+END:VTIMEZONE
+BEGIN:VTIMEZONE
+TZID:Europe/Zurich
+BEGIN:DAYLIGHT
+DTSTART:20260329T030000
+TZOFFSETFROM:+0100
+TZOFFSETTO:+0200
+RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=3
+TZNAME:CEST
+END:DAYLIGHT
+BEGIN:STANDARD
+DTSTART:20251026T020000
+TZOFFSETFROM:+0200
+TZOFFSETTO:+0100
+RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=10
+TZNAME:CET
+END:STANDARD
+END:VTIMEZONE
+BEGIN:VEVENT
+DTSTAMP;TZID=Europe/Paris:20260308T125011
+UID:34769@agendadulibre.org
+DTSTART;TZID=Europe/Paris:20260320T140000
+DTEND;TZID=Europe/Paris:20260322T200000
+DESCRIPTION:**[Rencontres Amicales Francophones du Logiciel Libre (RAFLL202
+ 6)](/events/)**\n\n**Vendredi 20 au dimanche 22 mars 2025 de 14h00 à 20h0
+ 0\nEPF Montpellier H03 et Hall - 21\, boulevard Berthelot\, 34000 Montpell
+ ier**\nTransmettre\, Fédérer\, Inspirer\, Créer.\nUn événement annuel
+ \, international\, hybride et innovant. Pourquoi participer ? L’événem
+ ent s'adresse à tout public: Simples curieux\, amateurs de logiciels libr
+ es\, étudiants\, geeks\, experts\, entrepreneurs\, institutionnels\, pers
+ onnes engagées qui souhaitent avoir un éclairage sur un numérique libre
+ : éthique\, inclusif\, durable\, responsable\, solidaire\, sobre. Un acce
+ nt particulier est porté sur la participation de la jeunesse. Il permet\,
+  auprès de tous\, comme l’appelle de ses vœux le CNLL\, de participer 
+ à « favoriser une meilleure compréhension des enjeux du numérique ouve
+ rt et des dynamiques technologiques et économiques complexes qui caracté
+ risent l’écosystème du logiciel libre ». Village associatif\, entrepr
+ eneurial et radio\n[Visio][1] \\| [Proposer une conférence][2] \\| [P
+ roposer un stand][3] \\| [Photos][4] \\| [GPS][5] 43.60023/3.87136\n\n
+ \n\n\n\n[1]: https://visio.rafll.org/rooms/sll-hts-cfa-dh3/join\n[2]: http
+ s://framaforms.org/rafll2026-appel-a-conference-1758106034\n[3]: https://f
+ ramaforms.org/rafll2026-proposer-un-stand-1771445636\n[4]: https://montpel
+ libre.fr/galerie/index.php?/category/8\n[5]: https://www.openstreetmap.org
+ /?mlat=43.60023&amp\;mlon=3.87136#map=19/43.60023/3.87136\n
+GEO:43.6002;3.87136
+LOCATION:EPF École d'Ingénieurs\, 21 boulevard Berthelot\, Montpellier\, 
+ Occitanie\, France
+ORGANIZER:mailto:contact@montpellibre.fr
+SEQUENCE:4
+SUMMARY:Rencontres Amicales Francophones du Logiciel Libre (RAFLL2026)
+URL;VALUE=URI:https://montpellibre.fr
+CATEGORIES:montpel-libre
+CATEGORIES:logiciels-libres
+CATEGORIES:rafll
+CATEGORIES:rencontres
+CATEGORIES:amicales
+CATEGORIES:francophones
+X-ALT-DESC;FMTTYPE=text/html:<h3><a href="/events/"><img style="float: righ
+ t\;" src="https://montpellibre.fr/images/RAFLL2025_Papillon_Carre500.png" 
+ alt="Rencontres Amicales Francophones du Logiciel Libre (#RAFLL2025)" widt
+ h="200" height="200">Rencontres Amicales Francophones du Logiciel Libre (R
+ AFLL2026)</a></h3>\n<p style="text-align: justify\;"><strong>Vendredi 20 a
+ u dimanche 22 mars 2025 de 14h00 à 20h00<br>EPF Montpellier H03 et Hall -
+  21\, boulevard Berthelot\, 34000 Montpellier</strong><br>Transmettre\, F
+ édérer\, Inspirer\, Créer.<br>Un événement annuel\, international\, h
+ ybride et innovant. Pourquoi participer ? L’événement s'adresse à tou
+ t public : Simples curieux\, amateurs de logiciels libres\, étudiants\, g
+ eeks\, experts\, entrepreneurs\, institutionnels\, personnes engagées qui
+  souhaitent avoir un éclairage sur un numérique libre : éthique\, inclu
+ sif\, durable\, responsable\, solidaire\, sobre. Un accent particulier est
+  porté sur la participation de la jeunesse. Il permet\, auprès de tous\,
+  comme l’appelle de ses vœux le CNLL\, de participer à « favoriser un
+ e meilleure compréhension des enjeux du numérique ouvert et des dynamiqu
+ es technologiques et économiques complexes qui caractérisent l’écosys
+ tème du logiciel libre ». Village associatif\, entrepreneurial et radio<
+ br><a href="https://visio.rafll.org/rooms/sll-hts-cfa-dh3/join" target="_b
+ lank" rel="noopener">Visio</a> | <a href="https://framaforms.org/rafll20
+ 26-appel-a-conference-1758106034">Proposer une conférence</a> | <a href
+ ="https://framaforms.org/rafll2026-proposer-un-stand-1771445636" target="_
+ blank" rel="noopener">Proposer un stand</a> | <a href="https://montpelli
+ bre.fr/galerie/index.php?/category/8" target="_blank" rel="noopener">Photo
+ s</a> | <a href="https://www.openstreetmap.org/?mlat=43.60023&amp\;mlon=
+ 3.87136#map=19/43.60023/3.87136">GPS</a> 43.60023/3.87136</p>\n<p style="t
+ ext-align: justify\;"> </p>
+END:VEVENT
+BEGIN:VEVENT
+DTSTAMP;TZID=Europe/Paris:20251209T060137
+UID:34060@agendadulibre.org
+DTSTART;TZID=Europe/Paris:20260323T190000
+DTEND;TZID=Europe/Paris:20260323T220000
+DESCRIPTION:Tous les **lundis soir** **de 19h à 22h** (hors jours fériés
+ ) à la Bricoleuse.\n\nRencontrer les bénévoles\, poser des questions su
+ r le libre ou l'informatique\, les logiciels\, l'hébergement\, passer de 
+ Windows à Linux.\n\nPour passer votre ordinateur sous linux\, nous vous i
+ nvitons à nous prévenir avant votre passage: contact@alolise.org.\n\n
+GEO:45.4362;4.38622
+LOCATION:La Bricoleuse\, 27 rue de la Ville\, Saint-Étienne\, Auvergne-Rh
+ ône-Alpes\, France
+ORGANIZER:mailto:contact@alolise.org
+SEQUENCE:1
+SUMMARY:Permanence de l'association Alolise
+URL;VALUE=URI:https://alolise.org
+CATEGORIES:install-party
+CATEGORIES:aide
+CATEGORIES:logiciel-libre
+CATEGORIES:entraide
+CATEGORIES:alolise
+CATEGORIES:permanence
+CATEGORIES:linux
+CATEGORIES:gnu-linux
+X-ALT-DESC;FMTTYPE=text/html:<div class="ccm-custom-style-container ccm-cus
+ tom-style-main58-2834">\n<p><img class="ccm-svg ccm-image-block img-respon
+ sive bID-2814" style="float: right\;" src="https://alolise.org/application
+ /files/4815/2587/2156/tux.svg" alt="" width="124" height="167">Tous les <s
+ trong>lundis soir</strong> <strong>de 19h à 22h</strong> (hors jours fér
+ iés) à la Bricoleuse.</p>\n</div>\n<p>Rencontrer les bénévoles\, poser
+  des questions sur le libre ou l'informatique\, les logiciels\, l'héberge
+ ment\, passer de Windows à Linux.<br><br>Pour passer votre ordinateur sou
+ s linux\, nous vous invitons à nous prévenir avant votre passage : conta
+ ct@alolise.org.</p>
+END:VEVENT
+END:VCALENDAR

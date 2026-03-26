@@ -5,6 +5,15 @@ export const extractImageUrl = value => {
     
     if (!value) return null
 
+    if (Array.isArray(value)) {
+        let images = []
+        for (const v of value) {
+            const imageUrl = extractImageUrl(v)
+            if (imageUrl) images.push(imageUrl)
+        }
+        return images.length > 0 ? images : null
+    }
+
     if (isString(value)) return isValidUrl(value) ? value : null 
     
     if (value['url']) return isValidUrl(value['url']) ? value['url'] : null
@@ -17,6 +26,14 @@ export const extractImageUrl = value => {
 export const extractPhysicalAddressFromLocation = value => {
 
     if (!value) return null
+
+    if (Array.isArray(value)) {
+        for (const v of value) {
+            const physicalAddress = extractPhysicalAddressFromLocation(v)
+            if (physicalAddress) return physicalAddress
+        }
+        return null
+    }
 
     if (value['@type']) {
         

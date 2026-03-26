@@ -33,18 +33,22 @@ const parse = async (page, metas) => {
     if (parsedJsonLd.description) {
         metas.description = parsedJsonLd.description
     }    
-    if (parsedJsonLd.image) {        
-        const parsedImage = await convertUrlToBase64DataUrl(parsedJsonLd.image);
-        if (parsedImage) {
-            metas.banners.push(parsedImage);
-        }                
+    if (parsedJsonLd.images && parsedJsonLd.images.length > 0) {        
+        for (const image of parsedJsonLd.images) {
+            const parsedImage = await convertUrlToBase64DataUrl(image);
+            if (parsedImage) {
+                metas.banners.push(parsedImage);
+            }
+        }
     }        
-    if (parsedJsonLd.logo) {        
-        const parsedImage = await convertUrlToBase64DataUrl(parsedJsonLd.logo);
-        if (parsedImage) {
-            metas.logos.push(parsedImage);
-        }                
-    }        
+    if (parsedJsonLd.logos && parsedJsonLd.logos.length > 0) {        
+        for (const logo of parsedJsonLd.logos) {
+            const parsedImage = await convertUrlToBase64DataUrl(logo);
+            if (parsedImage) {
+                metas.logos.push(parsedImage);
+            }
+        }
+    }
 
     return metas;
 }

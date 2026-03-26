@@ -2,7 +2,7 @@ import * as chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import puppeteer from 'puppeteer'
 import { promises as fs } from "fs"
-import { getEventModel } from '../libs/parsers/web-parsers/models.mjs'
+import { getEventModel, getGroupModel } from '../libs/parsers/web-parsers/models.mjs'
 import path from 'path'
 import { test, mock, after, it } from 'node:test'
 import * as utils from '../libs/parsers/web-parsers/utils/utils.mjs'
@@ -10,7 +10,7 @@ import * as utils from '../libs/parsers/web-parsers/utils/utils.mjs'
 chai.use(chaiAsPromised)
 
 const browser = await puppeteer.launch()
-const mockConvertUrlToBase64DataUrl = mock.fn(async () => {})
+const mockConvertUrlToBase64DataUrl = mock.fn(async () => ({empty: true}))
 
 mock.module('../libs/parsers/web-parsers/utils/utils.mjs', {
     namedExports: {
@@ -37,18 +37,43 @@ const loadPage = async (url, file) => {
     return page
 }
 
-test('web parser', async () => {
+test('group web parser', async () => {
+
+    const parser = await import('../libs/parsers/web-parsers/group/default-group-parser.mjs')
+
+    it('should parse hello asso group page', async () => {
+        const url = 'https://www.helloasso.com/associations/resonance-euskadi'
+        const htmlFilePath = './test/group-pages/helloasso-resonance-euskadi.html'
+        const page = await loadPage(url, htmlFilePath)
+        const parsed = await parser.default.parse(page, getGroupModel())
+        chai.expect(mockConvertUrlToBase64DataUrl.mock.calls.some(call => call.arguments[0] === 'https://cdn.helloasso.com/img/photos/croppedimage-71fec38435c748658b4dfacb365480b8.png')).to.be.true
+        chai.expect(mockConvertUrlToBase64DataUrl.mock.calls.some(call => call.arguments[0] === 'https://cdn.helloasso.com/img/photos/croppedimage-other.png')).to.be.true
+        chai.expect(parsed).to.be.deep.contains({
+            name: 'Resonance Euskadi',
+            physicalAddress: {
+                locality: 'Saint-Jean-de-Luz',
+                country: 'FR',
+                postalCode: '64500',
+                street: null
+            }
+        })
+        chai.expect(parsed.logos).to.be.an('array').that.is.not.empty.and.to.have.lengthOf(2)
+    })
+})
+
+test('event web parser', async () => {
     
     after(async () => {
         await browser.close()
     })
 
+    const parser = await import('../libs/parsers/web-parsers/event/default-event-parser.mjs')
+
     it('should parse stereolab event page', async () => {
 
         const url = 'https://aeronef.fr/agenda/ditter-gunerkunier'
-        const htmlFilePath = './test/pages/stereolab-ditter-gunerkunier.html'
+        const htmlFilePath = './test/event-pages/stereolab-ditter-gunerkunier.html'
         const page = await loadPage(url, htmlFilePath)
-        const parser = await import('../libs/parsers/web-parsers/event/default-event-parser.mjs')
         const parsed = await parser.default.parse(page, getEventModel())
         chai.expect(mockConvertUrlToBase64DataUrl.mock.calls.some(call => call.arguments[0] === 'https://aeronef.fr/sites/aeronef/files/styles/16x9_1920/public/2025-12/visuel_site.png?h=fbf7a813&itok=fiGsAHLC')).to.be.true
         chai.expect(parsed.metas).to.be.deep.contains({
@@ -102,9 +127,8 @@ test('web parser', async () => {
 
     it('should parse eventbrite event page', async () => {
         const url = 'https://www.eventbrite.fr/e/billets-grande-vente-de-plantes-st-germain-en-laye-1981575849709'
-        const htmlFilePath = './test/pages/eventbrite-plantes.html'
+        const htmlFilePath = './test/event-pages/eventbrite-plantes.html'
         const page = await loadPage(url, htmlFilePath)
-        const parser = await import('../libs/parsers/web-parsers/event/default-event-parser.mjs')
         const parsed = await parser.default.parse(page, getEventModel())
 
         chai.expect(mockConvertUrlToBase64DataUrl.mock.calls.some(call => call.arguments[0] === 'https://www.eventbrite.fr/e/_next/image?url=https%3A%2F%2Fimg.evbuc.com%2Fhttps%253A%252F%252Fcdn.evbuc.com%252Fimages%252F1175834380%252F446654944658%252F1%252Foriginal.20260126-134328%3Fcrop%3Dfocalpoint%26fit%3Dcrop%26w%3D480%26auto%3Dformat%252Ccompress%26q%3D75%26sharp%3D10%26fp-x%3D0.5%26fp-y%3D0.5%26s%3D02e9a642e09e5954fb6fb51dbabbd71a&w=940&q=75')).to.be.true
@@ -134,7 +158,7 @@ test('web parser', async () => {
 
     it('should parse facebook garorock event page', async () => {
         const url = 'https://www.facebook.com/events/plaine-de-la-filhole-47200-marmande-france/garorock-2026-30-%C3%A8me-%C3%A9dition/1156265816461916/'
-        const htmlFilePath = './test/pages/facebook-garorock.html'
+        const htmlFilePath = './test/event-pages/facebook-garorock.html'
         const page = await loadPage(url, htmlFilePath)
         const parser = await import('../libs/parsers/web-parsers/event/facebook-event-parser.mjs')
         const parsed = await parser.default.parse(page, getEventModel())         
@@ -176,11 +200,35 @@ test('web parser', async () => {
         })            
     })
 
+    it('should return an empty physical address when none is found (and not null)', async () => {
+        const url = 'https://www.meetup.com/it-it/pydata-venice/events/312820080/'
+        const htmlFilePath = './test/event-pages/unknown-location-type.html'
+        const page = await loadPage(url, htmlFilePath)
+        const parsed = await parser.default.parse(page, getEventModel())        
+        chai.expect(parsed.metas.physicalAddress).to.not.eq(null)
+    }) 
+
+    it('should parse meetup pydata event page', async () => {
+        const url = 'https://www.meetup.com/it-it/pydata-venice/events/312820080/'
+        const htmlFilePath = './test/event-pages/meetup-pydata.html'
+        const page = await loadPage(url, htmlFilePath)
+        const parsed = await parser.default.parse(page, getEventModel())                
+        chai.expect(parsed.metas.physicalAddress).to.be.deep.contains({
+            locality: 'Venice',
+            country: 'it',
+            street: 'Via Ortigara, 10, 30171 Mestre VE, Venice, VE',
+            description: 'Anda Venice Hostel'
+        })
+        chai.expect(mockConvertUrlToBase64DataUrl.mock.calls.some(call => call.arguments[0] === "https://secure-content.meetupstatic.com/images/classic-events/533321988/676x676.jpg")).to.be.true
+        chai.expect(mockConvertUrlToBase64DataUrl.mock.calls.some(call => call.arguments[0] === "https://secure-content.meetupstatic.com/images/classic-events/533321988/676x507.jpg")).to.be.true
+        chai.expect(mockConvertUrlToBase64DataUrl.mock.calls.some(call => call.arguments[0] === "https://secure-content.meetupstatic.com/images/classic-events/533321988/676x380.jpg")).to.be.true
+        chai.expect(parsed.images).to.be.an('array').that.is.not.empty.and.to.have.lengthOf(3)
+    })
+
     it('should parse ticket url in structured data', async () => { 
         const url = 'https://random-event.com'
-        const htmlFilePath = './test/pages/no-platform-just-structured-data.html'
+        const htmlFilePath = './test/event-pages/no-platform-just-structured-data.html'
         const page = await loadPage(url, htmlFilePath)
-        const parser = await import('../libs/parsers/web-parsers/event/default-event-parser.mjs')
         const parsed = await parser.default.parse(page, getEventModel())
         chai.expect(parsed.metas).to.be.deep.contains({
             ticketsUrl: 'https://www.helloasso.com/associations/resonance-euskadi/evenements/dub-to-techno-2',
@@ -202,7 +250,7 @@ test('web parser', async () => {
 
     it('should parse hello asso dub to techno event page', async () => {
         const url = 'https://www.helloasso.com/associations/resonance-euskadi/evenements/dub-to-techno-2?utm_source=ig&utm_medium=social&utm_content=link_in_bio'
-        const htmlFilePath = './test/pages/helloasso-dubtotechno.html'
+        const htmlFilePath = './test/event-pages/helloasso-dubtotechno.html'
         const page = await loadPage(url, htmlFilePath)
         const parser = await import('../libs/parsers/web-parsers/event/helloasso-event-parser.mjs')
         const parsed = await parser.default.parse(page, getEventModel())

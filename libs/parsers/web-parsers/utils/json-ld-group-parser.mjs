@@ -34,9 +34,19 @@ export default {
                     
                     group.url = getFirstJsonPath("$..['url']", json);
                     
-                    group.image = extractImageUrl(getFirstJsonPath("$..['image']", json))
+                    const images = extractImageUrl(getFirstJsonPath("$..['image']", json))
+                    if (images) {
+                        group.images = Array.isArray(images) ? images : [images]
+                    } else { 
+                        group.images = []
+                    }
                     
-                    group.logo = extractImageUrl(getFirstJsonPath("$..['logo']", json))
+                    const logos = extractImageUrl(getFirstJsonPath("$..['logo']", json))
+                    if (logos) {
+                        group.logos = Array.isArray(logos) ? logos : [logos]
+                    } else {
+                        group.logos = []
+                    }
 
                     group.physicalAddress = {}
 
