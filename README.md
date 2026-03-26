@@ -133,7 +133,5 @@ docker push dindy88/mobilizon-importer-backend
 * Set number of puppeteer instances running simultaneously configurable
 * What to do with imported events but deleted from Mobilizon server ?
 * Handle automation execution separatly for each automation (display next execution timer)
-* Share out automation events fetching to prevent ban 
+* Share out automation events scraping to prevent ban 
 * Use Linked Data as core event model with Schema.org vocabulary
-* Delete all debug files
-* Use available X-ALT-DESC;FMTTYPE=text/html instead of DESCRIPTION

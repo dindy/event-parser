@@ -390,6 +390,12 @@ export const parseIcsEvent = async (icsEvent, automation) => {
             uid: icsEvent.uid
         }
 
+        // try to get a HTML description        
+        if (icsEvent['ALT-DESC']?.params?.FMTTYPE === 'text/html'
+        ) {
+            mbzEvent.description = icsEvent['ALT-DESC'].val || mbzEvent.description
+        }
+
         // Try to get URL from ICS
         const url = icsEvent.url?.val || icsEvent.url
         if (url)

@@ -146,6 +146,9 @@ test('should parse and convert ics events to Mobilizon events', async () => {
 
     assert.deepStrictEqual(mbzEvents[2].onlineAddress, 'https://wiki.openstreetmap.org/wiki/FR:Vienne_(Isère)')
 
+    assert.equal(mbzEvents[2].description.startsWith(`<div class="description">
+<p>Discussion entre contributeurs.trices viennois.es du projet`), true)
+
     for (const e of eventList) {
         // Verify logger.info called for each event
         assert(mockLogger.info.mock.calls.some(call => call.arguments[0].includes(e.uid) && call.arguments[1] === automation.id));
