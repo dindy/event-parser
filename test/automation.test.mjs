@@ -1,13 +1,10 @@
 import ical from 'node-ical';
 import path, { parse } from 'path';
-import { test, mock, afterEach, it } from 'node:test'
+import { test, mock, afterEach, it, beforeEach } from 'node:test'
 import assert from 'assert'
 import { BadRequestError } from '../api/exceptions/BadRequestError.mjs'
 import { isValidUrl } from '../libs/parsers/web-parsers/utils/utils.mjs';
-import { url } from 'inspector';
-import { stat } from 'fs';
-import { type } from 'os';
-import { start } from 'repl';
+import { getEventModel } from '../libs/parsers/web-parsers/models.mjs';
 
 const mockLogger = {
     info: mock.fn(async () => {}),
@@ -16,7 +13,8 @@ const mockLogger = {
     warning: mock.fn(async () => {}),
 };
 const mockConvertUrlToBase64 = mock.fn(async () => ({ base64: 'mockbase64', extension: 'jpg', type: 'image/jpg' }));
-const mockScrap = mock.fn(async () => {});
+const mockScrapWeb = mock.fn()
+const mockConvertBase64DataUrlToBase64 = mock.fn()
 const mockImportedEventAlreadyExists = mock.fn(async () => null)
 const mockUpdateImportedEvent = mock.fn(async () => null)
 const mockCreateImportedEvent = mock.fn(async () => null)
@@ -32,7 +30,6 @@ const mockAutomation = {
     })
 }
 const mockRefreshOnExpired = mock.fn(async () => null)
-const mockConvertBase64DataUrlToBase64 = mock.fn(() => ({ base64: 'mockbase64', extension: 'jpg', type: 'image/jpg' }))
 const mockScrapIcs = mock.fn(async () => null)
 
 mock.module('node:crypto', {
@@ -93,7 +90,7 @@ mock.module('../libs/scrappers/ics-scrapper/scrapper.mjs', {
 })
 mock.module('../libs/scrappers/page-scrapper/scrapper.mjs', {
     namedExports: {
-        scrap: mockScrap
+        scrap: mockScrapWeb
     }
 });
 mock.module('../libs/parsers/web-parsers/event/default-event-parser.mjs', {
@@ -106,22 +103,42 @@ mock.module('../libs/parsers/web-parsers/event/facebook-event-parser.mjs', {
     defaultExport: () => null
 })
 
+beforeEach(() => {
+    mockScrapWeb.mock.mockImplementation(mock.fn(async () => null))
+    mockConvertBase64DataUrlToBase64.mock.mockImplementation(mock.fn(() => ({ base64: 'mockbase64', extension: 'jpg', type: 'image/jpg' })))
+})
+
 const { parseIcsEvent, saveNewOrModifiedEvent } = await import('../middlewares/automation.mjs');
 
 test('should parse and convert ics events to Mobilizon events', async () => {
 
+    // Fake event returned by the web scrapper with an image url
+    const mockEventModel = {
+        metas: { ...getEventModel() },
+        images: ['https://example.com/image.jpg'],
+    }
+    mockScrapWeb.mock.mockImplementation(async (url) => mockEventModel)
+
+    // This function is only called on base64 images returned by the web scrapper so we return a different base64 to verify that ics picture is kept when web parser returns a picture and that web picture is used when ics picture is not defined
+    mockConvertBase64DataUrlToBase64.mock.mockImplementation(() => ({ base64: 'mockbase64_2', extension: 'jpg', type: 'image/jpg' }))
     const automation = { id: 'test-automation' };
+    
+    // Get events from ics file
     const events = await ical.async.parseFile(path.resolve('./test/ics/feed-1.ics'));
     const eventList = Object.values(events).filter(e => e.type === 'VEVENT');
-
     let mbzEvents = [];
+    
+    // For each event, parse it and convert it to Mobilizon format
     for (const icsEvent of eventList) {
         mbzEvents.push(await parseIcsEvent(icsEvent, automation));
     }
 
+    // The image must be the one from the ics and not the one from the web scrapper
     assert.strictEqual(mbzEvents[0].picture.media.file, 'mockbase64');
+    // Dates must be correctly parsed
     assert.strictEqual(new Date(mbzEvents[0].beginsOn).toISOString(), '2026-02-26T14:00:00.000Z');
     assert.strictEqual(new Date(mbzEvents[0].endsOn).toISOString(), '2026-02-26T15:00:00.000Z');
+    // Other properties must be correctly parsed from ics
     assert.deepStrictEqual(mbzEvents[0].title, 'Permanence du CRAS Mardi et Jeudi');
     assert.deepStrictEqual(mbzEvents[0].description, "plus d'infos sur : https://toulouse.demosphere.net/rv/34469");
     assert.deepStrictEqual(mbzEvents[0].onlineAddress, 'https://toulouse.demosphere.net/rv/34469');
@@ -132,6 +149,7 @@ test('should parse and convert ics events to Mobilizon events', async () => {
     assert.deepStrictEqual(mbzEvents[0].draft, false);
     assert.deepStrictEqual(mbzEvents[0].uid, 'https://toulouse.demosphere.net/rv/34469');
 
+    // Same for second event, but with no image type
     assert.strictEqual(mbzEvents[1].picture.media.file, 'mockbase64');
     assert.strictEqual(new Date(mbzEvents[1].beginsOn).toISOString(), '2026-02-26T15:00:00.000Z');
     assert.strictEqual(new Date(mbzEvents[1].endsOn).toISOString(), '2026-02-26T16:00:00.000Z');
@@ -144,18 +162,20 @@ test('should parse and convert ics events to Mobilizon events', async () => {
     assert.deepStrictEqual(mbzEvents[1].draft, false);
     assert.deepStrictEqual(mbzEvents[1].uid, 'https://toulouse.demosphere.net/rv/34171');
 
+    // For the third event the online address must be the URL from ICS
     assert.deepStrictEqual(mbzEvents[2].onlineAddress, 'https://wiki.openstreetmap.org/wiki/FR:Vienne_(Isère)')
-
+    // The description must be the HTML from X-ALT-DESC 
     assert.equal(mbzEvents[2].description.startsWith(`<div class="description">
 <p>Discussion entre contributeurs.trices viennois.es du projet`), true)
-
+    assert.strictEqual(mbzEvents[2].picture.media.file, 'mockbase64_2');
+    
     for (const e of eventList) {
-        // Verify logger.info called for each event
+        // Verify logger.info called for each event with the event uid and automation id
         assert(mockLogger.info.mock.calls.some(call => call.arguments[0].includes(e.uid) && call.arguments[1] === automation.id));
-        // Verify scrap called for events with valid URL
+        // Verify scraper is called for events with the URL from ICS
         if (e.url) {     
             const url = e.url.val || e.url;
-            assert(mockScrap.mock.calls.some(call => call.arguments[0] === url));
+            assert(mockScrapWeb.mock.calls.some(call => call.arguments[0] === url));
         }
     }
 });
@@ -178,7 +198,7 @@ test('saveNewOrModifiedEvent', async () => {
         })
 
         const event = { uid: 'event-uid', title: 'Test Event' };
-        await saveNewOrModifiedEvent(event, mockAutomation);    
+        await saveNewOrModifiedEvent(event, mockAutomation);
         
         assert.strictEqual(mockLogger.error.mock.calls.length, 1, 'Expected logger.error to be called once');
         assert.deepStrictEqual(

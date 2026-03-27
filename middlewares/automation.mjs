@@ -303,10 +303,6 @@ const mergeIcsEventAndWebEvent = (icsEvent, webEvent) =>
                 mergedEvent.description = webEvent.description
             }
         }
-        // Keep ics picture if defined
-        if (!mergedEvent.picture && webEvent.picture) {
-            mergedEvent.picture = webEvent.picture
-        }
         // Keep physical address from web if defined
         if (webEvent.physicalAddress.description) {
             mergedEvent.physicalAddress.description = webEvent.physicalAddress.description
@@ -327,9 +323,15 @@ const mergeIcsEventAndWebEvent = (icsEvent, webEvent) =>
             mergedEvent.physicalAddress.country = webEvent.physicalAddress.country
         }
         
+        /** @TODO : Keep ics ticketsUrl if X-TICKETS-URL is implemented */
         mergedEvent.ticketsUrl = webEvent.ticketsUrl
 
         mergedEvent.metadata = webEvent.metadata
+    }
+
+    // In any case keep add web picture if ics event does not have one
+    if (!mergedEvent.picture && webEvent.picture) {
+        mergedEvent.picture = webEvent.picture
     }
 
     return mergedEvent

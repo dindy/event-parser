@@ -136,3 +136,4 @@ docker push dindy88/mobilizon-importer-backend
 * Handle automation execution separatly for each automation (display next execution timer)
 * Share out automation events scraping to prevent ban 
 * Use Linked Data as core event model with Schema.org vocabulary
+* Improve event scrapper error return
