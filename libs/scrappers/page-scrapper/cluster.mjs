@@ -3,7 +3,7 @@ import puppeteer from "puppeteer-extra"
 import StealthPlugin from "puppeteer-extra-plugin-stealth"
 
 puppeteer.use(StealthPlugin())
-
+const maxConcurrency = process.env.PUPPETEER_MAX_CONCURRENCY ? parseInt(process.env.PUPPETEER_MAX_CONCURRENCY) : 3
 const headless = process.env.PUPPETEER_HEADLESS_MODE === '1' ? true : false
 const args = [
     "--no-sandbox"
@@ -19,7 +19,7 @@ args.push('--proxy-server=http://localhost:8001')
 
 const cluster = await Cluster.launch({
     concurrency: Cluster.CONCURRENCY_CONTEXT,
-    maxConcurrency: 3,
+    maxConcurrency,
     puppeteer,
     puppeteerOptions: {
         headless,
