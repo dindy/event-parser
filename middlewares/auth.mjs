@@ -26,9 +26,16 @@ import MissingParameter from './exceptions/MissingParameter.mjs'
 import InvalidJsonBody from './exceptions/InvalidJsonBody.mjs'
 import InvalidJsonProperty from './exceptions/InvalidJsonProperty.mjs'
 
+export const sanitizeDomain = (domain) => {
+    if (domain.endsWith('/')) {
+        return domain.slice(0, -1)
+    }
+    return domain
+}
+
 export const register = async (req, res, next) => {
     
-    const instanceDomain = req.query.instance
+    const instanceDomain = sanitizeDomain(req.query.instance)
     if (!instanceDomain) throw new MissingParameter('instance')
     
     const redirectUri = req.query.redirect_uri
