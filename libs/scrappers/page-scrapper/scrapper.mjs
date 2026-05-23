@@ -6,14 +6,7 @@ const useProxy = process.env.USE_PROXY === '1' ? true : false;
 const proxyUsername = process.env.PROXY_USERNAME;
 const proxyPassword = process.env.PROXY_PASSWORD;
 
-const configurePage = async page => {
-
-  if (useProxy) {
-    await page.authenticate({
-      username: proxyUsername,
-      password: proxyPassword
-    })  
-  }
+const configurePage = async (page, url) => {
   
   // const customUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:140.0) Gecko/20100101 Firefox/140.0';
   const customUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'; 
@@ -71,7 +64,7 @@ export const scrap = async (url, parser, metas) =>
 {
   return await cluster.execute(url, async ({ page, data }) =>
   {
-    page = await configurePage(page)
+    page = await configurePage(page, url)
     
     await page.goto(data, { waitUntil: 'load', timeout: 0 })
         

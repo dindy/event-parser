@@ -4,9 +4,7 @@ import StealthPlugin from "puppeteer-extra-plugin-stealth"
 
 puppeteer.use(StealthPlugin())
 
-const useProxy = process.env.USE_PROXY === '1' ? true : false
 const headless = process.env.PUPPETEER_HEADLESS_MODE === '1' ? true : false
-const proxyServer = process.env.PROXY_SERVER
 const args = [
     "--no-sandbox"
     // '--disable-extensions',
@@ -15,9 +13,10 @@ const args = [
     // '--disable-software-rasterizer',
     // '--disable-dev-shm-usage',    
 ]
-if (useProxy) {
-    args.push('--proxy-server=' + proxyServer);
-}
+
+// Always use local proxy, which will decide whether to forward the request to the actual proxy.
+args.push('--proxy-server=http://localhost:8001')
+
 const cluster = await Cluster.launch({
     concurrency: Cluster.CONCURRENCY_CONTEXT,
     maxConcurrency: 3,
