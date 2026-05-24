@@ -42,7 +42,7 @@
     "node-file-logger": "^0.9.5",
     "node-ical": "^0.22.1",
     "proxy-chain": "^2.7.1",
-    "puppeteer": "^24.26.0",
+    "puppeteer": "^25.0.4",
     "puppeteer-cluster": "^0.25.0",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
