@@ -8,28 +8,36 @@ const envProxyServer = process.env.PROXY_SERVER;
 const envProxyProtocol = process.env.PROXY_PROTOCOL || 'http';
 const envProxyOnlyForDomains = process.env.PROXY_ONLY_FOR_DOMAINS ? process.env.PROXY_ONLY_FOR_DOMAINS.split(',') : [];
 
+console.log(envProxyEnabled ? `Proxy enabled for server: ${envProxyServer}` : 'Proxy disabled');
+console.log('PROXY_ONLY_FOR_DOMAINS:', process.env.PROXY_ONLY_FOR_DOMAINS);
+console.log(envProxyOnlyForDomains.length > 0 ? `Proxy will be used only for domains: ${envProxyOnlyForDomains.join(', ')}` : 'Proxy will be used for all domains');
+
 export const domainsMatchHostname = (domains, hostname) => domains.some(domain => hostname.endsWith(domain))
 
 export const getProxyUrl = (username, password, server, protocol) => {
   return `${protocol.toLowerCase()}://${username ? encodeURIComponent(username) : ''}${password ? ':' + encodeURIComponent(password) : ''}${username ? '@' : ''}${server}`
 }
 
+const proxyUrl = getProxyUrl(envProxyUsername, envProxyPassword, envProxyServer, envProxyProtocol)
+
 export const prepareRequestFunction = ({ request, username, password, hostname, port, isHttp, connectionId }) => {
-    // If envProxyOnlyForDomains is empty, use proxy for all domains. Otherwise, use proxy only for specified domains.
-    const match = domainsMatchHostname(envProxyOnlyForDomains, hostname)
-    const useProxy = envProxyEnabled && (envProxyOnlyForDomains.length === 0 || match)
-    const proxyUrl = getProxyUrl(envProxyUsername, envProxyPassword, envProxyServer, envProxyProtocol)
+  
+  // If envProxyOnlyForDomains is empty, use proxy for all domains. Otherwise, use proxy only for specified domains.
+  const match = domainsMatchHostname(envProxyOnlyForDomains, hostname)
+  const useProxy = envProxyEnabled && (envProxyOnlyForDomains.length === 0 || match)
     
-    return {
-      upstreamProxyUrl: useProxy ? proxyUrl : null,
-      ignoreUpstreamProxyCertificate: true,
-      // Optional custom tag that will be passed back via
-      // `tunnelConnectResponded` or `tunnelConnectFailed` events
-      // Can be used to pass information between proxy-chain
-      // and any external code or application using it
-      // customTag: { userId: '123' },
-    };
-  }
+  console.log(`Using proxy for domain ${hostname}: ${useProxy}`);
+  
+  return {
+    upstreamProxyUrl: useProxy ? proxyUrl : null,
+    ignoreUpstreamProxyCertificate: true,
+    // Optional custom tag that will be passed back via
+    // `tunnelConnectResponded` or `tunnelConnectFailed` events
+    // Can be used to pass information between proxy-chain
+    // and any external code or application using it
+    // customTag: { userId: '123' },
+  };
+}
 
 const server = new ProxyChain.Server({
   // Port where the server will listen. By default 8000.
