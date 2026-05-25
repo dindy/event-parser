@@ -85,6 +85,14 @@ GET https://domain.com/cron/automations?secret=my-secret
 
 Secret password must be set in `.env` file.
 
+## Auto-clean debug files
+
+```
+GET https://domain.com/cron/maintenance?secret=my-secret
+```
+
+Secret password must be set in `.env` file.
+
 ## Docker
 
 ### Docker compose
