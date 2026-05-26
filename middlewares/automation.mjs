@@ -364,7 +364,7 @@ export const parseIcsEvent = async (icsEvent, automation) => {
     
         const mbzEvent = {
             title: icsEvent.summary,
-            description: icsEvent.description || "",
+            description: icsEvent.description ? icsEvent.description.replaceAll('\n', '</br>') : '',
             beginsOn: icsEvent.start,
             endsOn: icsEvent.end || null,
             status: icsEvent.status || 'CONFIRMED',

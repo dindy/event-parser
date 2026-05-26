@@ -169,6 +169,9 @@ test('should parse and convert ics events to Mobilizon events', async () => {
 <p>Discussion entre contributeurs.trices viennois.es du projet`), true)
     assert.strictEqual(mbzEvents[2].picture.media.file, 'mockbase64_2');
     
+    // \n must be replaced with </br> in description
+    assert.strictEqual(mbzEvents[3].description, "Piano Chandelles à La Grande École 🎹🕯️</br></br>")
+    
     for (const e of eventList) {
         // Verify logger.info called for each event with the event uid and automation id
         assert(mockLogger.info.mock.calls.some(call => call.arguments[0].includes(e.uid) && call.arguments[1] === automation.id));

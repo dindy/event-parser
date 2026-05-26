@@ -72,4 +72,31 @@ X-ALT-DESC;FMTTYPE=text/html:<div class="description">\n<p>Discussion entre
   <span itemprop="addressLocality">Vienne</span> - à partir de 18h30</str
  ong></p>\n</div>
 END:VEVENT
+BEGIN:VEVENT
+DTSTART:20260528T170000Z
+DTEND:20260528T200000Z
+DTSTAMP:20260525T075854Z
+UID:8cgdpsb82ld3trv64eoqsp74co@google.com
+URL:https://www.facebook.com/events/2192792084809238/
+CREATED:20260430T142211Z
+DESCRIPTION:Piano Chandelles à La Grande École 🎹🕯️\n\nLe Salon Versailles
+  s’illumine pour une expérience musicale unique\, à la lueur des bougies.\n
+ Un moment suspendu\, où la musique rencontre une atmosphère intimiste et po
+ étique.\n\n🗓 Jeudi 28 mai\n📍 Salon Versailles – La Grande École\, Le Havr
+ e\n\n🎹 Deux sessions\, deux univers :\n\n🕖 19h – “Un piano sous les étoil
+ es”\nUn programme tout en douceur avec Domitille Bès\, autour de Einaudi\, 
+ Chopin\, Debussy\, Yiruma\, Satie ou encore Tiersen.\n\n🕘 21h – “CinéRêve”
+ \nAvec Guillaume Fournier\, un voyage musical inspiré du cinéma : de Bach à
+  Tchaïkovsky\, de Zimmer à Tiersen.\n\n✨ Deux parenthèses poétiques entre o
+ mbre et lumière\, où la musique devient pure émotion.\n\nÀ partir de 35€\nS
+ ur réservation – places limitées\n\nUne expérience élégante et immersive\, 
+ à vivre seul(e)\, en couple ou à partager.\n\nhttps://www.facebook.com/even
+ ts/2192792084809238/
+LAST-MODIFIED:20260503T232410Z
+LOCATION:6 rue Gustave Lennier\, 76600 Le Havre\, France
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:Piano chandelles - Pianoctambule 🎹🕯️
+TRANSP:OPAQUE
+END:VEVENT
 END:VCALENDAR
