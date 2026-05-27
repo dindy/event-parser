@@ -75,3 +75,13 @@ export const scrap = async (url, parser, metas) =>
     return result
   })
 }
+
+export const execute = async (url, callback) => {
+
+  return await cluster.execute(url, async ({ page, url }) =>
+  {
+    page = await configurePage(page, url)  
+
+    return await callback(page, url)
+  })
+}

@@ -10,7 +10,7 @@ import {
     listActive as listActiveAutomations,
     findAuthorized as findAuthorizedAutomations,
     findById as findAutomationById,
-    destroy as destroyAutomation
+    destroy as destroyAutomation,
 } from '../models/Automation.mjs'
 import AutomationAlreadyExists from './exceptions/AutomationAlreadyExists.mjs'
 import { refreshOnExpired, requestApi } from './utils.mjs'
@@ -23,7 +23,7 @@ import {
 } from '../models/ImportedEvent.mjs'
 import logger from '../libs/AutomationLogger.mjs'
 import { BadRequestError } from '../api/exceptions/BadRequestError.mjs'
-import { scrap as scrapPage } from '../libs/scrappers/page-scrapper/scrapper.mjs';
+import { scrap as scrapPage, execute as useScrapper } from '../libs/scrappers/page-scrapper/scrapper.mjs';
 import { scrap as scrapICS } from '../libs/scrappers/ics-scrapper/scrapper.mjs';
 import fbGroupEventsParser from '../libs/parsers/web-parsers/group-events/facebook-group-events-parser.mjs'
 import fbEventParser from '../libs/parsers/web-parsers/event/facebook-event-parser.mjs'
@@ -168,38 +168,51 @@ export const convertEventModelToMbzEvent = async (modelEvent, automation) =>
     }
 }
 
-const executeFacebookAutomation = async automation =>
-{
-    let fbGroupEvents = []
+/**
+ * Execute a Facebook group events automation : scrap the group events page and load each group's events within the same browser context, then save them on Mobilizon
+ */
+const executeFacebookAutomation = async automation => {
 
-    try {
-        await logger.info(`Fetching facebook group events at ${automation.url}.`, automation.id)
-        fbGroupEvents = await scrapPage(automation.url, fbGroupEventsParser, [])
+    return await useScrapper(automation.url, async (page, data) => { 
         
-        // Treat only future events
-        fbGroupEvents = fbGroupEvents.filter(event => !event.isPast)        
-        
-        if (fbGroupEvents.length > 0) {
-            fbGroupEvents.forEach(async event => await logger.info(`Facebook event found : ${event.url}.`, automation.id))
-        } else {
-            await logger.info(`No Facebook event found.`, automation.id)
+        const timeout = 30_000
+        let fbGroupEventsToLoad = []
+        let fbGroupEventsParsed = []
+        let fbGroupEventsSavedPromises = []
+
+        try {
+            await page.goto(automation.url, { waitUntil: 'load', timeout })
+            
+            fbGroupEventsToLoad = await fbGroupEventsParser.parse(page, [])
+
+            if (fbGroupEventsToLoad.length > 0) {
+                fbGroupEventsToLoad.forEach(async event => await logger.info(`Facebook event found : ${event.url}.`, automation.id))
+            } else {
+                await logger.info(`No Facebook event found.`, automation.id)
+            }
+
+        } catch (error) {
+            await logger.error(`Error fetching facebook group events : ${error.name} : ${error.message}.`, automation.id)
+            throw error
         }
         
-    } catch (error) {
-        await logger.error(`Error fetching facebook group events : ${error.name} : ${error.message}.`, automation.id)
-        throw error
-    }
+        for (const eventLoaded of fbGroupEventsToLoad) {
+            try {
+                await page.goto(eventLoaded.url, { waitUntil: 'load', timeout })
+                const eventData = await fbEventParser.parse(page, getEventModel())
+                fbGroupEventsParsed.push(eventData)
+            } catch (error) {
+                await logger.error(`Error fetching facebook event at ${eventLoaded.url}: ${error.name} : ${error.message}.`, automation.id)
+            }
+        }
+        
+        for (const eventParsed of fbGroupEventsParsed) { 
+            const mbzEvent = await convertEventModelToMbzEvent(eventParsed, automation)
+            fbGroupEventsSavedPromises.push(saveNewOrModifiedEvent(mbzEvent, automation))
+        }
 
-    const promises = fbGroupEvents.map(
-        event => scrapPage(event.url, fbEventParser, getEventModel())
-            .catch(async error => await logger.error(`Error fetching facebook event at ${event.url}: ${error.name} : ${error.message}.`, automation.id))
-            .then(async event => saveNewOrModifiedEvent(
-                await convertEventModelToMbzEvent(event, automation),
-                automation)
-            )
-    )
-
-    return Promise.allSettled(promises)
+        return fbGroupEventsSavedPromises
+    })
 }
 
 export const saveNewOrModifiedEvent = async (event, automation) => {
@@ -249,6 +262,8 @@ export const saveNewOrModifiedEvent = async (event, automation) => {
     }
 
     await logger.success(`Event ${event.uid} has been saved with UUID ${savedMbzEvent.uuid}.`, automation.id);
+
+    return
 }
 
 const saveEventOnMobilizon = async (event, application, authorization, automation) =>
@@ -484,7 +499,7 @@ export const executeIcsAutomation = async automation =>
             })
     )
     
-    return Promise.allSettled(promises)
+    return promises
 }
 
 const executeAutomation = async automation => {
@@ -608,7 +623,8 @@ export const forceAutomation = async (req, res, next) =>
     const page = 1
     const pageSize = 250
     const automation = await getAutomationIfAuthorized(req.user, res, req.params.id)
-    await executeAutomation(automation)
+    const promises = await executeAutomation(automation)
+    await Promise.allSettled(promises)
     const logs = await getLogsByAutomationId(automation.id, page, pageSize)
     const importedEvents = await automation.getImportedEvents()
     res.json({

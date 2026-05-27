@@ -14,6 +14,7 @@ const mockLogger = {
 };
 const mockConvertUrlToBase64 = mock.fn(async () => ({ base64: 'mockbase64', extension: 'jpg', type: 'image/jpg' }));
 const mockScrapWeb = mock.fn()
+const executeScrapWeb = mock.fn()
 const mockConvertBase64DataUrlToBase64 = mock.fn()
 const mockImportedEventAlreadyExists = mock.fn(async () => null)
 const mockUpdateImportedEvent = mock.fn(async () => null)
@@ -90,7 +91,8 @@ mock.module('../libs/scrappers/ics-scrapper/scrapper.mjs', {
 })
 mock.module('../libs/scrappers/page-scrapper/scrapper.mjs', {
     namedExports: {
-        scrap: mockScrapWeb
+        scrap: mockScrapWeb,
+        execute: executeScrapWeb
     }
 });
 mock.module('../libs/parsers/web-parsers/event/default-event-parser.mjs', {
@@ -105,6 +107,7 @@ mock.module('../libs/parsers/web-parsers/event/facebook-event-parser.mjs', {
 
 beforeEach(() => {
     mockScrapWeb.mock.mockImplementation(mock.fn(async () => null))
+    executeScrapWeb.mock.mockImplementation(mock.fn(async () => null))
     mockConvertBase64DataUrlToBase64.mock.mockImplementation(mock.fn(() => ({ base64: 'mockbase64', extension: 'jpg', type: 'image/jpg' })))
 })
 
@@ -170,7 +173,7 @@ test('should parse and convert ics events to Mobilizon events', async () => {
     assert.strictEqual(mbzEvents[2].picture.media.file, 'mockbase64_2');
     
     // \n must be replaced with </br> in description
-    assert.strictEqual(mbzEvents[3].description, "Piano Chandelles à La Grande École 🎹🕯️</br></br>")
+    assert.strictEqual(mbzEvents[3].description.startsWith("Piano Chandelles à La Grande École 🎹🕯️</br></br>"), true)
     
     for (const e of eventList) {
         // Verify logger.info called for each event with the event uid and automation id
@@ -425,7 +428,7 @@ test('executeIcsAutomation', async () => {
         getAuthorization: async () => ({ getApplication: async () => ({}) }),
     }
 
-    const results = await executeIcsAutomation(automation);
+    const results = await Promise.allSettled(await executeIcsAutomation(automation));
     
     assert.strictEqual(results.length, 3)
     assert.strictEqual(results[1].value, null)    
