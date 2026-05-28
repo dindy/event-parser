@@ -145,5 +145,7 @@ docker push dindy88/mobilizon-importer-backend
 * Share out automation events scraping to prevent ban 
 * Use Linked Data as core event model with Schema.org vocabulary
 * Improve event scrapper error return
-* Why some fb images are not saved ? The hash not even change... 
 * Missing breakline when importing ics `\n\n`
+* Why some fb images are not saved ? The hash not even change... 
+* UID too long
+* handle page.goto fail
