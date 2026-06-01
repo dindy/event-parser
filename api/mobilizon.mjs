@@ -430,6 +430,8 @@ export const getUserId = (domain, accessToken) => {
 
 export const saveEvent = (domain, accessToken, event) => {
     
+    // Copy event to avoid mutating the original object when replacing the picture file with the form input name
+    const eventCopy = JSON.parse(JSON.stringify({ ...event }))
     const bannerFormInputName = "p...i...c...t...u...r...e...m.e.d.i.a.file"
     const formData = new FormData()
     const updateLine1 = !event.id ? `` : `$id: ID!,
@@ -477,12 +479,12 @@ export const saveEvent = (domain, accessToken, event) => {
 
     // Set picture
     if (event.picture) {
-        const buffer = Buffer.from(event.picture.media.file, 'base64');
-        formData.append(bannerFormInputName, buffer, event.picture.media.name)        
-        event.picture.media.file = bannerFormInputName        
+        const buffer = Buffer.from(eventCopy.picture.media.file, 'base64');
+        formData.append(bannerFormInputName, buffer, eventCopy.picture.media.name)        
+        eventCopy.picture.media.file = bannerFormInputName      
     }
 
-    formData.append('variables', JSON.stringify(event))
+    formData.append('variables', JSON.stringify(eventCopy))
     
     return graphql(
         domain,
