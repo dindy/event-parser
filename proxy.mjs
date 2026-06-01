@@ -8,8 +8,6 @@ const envProxyServer = process.env.PROXY_SERVER;
 const envProxyProtocol = process.env.PROXY_PROTOCOL || 'http';
 const envProxyOnlyForDomains = process.env.PROXY_ONLY_FOR_DOMAINS ? process.env.PROXY_ONLY_FOR_DOMAINS.split(',') : [];
 
-console.log(envProxyEnabled ? `Proxy enabled for server: ${envProxyServer}` : 'Proxy disabled');
-console.log('PROXY_ONLY_FOR_DOMAINS:', process.env.PROXY_ONLY_FOR_DOMAINS);
 console.log(envProxyOnlyForDomains.length > 0 ? `Proxy will be used only for domains: ${envProxyOnlyForDomains.join(', ')}` : 'Proxy will be used for all domains');
 
 export const domainsMatchHostname = (domains, hostname) => domains.some(domain => hostname.endsWith(domain))
@@ -26,7 +24,7 @@ export const prepareRequestFunction = ({ request, username, password, hostname, 
   const match = domainsMatchHostname(envProxyOnlyForDomains, hostname)
   const useProxy = envProxyEnabled && (envProxyOnlyForDomains.length === 0 || match)
     
-  console.log(`Using proxy for domain ${hostname}: ${useProxy}`);
+  // console.log(`Using proxy for domain ${hostname}: ${useProxy}`);
   
   return {
     upstreamProxyUrl: useProxy ? proxyUrl : null,
@@ -45,7 +43,7 @@ const server = new ProxyChain.Server({
   // You can use this option to limit the access to the proxy server.
   host: 'localhost',
   // Enables verbose logging
-  verbose: true,
+  verbose: false,
   prepareRequestFunction
 })
 
