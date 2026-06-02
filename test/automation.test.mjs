@@ -175,6 +175,9 @@ test('should parse and convert ics events to Mobilizon events', async () => {
     // \n must be replaced with </br> in description
     assert.strictEqual(mbzEvents[3].description.startsWith("Piano Chandelles à La Grande École 🎹🕯️</br></br>"), true)
     
+    // Parse description with ALTREP param with text/html and verify that it is correctly decoded
+    assert.strictEqual(mbzEvents[4].description, `Dans le cadre de la Vélorution "A l'Assaut du Gier"<br>Tout public dès 7ans<br>Réservation obligatoire (fanette.bigot@laposte.net)`)
+
     for (const e of eventList) {
         // Verify logger.info called for each event with the event uid and automation id
         assert(mockLogger.info.mock.calls.some(call => call.arguments[0].includes(e.uid) && call.arguments[1] === automation.id));

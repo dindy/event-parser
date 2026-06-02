@@ -376,10 +376,24 @@ export const parseIcsEvent = async (icsEvent, automation) => {
         if (!icsEvent.summary || icsEvent.summary === "") return null
         
         await logger.info(`Found event ${icsEvent.uid}.`, automation.id)
+        
+        let description = ''
+        if (icsEvent.description) { 
+            // Supports ALTREP with text/html
+            if (icsEvent.description.params?.ALTREP?.startsWith('data:text/html,')) {
+                description = decodeURIComponent(icsEvent.description.params.ALTREP.replace('data:text/html,', ''))
+            // If unknown param, try to use val as text description
+            } else if (icsEvent.description.val) {
+                description = icsEvent.description.val.replaceAll('\n', '</br>')
+            // Else use description as text
+            } else {
+                description = icsEvent.description.replaceAll('\n', '</br>')
+            }
+        }
     
         const mbzEvent = {
             title: icsEvent.summary,
-            description: icsEvent.description ? icsEvent.description.replaceAll('\n', '</br>') : '',
+            description,
             beginsOn: icsEvent.start,
             endsOn: icsEvent.end || null,
             status: icsEvent.status || 'CONFIRMED',

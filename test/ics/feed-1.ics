@@ -99,4 +99,20 @@ STATUS:CONFIRMED
 SUMMARY:Piano chandelles - Pianoctambule 🎹🕯️
 TRANSP:OPAQUE
 END:VEVENT
+BEGIN:VEVENT
+CREATED:20240217T081952Z
+LAST-MODIFIED:20240217T082207Z
+DTSTAMP:20240217T082207Z
+UID:079c722e-f5b4-446a-b5b5-ac2c34b41e3e
+SUMMARY:Week-end Vélo + train
+DTSTART;VALUE=DATE:20240615
+DTEND;VALUE=DATE:20240617
+TRANSP:TRANSPARENT
+LOCATION:Départ de la Fresque de l'école Buisson (Lyon 5)
+DESCRIPTION;ALTREP="data:text/html,Dans%20le%20cadre%20de%20la%20V%C3%A9lor
+ ution%20%22A%20l'Assaut%20du%20Gier%22%3Cbr%3ETout%20public%20d%C3%A8s%207
+ ans%3Cbr%3ER%C3%A9servation%20obligatoire%20(fanette.bigot%40laposte.net)"
+ :Dans le cadre de la Vélorution "A l'Assaut du Gier"\nTout public dès 7a
+ ns\nRéservation obligatoire (fanette.bigot@laposte.net)
+END:VEVENT
 END:VCALENDAR
