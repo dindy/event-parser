@@ -125,7 +125,7 @@ const internalRefreshOnExpired = async (
             }
             
             console.log(id, `Recursive call with token ${dt(accessToken)}`)
-            return internalRefreshOnExpired(id, request, domain, accessToken, authId, res, ...args)
+            return await internalRefreshOnExpired(id, request, domain, accessToken, authId, res, ...args)
 
         // Ignore aborted request
         } else if (error.name && error.name === 'AbortError') {       
