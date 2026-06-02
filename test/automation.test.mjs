@@ -429,8 +429,8 @@ test('executeIcsAutomation', async () => {
     }
 
     const results = await Promise.allSettled(await executeIcsAutomation(automation));
-    
     assert.strictEqual(results.length, 3)
-    assert.strictEqual(results[1].value, null)    
-    assert.strictEqual(results[2].value, null)    
+    assert.strictEqual(results[0].value, undefined) // The first event is correctly parsed and saved, so the function returns undefined   
+    assert.strictEqual(results[1].value, null) // The second event is not a VEVENT, so it should be ignored and the function should return null  
+    assert.strictEqual(results[2].value, null) // The third event is in the past, so it should be ignored and the function should return null
 })

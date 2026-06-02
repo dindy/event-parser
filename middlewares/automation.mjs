@@ -489,14 +489,16 @@ export const executeIcsAutomation = async automation =>
         await logger.error(`Error fetching or parsing data : ${error.name} : ${error.message}.`, automation.id)
     }
     
+    const isFuture = event => event.endsOn ?
+        event.endsOn.getTime() >= (new Date()).getTime() :
+        event.beginsOn.getTime() >= (new Date()).getTime()
+
     const promises = Object.entries(events).map(
         ([_, event]) => parseIcsEvent(event, automation)
-            .then(event => {
-                // Only future events
-                return event && event.endsOn.getTime() >= (new Date()).getTime()
-                    ? saveNewOrModifiedEvent(event, automation)
-                    : null
-            })
+            .then(event => event && isFuture(event) ?
+                saveNewOrModifiedEvent(event, automation) :
+                null
+            )
     )
     
     return promises
