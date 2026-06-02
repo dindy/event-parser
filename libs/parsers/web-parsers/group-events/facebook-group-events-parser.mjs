@@ -25,7 +25,7 @@ const parse = async (page, metas) => {
                     const id = event.node?.id
                     const startTimestamp = event.node?.actions_renderer?.event?.start_timestamp
                     const isPast = startTimestamp ?
-                        startTimestamp * 1000 < (new Date).getTime()
+                        startTimestamp * 1000 < (new Date()).getTime()
                         : null
                     if (url) {
                         metas.push({id, url, isPast})
