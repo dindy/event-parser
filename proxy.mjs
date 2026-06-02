@@ -20,10 +20,11 @@ const proxyUrl = getProxyUrl(envProxyUsername, envProxyPassword, envProxyServer,
 
 export const prepareRequestFunction = ({ request, username, password, hostname, port, isHttp, connectionId }) => {
   
+  console.log(`Local proxy server received request for ${hostname}:${port} (connectionId: ${connectionId})`)
+
   // If envProxyOnlyForDomains is empty, use proxy for all domains. Otherwise, use proxy only for specified domains.
   const match = domainsMatchHostname(envProxyOnlyForDomains, hostname)
   const useProxy = envProxyEnabled && (envProxyOnlyForDomains.length === 0 || match)
-    
   // console.log(`Using proxy for domain ${hostname}: ${useProxy}`);
   
   return {
@@ -49,8 +50,8 @@ const server = new ProxyChain.Server({
 
 // Emitted when HTTP connection is closed
 server.on('connectionClosed', ({ connectionId, stats }) => {
-  console.log(`Connection ${connectionId} closed`);
-  console.dir(stats);
+  // console.log(`Connection ${connectionId} closed`);
+  // console.dir(stats);
 });
 
 // Emitted when HTTP request fails
