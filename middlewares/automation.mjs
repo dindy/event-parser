@@ -149,22 +149,24 @@ export const convertEventModelToMbzEvent = async (modelEvent, automation) =>
         }    
     
         if (modelEvent.images && modelEvent.images.length > 0) {
-            const pictureObject = convertBase64DataUrlToBase64(modelEvent.images[0])
-            
-            mbzEvent.picture = {
-                media: {
-                    name: 'event_banner' + '.' + pictureObject.extension,
-                    alt: 'Event banner',
-                    file: pictureObject.base64
-                }
-            }                
+            try {
+                const pictureObject = convertBase64DataUrlToBase64(modelEvent.images[0])
+                mbzEvent.picture = {
+                    media: {
+                        name: 'event_banner' + '.' + pictureObject.extension,
+                        alt: 'Event banner',
+                        file: pictureObject.base64
+                    }
+                }                
+            } catch (error) {
+                logger.error(`Error converting image for event ${mbzEvent.uid} : ${error.name} : ${error.message}.`, automation.id)
+            }
         }    
     
         return mbzEvent
 
     } catch (error) {
-        await logger.error(`Error parsing event ${modelEvent.url}`, automation.id)
-        console.log(error)
+        await logger.error(`Error parsing event ${mbzEvent.uid} : ${error.name} : ${error.message}.`, automation.id)
     }
 }
 
