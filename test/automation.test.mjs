@@ -366,7 +366,7 @@ test('convertEventModelToMbzEvent sets all properties correctly', async () => {
     
     assert.strictEqual(event.title, 'Test Event');
     assert.ok(event.description.includes('This is a test event.'));
-    assert.ok(event.description.includes('Organisé par'));
+    assert.ok(event.description.includes('➡️​'));
     assert.strictEqual(event.beginsOn, new Date(fakeModelEvent.metas.startTimestamp * 1000).toJSON());
     assert.strictEqual(event.endsOn, new Date(fakeModelEvent.metas.endTimestamp * 1000).toJSON());
     assert.strictEqual(event.onlineAddress, 'https://example.com/event');

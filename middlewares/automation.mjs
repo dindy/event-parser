@@ -139,9 +139,9 @@ export const convertEventModelToMbzEvent = async (modelEvent, automation) =>
         const getLinkOrJustName = ({name, url}) => url ? `<a href="${url}">${name}</a>` : name
         if (hosts && hosts.length > 0) {
             if (hosts.length == 1) {
-                mbzEvent.description += `<br><p>Organisé par ${getLinkOrJustName(hosts[0])}</p>`
+                mbzEvent.description += `<br><p>➡️​ ${getLinkOrJustName(hosts[0])}</p>`
             } else {
-                mbzEvent.description += `<br><p>Organisé par : <ul>`
+                mbzEvent.description += `<br><p>➡️​ : <ul>`
                 hosts.forEach((host) => {
                     mbzEvent.description += `<li>${getLinkOrJustName(host)}</li>`
                 })
