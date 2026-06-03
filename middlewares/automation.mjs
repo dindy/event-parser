@@ -28,6 +28,7 @@ import { scrap as scrapICS } from '../libs/scrappers/ics-scrapper/scrapper.mjs';
 import fbGroupEventsParser from '../libs/parsers/web-parsers/group-events/facebook-group-events-parser.mjs'
 import fbEventParser from '../libs/parsers/web-parsers/event/facebook-event-parser.mjs'
 import defaultEventParser from '../libs/parsers/web-parsers/event/default-event-parser.mjs'
+import facebookEventParser from '../libs/parsers/web-parsers/event/facebook-event-parser.mjs'
 import { getEventModel } from '../libs/parsers/web-parsers/models.mjs'
 import { getLogsByAutomationId } from '../models/AutomationLog.mjs'
 
@@ -354,12 +355,20 @@ const mergeIcsEventAndWebEvent = (icsEvent, webEvent) =>
     return mergedEvent
 }
 
+export const getEventParserForUrl = url => { 
+    if (url.includes('facebook.com') && url.includes('/events/')) {
+        return facebookEventParser
+    } else {    
+        return defaultEventParser
+    }
+}
+
 export const completeIcsEventFromWeb = async (eventUrl, mbzEventFromIcs, automation) => {
 
     await logger.info(`Fetch more data about ics event ${mbzEventFromIcs.uid} from ${eventUrl}`, automation.id)
 
     try {
-        const eventModelFromWeb = await scrapPage(eventUrl, defaultEventParser, getEventModel())
+        const eventModelFromWeb = await scrapPage(eventUrl, getEventParserForUrl(eventUrl), getEventModel())
         const mbzEventFromWeb = await convertEventModelToMbzEvent(eventModelFromWeb, automation)
         if (mbzEventFromWeb) {
             mbzEventFromIcs = mergeIcsEventAndWebEvent(mbzEventFromIcs, mbzEventFromWeb)
