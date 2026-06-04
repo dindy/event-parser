@@ -5,6 +5,7 @@ import assert from 'assert'
 import { BadRequestError } from '../api/exceptions/BadRequestError.mjs'
 import { isValidUrl } from '../libs/parsers/web-parsers/utils/utils.mjs';
 import { getEventModel } from '../libs/parsers/web-parsers/models.mjs';
+import { log } from 'console';
 
 const mockLogger = {
     info: mock.fn(async () => {}),
@@ -42,7 +43,16 @@ mock.module('../models/Automation.mjs', {
     namedExports: {
         exists: () => null,
         save: () => null,
-        listActive: () => null,
+        listActive: async () => ([
+            {
+                type: 'ics',
+                id: 'test-automation',
+                url: 'https://example.com/calendar.ics',
+                getAuthorization: async () => ({ getApplication: async () => ({}) }),
+            },
+            // { id: 'automation-2', type: 'fb' },
+            // { id: 'automation-3', type: 'unknown' }
+        ]),
         findAuthorized: () => null,
         findById: () => null,
         destroy: () => null,    
@@ -115,15 +125,6 @@ const { parseIcsEvent, saveNewOrModifiedEvent } = await import('../middlewares/a
 
 test('should parse and convert ics events to Mobilizon events', async () => {
 
-    // Fake event returned by the web scrapper with an image url
-    const mockEventModel = {
-        metas: { ...getEventModel() },
-        images: ['https://example.com/image.jpg'],
-    }
-    mockScrapWeb.mock.mockImplementation(async (url) => mockEventModel)
-
-    // This function is only called on base64 images returned by the web scrapper so we return a different base64 to verify that ics picture is kept when web parser returns a picture and that web picture is used when ics picture is not defined
-    mockConvertBase64DataUrlToBase64.mock.mockImplementation(() => ({ base64: 'mockbase64_2', extension: 'jpg', type: 'image/jpg' }))
     const automation = { id: 'test-automation' };
     
     // Get events from ics file
@@ -170,7 +171,7 @@ test('should parse and convert ics events to Mobilizon events', async () => {
     // The description must be the HTML from X-ALT-DESC 
     assert.equal(mbzEvents[2].description.startsWith(`<div class="description">
 <p>Discussion entre contributeurs.trices viennois.es du projet`), true)
-    assert.strictEqual(mbzEvents[2].picture.media.file, 'mockbase64_2');
+    assert.strictEqual(mbzEvents[2].picture, null)
     
     // \n must be replaced with </br> in description
     assert.strictEqual(mbzEvents[3].description.startsWith("Piano Chandelles à La Grande École 🎹🕯️</br></br>"), true)
@@ -181,10 +182,10 @@ test('should parse and convert ics events to Mobilizon events', async () => {
     for (const e of eventList) {
         // Verify logger.info called for each event with the event uid and automation id
         assert(mockLogger.info.mock.calls.some(call => call.arguments[0].includes(e.uid) && call.arguments[1] === automation.id));
-        // Verify scraper is called for events with the URL from ICS
+        // Verify scraper is not called for events (they are not completed in this function anymore)
         if (e.url) {     
             const url = e.url.val || e.url;
-            assert(mockScrapWeb.mock.calls.some(call => call.arguments[0] === url));
+            assert.strictEqual(mockScrapWeb.mock.calls.length, 0);
         }
     }
 });
@@ -404,6 +405,19 @@ test('convertEventModelToMbzEvent sets all properties correctly', async () => {
 });
 
 test('executeIcsAutomation', async () => {
+    
+    // This function is only called on base64 images returned by the web scrapper
+    mockConvertBase64DataUrlToBase64.mock.resetCalls()
+    mockConvertBase64DataUrlToBase64.mock.mockImplementation(() => ({ base64: 'mockbase64_2', extension: 'jpg', type: 'image/jpg' }))
+
+    // Fake event returned by the web scrapper with an image url
+    const mockEventModel = {
+        metas: { ...getEventModel() },
+        images: ['https://from_web_scrapper.jpg'],
+    }
+    mockScrapWeb.mock.resetCalls()
+    mockScrapWeb.mock.mockImplementation(async (url) => mockEventModel)
+    
     const { executeIcsAutomation } = await import('../middlewares/automation.mjs')
     const event1 = {
         type: 'VEVENT',
@@ -423,7 +437,8 @@ test('executeIcsAutomation', async () => {
     }
     const event2 = { ...event1, uid: 'event-uid-2', type: 'OTHERVALUE' }
     const event3 = { ...event1, uid: 'event-uid-3', start: new Date('2024-02-26T14:00:00.000Z'), end: new Date('2024-02-26T15:00:00.000Z') }
-    mockScrapIcs.mock.mockImplementationOnce(async () => ([event1, event2, event3]))
+    const event4 = { ...event1, uid: 'event-uid-4', url: 'https://example.com/event' }
+    mockScrapIcs.mock.mockImplementationOnce(async () => ([event1, event2, event3, event4]))
     mockRefreshOnExpired.mock.mockImplementation(async () => ({ uuid: 'uuid', id: 42 }))
     const automation = {
         id: 'test-automation',
@@ -431,9 +446,40 @@ test('executeIcsAutomation', async () => {
         getAuthorization: async () => ({ getApplication: async () => ({}) }),
     }
 
-    const results = await Promise.allSettled(await executeIcsAutomation(automation));
-    assert.strictEqual(results.length, 3)
-    assert.strictEqual(results[0].value, undefined) // The first event is correctly parsed and saved, so the function returns undefined   
-    assert.strictEqual(results[1].value, null) // The second event is not a VEVENT, so it should be ignored and the function should return null  
-    assert.strictEqual(results[2].value, null) // The third event is in the past, so it should be ignored and the function should return null
+    const results = await executeIcsAutomation(automation)
+
+    // We expect 2 events to be processed and saved (event1 and event4), while event2 should be ignored because it is not a VEVENT and event3 should be ignored because it is in the past
+    assert.strictEqual(results.length, 2) 
+    
+    // We expect scrapWeb to be called only for event4 because event1 has no URL and is not passed to the web scrapper, while event2 is not a VEVENT and event3 is in the past so they are both ignored before calling the web scrapper
+    assert.strictEqual(mockScrapWeb.mock.calls.length, 1, 'We expect scrapWeb to be called for event4')
+
+    assert.strictEqual(mockConvertBase64DataUrlToBase64.mock.calls.length, 1, 'We expect convertBase64DataUrlToBase64 to be called once for the image returned by the web scrapper for event4')
+})
+
+test('executeAutomations', async () => {
+
+    const { executeAutomations } = await import('../middlewares/automation.mjs')
+    const event1 = {
+        type: 'VEVENT',
+        summary: 'summary',
+        description: 'description',
+        start: new Date('2326-02-26T14:00:00.000Z'),
+        end: new Date('2326-02-26T15:00:00.000Z'),
+        url: null,
+        uid: 'event-uid',
+        status: 'CONFIRMED',
+        categories: ['category1', 'category2'],
+        location: 'location',
+        geo: { lat: 1.23, lon: 4.56 },
+        datetype: 'date-time',
+        class: 'PUBLIC',
+        image: 'https://example.com/image.jpg',
+    }
+
+    mockScrapIcs.mock.mockImplementationOnce(async () => ([event1]))
+
+    const r = await executeAutomations(null, null, null)
+
+    // console.log(r)
 })

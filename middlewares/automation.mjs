@@ -233,7 +233,7 @@ export const saveNewOrModifiedEvent = async (event, automation) => {
     {            
         if (alreadyExistingEvent.hash === hash) {
             await logger.info(`Event ${event.uid} has not been modified.`, automation.id);
-            return
+            return 'Not modified'
         }
         await logger.info(`Event ${event.uid} has been modified.`, automation.id);
         event.id = alreadyExistingEvent.mbzId
@@ -245,7 +245,7 @@ export const saveNewOrModifiedEvent = async (event, automation) => {
     
     const savedMbzEvent = await saveEventOnMobilizon(event, application, authorization, automation)
 
-    if (!savedMbzEvent) return
+    if (!savedMbzEvent) return 'Error saving event on Mobilizon'
     
     try {
         if (alreadyExistingEvent) {
@@ -262,12 +262,12 @@ export const saveNewOrModifiedEvent = async (event, automation) => {
         } 
     } catch (error) {
         await logger.error(`Could not ${alreadyExistingEvent ? 'update' : 'create'} imported event for event ${event.uid} : ${error.name} : ${error.message}.`, automation.id)
-        return
+        return 'Error saving event in database'
     }
 
     await logger.success(`Event ${event.uid} has been saved with UUID ${savedMbzEvent.uuid}.`, automation.id);
 
-    return
+    return 'success'
 }
 
 const saveEventOnMobilizon = async (event, application, authorization, automation) =>
@@ -452,9 +452,9 @@ export const parseIcsEvent = async (icsEvent, automation) => {
         }
         
         // If no URL try to use UID as URL
-        if (!mbzEvent.onlineAddress) {
-            mbzEvent.onlineAddress = icsEvent.uid ? `data:ics:uid:${icsEvent.uid}` : null
-        }
+        // if (!mbzEvent.onlineAddress) {
+        //     mbzEvent.onlineAddress = icsEvent.uid ? `data:ics:uid:${icsEvent.uid}` : null
+        // }
 
         if (mbzEvent.endsOn && mbzEvent.endsOn <= mbzEvent.beginsOn) {
             mbzEvent.endsOn = null
@@ -490,10 +490,6 @@ export const parseIcsEvent = async (icsEvent, automation) => {
                 await logger.warning(`Could not fetch image ${icsEvent.attach.val} : ${error.name} : ${error.message}.`, automation.id)
             }
         }
-        
-        if (url && isValidUrl(url)) {
-            return await completeIcsEventFromWeb(url, mbzEvent, automation)
-        }
 
         return mbzEvent
 
@@ -505,29 +501,67 @@ export const parseIcsEvent = async (icsEvent, automation) => {
 
 export const executeIcsAutomation = async automation =>
 {
-    let events = []
+    let scrappedIcsEvents = []
     
     await logger.info(`Fetching ICS feed.`, automation.id)
-    
+
+    // Fetch the ICS feed and parse it to get raw events data.
     try {
-        events = await scrapICS(automation.url)        
+        scrappedIcsEvents = await scrapICS(automation.url)        
     } catch (error) {
         await logger.error(`Error fetching or parsing data : ${error.name} : ${error.message}.`, automation.id)
     }
     
-    const isFuture = event => event.endsOn ?
-        event.endsOn.getTime() >= (new Date()).getTime() :
-        event.beginsOn.getTime() >= (new Date()).getTime()
+    const isFuture = event => {
+        return event.endsOn ?
+            event.endsOn.getTime() >= (new Date()).getTime() :
+            event.beginsOn.getTime() >= (new Date()).getTime()
+    }
 
-    const promises = Object.entries(events).map(
-        ([_, event]) => parseIcsEvent(event, automation)
-            .then(event => event && isFuture(event) ?
-                saveNewOrModifiedEvent(event, automation) :
-                null
-            )
-    )
+    // Get event data as an object
+    const rawIcsEvents = Object.entries(scrappedIcsEvents).map(([_, event]) => event)
+
+    // For each event, parse it to get a mbzEvent object, then keep only future events (or ongoing if endsOn is not defined)
+    const parsedIcsFutureEvents = []
+    for await (const event of parseIcsEventGenerator(rawIcsEvents, automation)) {
+        if (event && isFuture(event)) {
+            parsedIcsFutureEvents.push(event)
+        }
+    }
     
-    return promises
+    // For each future event, if it has an online address, try to fetch more data about it from the web and merge it with the parsed ics data 
+    const completedIcsEvents = []
+    for await (const event of completeIcsEventFromWebGenerator(parsedIcsFutureEvents, automation)) {
+        completedIcsEvents.push(event)
+    }
+
+    // Save each completed event on Mobilizon, either as a new event or as an update of an existing one if the uid is the same, then save the event in our database as imported for this automation
+    const savePromises = []
+    for await (const event of completedIcsEvents) {
+        savePromises.push(saveNewOrModifiedEvent(event, automation))
+    }
+
+    // Return array of promises to be able to wait for all events to be saved before ending the automation execution
+    return savePromises
+}
+
+const completeIcsEventFromWebGenerator = async function* (icsEvents, automation) {
+    for (const icsEvent of icsEvents) {
+        if (icsEvent.onlineAddress) {
+            yield await completeIcsEventFromWeb(icsEvent.onlineAddress, icsEvent, automation)
+        } else {
+            yield icsEvent
+        }
+    }
+}
+    
+const parseIcsEventGenerator = async function* (icsEvents, automation) {
+    for (const icsEvent of icsEvents) {
+        const mbzEvent = await parseIcsEvent(icsEvent, automation)
+        if (mbzEvent) {
+            yield mbzEvent
+        }
+    }
 }
 
 const executeAutomation = async automation => {
@@ -535,7 +569,7 @@ const executeAutomation = async automation => {
     await logger.info('Launching automation.', automation.id)
     
     if (automation.type == 'ics') {
-        return executeIcsAutomation(automation)
+        return await executeIcsAutomation(automation)
     } else if (automation.type == 'fb') { 
         return executeFacebookAutomation(automation)
     }
@@ -547,7 +581,7 @@ export const executeAutomations = async (req, res, next) => {
     const promises = automations.map(automation => executeAutomation(automation))
     
     Promise.allSettled(promises)
-        .then((r) => { console.log(r) })
+        .then((automations) => console.log(automations))
         .catch(e => console.log(e))
         .finally(() => res.end('Done !'))
 }

@@ -145,17 +145,16 @@ docker push dindy88/mobilizon-importer-backend
 * Use Linked Data as core event model with Schema.org vocabulary
 * Improve event scrapper error return
 * handle page.goto fail
-* Replace "Oragnisé par" by an emoji
 * Add feature to suspend automation
-* On ics events automation don't scrap url and image if event is past to save resources
 
 # SQL queries to monitor
 
+## Get last imported events
 ```sql
 SELECT CONCAT('https://', AP.domain, '/events/', IE.mbzUid), IE.uid, AP.domain FROM importedEvents IE INNER JOIN automations AM on AM.id = IE.automationId INNER JOIN authorizations AZ on AZ.id = AM.authorizationId INNER JOIN applications AP on AP.id = AZ.applicationId WHERE IE.updatedAt >= '2026-06-03 00:00:00';
 ```
 
-
+## Get last logs
 ```sql
 SELECT AL.type, AL.message, AP.domain, AM.url FROM automationLogs AL INNER JOIN automations AM on AM.id = AL.automationId INNER JOIN authorizations AZ on AZ.id = AM.authorizationId INNER JOIN applications AP on AP.id = AZ.applicationId WHERE AL.updatedAt >= '2026-06-03 00:00:00'; 
 ```
