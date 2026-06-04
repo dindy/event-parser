@@ -201,6 +201,7 @@ const executeFacebookAutomation = async automation => {
         
         for (const eventLoaded of fbGroupEventsToLoad) {
             try {
+                if (eventLoaded.isPast) continue
                 await page.goto(eventLoaded.url, { waitUntil: 'load', timeout })
                 const eventData = await fbEventParser.parse(page, getEventModel())
                 fbGroupEventsParsed.push(eventData)
