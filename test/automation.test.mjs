@@ -5,7 +5,6 @@ import assert from 'assert'
 import { BadRequestError } from '../api/exceptions/BadRequestError.mjs'
 import { isValidUrl } from '../libs/parsers/web-parsers/utils/utils.mjs';
 import { getEventModel } from '../libs/parsers/web-parsers/models.mjs';
-import { log } from 'console';
 
 const mockLogger = {
     info: mock.fn(async () => {}),
