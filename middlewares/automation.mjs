@@ -215,6 +215,8 @@ const executeFacebookAutomation = async automation => {
             fbGroupEventsSavedPromises.push(saveNewOrModifiedEvent(mbzEvent, automation))
         }
 
+        await page.close()
+
         return fbGroupEventsSavedPromises
     })
 }
