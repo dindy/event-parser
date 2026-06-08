@@ -115,6 +115,9 @@ mock.module('../libs/parsers/web-parsers/event/facebook-event-parser.mjs', {
 })
 
 beforeEach(() => {
+    mockConvertUrlToBase64.mock.resetCalls()
+    mockScrapWeb.mock.resetCalls()
+    mockConvertBase64DataUrlToBase64.mock.resetCalls()
     mockScrapWeb.mock.mockImplementation(mock.fn(async () => null))
     executeScrapWeb.mock.mockImplementation(mock.fn(async () => null))
     mockConvertBase64DataUrlToBase64.mock.mockImplementation(mock.fn(() => ({ base64: 'mockbase64', extension: 'jpg', type: 'image/jpg' })))
@@ -187,6 +190,10 @@ test('should parse and convert ics events to Mobilizon events', async () => {
             assert.strictEqual(mockScrapWeb.mock.calls.length, 0);
         }
     }
+
+    // Event 5 should trigger image loading with the prop IMAGE and not ATTACH
+    assert(mockConvertUrlToBase64.mock.calls.some(call => call.arguments[0] == 'http://pommesdelune.fr/media/906525fc-ccb5-4c30-83f7-f0f5b5d4a76b.jpg'))
+    assert(!mockConvertUrlToBase64.mock.calls.some(call => call.arguments[0] == 'https://attachdomain.com/image.png'))
 });
 
 test('saveNewOrModifiedEvent', async () => {

@@ -468,10 +468,13 @@ export const parseIcsEvent = async (icsEvent, automation) => {
         }
 
         mbzEvent.picture = null
+
+        const imageProp = icsEvent.image ? 'image' : 'attach'
+
         /** @TODO : Handle binary data images */
         // If there is a value that is a url and type is image or not specified
-        const val = icsEvent.attach?.val || icsEvent.attach
-        const type = icsEvent.attach?.params?.FMTTYPE
+        const val = icsEvent[imageProp]?.val || icsEvent[imageProp]
+        const type = icsEvent[imageProp]?.params?.FMTTYPE
         if (
             val
             && isValidUrl(val)
@@ -489,7 +492,7 @@ export const parseIcsEvent = async (icsEvent, automation) => {
                     }
                 }
             } catch(error) {
-                await logger.warning(`Could not fetch image ${icsEvent.attach.val} : ${error.name} : ${error.message}.`, automation.id)
+                await logger.warning(`Could not fetch image ${val} : ${error.name} : ${error.message}.`, automation.id)
             }
         }
 
