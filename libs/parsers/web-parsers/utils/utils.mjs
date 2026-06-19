@@ -42,7 +42,8 @@ export const convertUrlToBase64DataUrl = async url => {
         return "data:" + image.type + ";base64," + image.base64;
     } catch (e) {
         console.log('Erreur sur l\'url : ', url);
-        console.log(e);
+        /** @TODO Log usefull data */
+        // console.log(e); 
         return null;
     }
 }

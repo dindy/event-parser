@@ -20,7 +20,7 @@ const proxyUrl = getProxyUrl(envProxyUsername, envProxyPassword, envProxyServer,
 
 export const prepareRequestFunction = ({ request, username, password, hostname, port, isHttp, connectionId }) => {
   
-  console.log(`Local proxy server received request for ${hostname}:${port} (connectionId: ${connectionId})`)
+  // console.log(`Local proxy server received request for ${hostname}:${port} (connectionId: ${connectionId})`)
 
   // If envProxyOnlyForDomains is empty, use proxy for all domains. Otherwise, use proxy only for specified domains.
   const match = domainsMatchHostname(envProxyOnlyForDomains, hostname)

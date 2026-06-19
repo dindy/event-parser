@@ -5,6 +5,7 @@ import { refresh as refreshAuthorization } from "../models/Authorization.mjs"
 import MobilizonRefreshTokenError from "./exceptions/MobilizonRefreshTokenError.mjs"
 import { updateTokenSession } from './sessionWriter.mjs'
 import { RefreshTokenError } from '../api/exceptions/RefreshTokenError.mjs'
+import { BadRequestError } from '../api/exceptions/BadRequestError.mjs'
 
 const sleep = ms => new Promise((resolve) => {
     setTimeout(resolve, ms);
@@ -38,7 +39,7 @@ const internalRefreshOnExpired = async (
     } catch (error) {    
 
         // If token has expired
-        if (error instanceof ExpiredTokenError) {            
+        if (error instanceof ExpiredTokenError) {
             
             console.log(id, `Token ${dt(accessToken)} has expired`)
             
@@ -58,7 +59,7 @@ const internalRefreshOnExpired = async (
                 // Update the access token
                 accessToken = auth.accessToken
             
-            // If there is no new access token in DB
+                // If there is no new access token in DB
             } else {
 
                 console.log(id, `No new token found in database. Trying to refresh the token ${dt(accessToken)}`)
@@ -70,7 +71,7 @@ const internalRefreshOnExpired = async (
                     const tokenData = await refreshToken(domain, auth.refreshToken).getData()
                     
                     // Update the authorization in DB
-                    await refreshAuthorization(auth, tokenData.refreshToken, tokenData.accessToken) 
+                    await refreshAuthorization(auth, tokenData.refreshToken, tokenData.accessToken)
                     
                     // Update the user session
                     // (there is no user session if the request comes from automation)
@@ -100,7 +101,7 @@ const internalRefreshOnExpired = async (
 
                             const currentMs = (new Date()).getTime()
                             const elapsedMs = currentMs - beginMs
-                            const remainingMs = timeoutMs - elapsedMs 
+                            const remainingMs = timeoutMs - elapsedMs
                             console.log(id, `Looking for a new token in database. Timeout in ${remainingMs}ms`)
                             
                             // Exit the loop if timeout has been reached
@@ -120,17 +121,21 @@ const internalRefreshOnExpired = async (
 
                         console.log(id, `Unknown error while trying to refresh the token ${dt(accessToken)}`)
                         throw error
-                    }                    
+                    }
                 }
             }
             
             console.log(id, `Recursive call with token ${dt(accessToken)}`)
             return await internalRefreshOnExpired(id, request, domain, accessToken, authId, res, ...args)
+        
+        } else if (error instanceof BadRequestError) { 
+            console.log(id, 'BadRequestError', error.body)
+            throw error
 
         // Ignore aborted request
         } else if (error.name && error.name === 'AbortError') {       
             console.log(id, 'Aborting request')
-            
+        
         // Else it's an unknown error, pass to error handler
         } else {       
             console.log(id, 'Unknown error', error);
