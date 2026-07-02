@@ -54,6 +54,8 @@ const logScraping = async (page, scraped) =>
       }
     }
     // const debugPageFullPath = await debugPage(page)
+    // console.log(debugPageFullPath);
+    
     log.Debug(`Scrapping done : ${JSON.stringify(toDebug)}`)
   } catch (error) {
     console.log('Error while logging ', error);
