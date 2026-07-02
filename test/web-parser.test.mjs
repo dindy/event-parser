@@ -68,6 +68,7 @@ test('event web parser', async () => {
     })
 
     const parser = await import('../libs/parsers/web-parsers/event/default-event-parser.mjs')
+    const instagramParser = await import('../libs/parsers/web-parsers/event/instagram-event-parser.mjs')
 
     it('should parse stereolab event page', async () => {
 
@@ -123,6 +124,18 @@ test('event web parser', async () => {
                 country: 'FR'
             }
         })
+    })
+
+    it('should parse instagram post data from embedded json structures', async () => {
+        const url = 'https://www.instagram.com/p/DaF1PuBsu4e/'
+        const htmlFilePath = './test/event-pages/insta-coucous.html'
+        const page = await loadPage(url, htmlFilePath)
+        const parsed = await instagramParser.default.parse(page, getEventModel())
+
+        chai.expect(parsed.images).to.be.an('array').that.is.not.empty
+        chai.expect(parsed.metas.description).to.include('Tous les lundis')
+        chai.expect(parsed.metas.startTimestamp).to.be.a('number')
+        chai.expect(parsed.metas.endTimestamp).to.be.a('number')
     })
 
     it('should parse eventbrite event page', async () => {
