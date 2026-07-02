@@ -151,12 +151,12 @@ docker push dindy88/mobilizon-importer-backend
 
 ## Get last imported events
 ```sql
-SELECT CONCAT('https://', AP.domain, '/events/', IE.mbzUid), IE.uid, AP.domain FROM importedEvents IE INNER JOIN automations AM on AM.id = IE.automationId INNER JOIN authorizations AZ on AZ.id = AM.authorizationId INNER JOIN applications AP on AP.id = AZ.applicationId WHERE IE.updatedAt >= '2026-06-03 00:00:00';
+SELECT CONCAT('https://', AP.domain, '/events/', IE.mbzUid), IE.uid, AP.domain FROM importedEvents IE INNER JOIN automations AM on AM.id = IE.automationId INNER JOIN authorizations AZ on AZ.id = AM.authorizationId INNER JOIN applications AP on AP.id = AZ.applicationId WHERE TIMESTAMPDIFF(HOUR,IE.updatedAt,NOW())<24;
 ```
 
 ## Get last logs
 ```sql
-SELECT AL.type, AL.message, AP.domain, AM.url FROM automationLogs AL INNER JOIN automations AM on AM.id = AL.automationId INNER JOIN authorizations AZ on AZ.id = AM.authorizationId INNER JOIN applications AP on AP.id = AZ.applicationId WHERE AL.updatedAt >= '2026-06-03 00:00:00'  AND AL.type='error'; 
+SELECT AL.updatedAt, AL.type, AL.message, AP.domain, AM.url FROM automationLogs AL INNER JOIN automations AM on AM.id = AL.automationId INNER JOIN authorizations AZ on AZ.id = AM.authorizationId INNER JOIN applications AP on AP.id = AZ.applicationId WHERE TIMESTAMPDIFF(HOUR,AL.updatedAt,NOW())<24 AND AL.type='error'; 
 ```
 
 ## Get created events by day
