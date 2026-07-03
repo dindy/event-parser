@@ -1,3 +1,7 @@
+<a href="https://liberapay.com/dindy">
+  <img src="https://img.shields.io/badge/Liberapay-Donate-f6c915?logo=liberapay&logoColor=black" alt="Liberapay">
+</a>
+
 # Presentation
 
 Express backend for [mobilizon-event-importer](https://github.com/dindy/mobilizon-event-importer). 
