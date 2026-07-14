@@ -308,12 +308,7 @@ const mergeIcsEventAndWebEvent = (icsEvent, webEvent) =>
     // If beginsOn is set we are pretty sure we have parsed an event
     // and data are reliable
     if (webEvent.beginsOn)
-    {
-        // Keep web URL if defined
-        if (webEvent.onlineAddress) {
-            mergedEvent.onlineAddress = webEvent.onlineAddress
-        }
-        
+    {   
         // Keep ics name if defined
         if (!mergedEvent.title && webEvent.title) {
             mergedEvent.title = webEvent.title
