@@ -48,7 +48,7 @@ app.get("/cron/maintenance", cronSecretChecker, cleanUpLogs)
 app.use(mobilizonApiErrorHandler)
 app.use(errorHandler)
 process.on("uncaughtException", (err) => {
-  console.error("Uncaught Exception:", err.message)
+  console.error("Uncaught Exception:", err)
   process.exit(1) // Exit to prevent an unstable state
 })
 // Handle unhandled promise rejections (async errors outside Express)
