@@ -128,7 +128,7 @@ test('event web parser', async () => {
 
     it('should parse instagram post data from embedded json structures', async () => {
         const url = 'https://www.instagram.com/p/DaF1PuBsu4e/'
-        const htmlFilePath = './test/event-pages/insta-coucous.html'
+        const htmlFilePath = './test/event-pages/insta-couscous.html'
         const page = await loadPage(url, htmlFilePath)
         const parsed = await instagramParser.default.parse(page, getEventModel())
 
@@ -136,6 +136,15 @@ test('event web parser', async () => {
         chai.expect(parsed.metas.description).to.include('Tous les lundis')
         chai.expect(parsed.metas.startTimestamp).to.be.a('number')
         chai.expect(parsed.metas.endTimestamp).to.be.a('number')
+    })
+
+    it('should parse musee d\'orsay event page', async () => {
+        const url = 'https://www.musee-orsay.fr/fr/programme/agenda/visites-et-ateliers/vacances-orsay-2026'
+        const htmlFilePath = './test/event-pages/musee-orsay.html'
+        const page = await loadPage(url, htmlFilePath)
+        const parsed = await parser.default.parse(page, getEventModel())
+        // Handles the case where the street address is an array of strings, and joins them into a single string
+        chai.expect(parsed.metas.physicalAddress.street).to.eq("Salle des fêtes\r(salle 51 niveau 2)")
     })
 
     it('should parse eventbrite event page', async () => {

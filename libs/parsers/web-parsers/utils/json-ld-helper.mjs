@@ -107,6 +107,7 @@ export const extractPhysicalAddressFromPostalAddress = value => {
     pA.locality = value.addressLocality || null
     pA.postalCode = value.postalCode || null
     pA.street = value.streetAddress || null
+    if (Array.isArray(pA.street)) pA.street = pA.street.join(' ')
     pA.country = value.addressCountry || null
     if (value.description) pA.description = value.description
     if (value.extendedAddress) pA.description = value.extendedAddress
