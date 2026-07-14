@@ -167,6 +167,90 @@ const graphqlJson = (
     { 'Content-Type': "application/json" }
 )
 
+const saveEventRateLimitMs = 1000
+const saveEventQueues = new Map()
+
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+
+const getSaveEventQueue = domain => {
+    if (!saveEventQueues.has(domain)) {
+        saveEventQueues.set(domain, {
+            lastRunAt: 0,
+            entries: [],
+            processing: false
+        })
+    }
+
+    return saveEventQueues.get(domain)
+}
+
+const processSaveEventQueue = async domain => {
+    const queue = saveEventQueues.get(domain)
+    if (!queue || queue.processing) return
+
+    queue.processing = true
+
+    while (queue.entries.length > 0) {
+        const now = Date.now()
+        const delay = queue.lastRunAt + saveEventRateLimitMs - now
+        if (delay > 0) {
+            await sleep(delay)
+        }
+
+        const entry = queue.entries.shift()
+        if (!entry) break
+
+        entry.started = true
+        entry.request = entry.createRequest()
+        queue.lastRunAt = Date.now()
+
+        try {
+            const result = await entry.request.getData()
+            entry.resolve(result)
+        } catch (error) {
+            entry.reject(error)
+        }
+    }
+
+    queue.processing = false
+}
+
+const enqueueSaveEventRequest = (domain, createRequest) => {
+    const queue = getSaveEventQueue(domain)
+    const entry = {
+        createRequest,
+        request: null,
+        resolve: null,
+        reject: null,
+        started: false
+    }
+
+    const promise = new Promise((resolve, reject) => {
+        entry.resolve = resolve
+        entry.reject = reject
+    })
+
+    entry.abort = () => {
+        if (!entry.started) {
+            const idx = queue.entries.indexOf(entry)
+            if (idx !== -1) {
+                queue.entries.splice(idx, 1)
+            }
+            entry.reject(new Error('saveEvent aborted'))
+        } else if (entry.request?.abort) {
+            entry.request.abort()
+        }
+    }
+
+    queue.entries.push(entry)
+    processSaveEventQueue(domain).catch(() => {})
+
+    return {
+        abort: entry.abort,
+        getData: () => promise
+    }
+}
+
 export const refreshToken = (
     domain,
     refreshToken
@@ -486,13 +570,13 @@ export const saveEvent = (domain, accessToken, event) => {
 
     formData.append('variables', JSON.stringify(eventCopy))
     
-    return graphql(
+    return enqueueSaveEventRequest(domain, () => graphql(
         domain,
         accessToken,
         (data) => data.data[operationName],
         formData.getBuffer(),
         formData.getHeaders()
-    )    
+    ))
 }
 
 export const pass = (domain, accessToken, contentType, body) => {

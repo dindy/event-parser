@@ -174,3 +174,4 @@ test("Test refreshOnExpired", async function () {
         chai.expect(refresh.mock.calls.length).to.equal(0)       
     })
 })
+
