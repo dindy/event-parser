@@ -1,4 +1,7 @@
 import ical from 'node-ical';
+
+
+
 import path, { parse } from 'path';
 import { test, mock, afterEach, it, beforeEach } from 'node:test'
 import assert from 'assert'
@@ -114,6 +117,44 @@ mock.module('../libs/parsers/web-parsers/event/facebook-event-parser.mjs', {
     defaultExport: () => null
 })
 
+test('parseIcsEventGenerator returns recurring events', async () => {
+    const icalModule = await import('node-ical')
+
+    // Mock expandRecurringEvent to return two occurrences for the input event
+    const originalExpand = icalModule.default.expandRecurringEvent
+    icalModule.default.expandRecurringEvent = (icsEvent, opts) => {
+        const first = { ...icsEvent, start: new Date('2026-08-01T10:00:00.000Z'), end: new Date('2026-08-01T11:00:00.000Z') }
+        const second = { ...icsEvent, start: new Date('2026-08-02T10:00:00.000Z'), end: new Date('2026-08-02T11:00:00.000Z') }
+        return [first, second]
+    }
+
+    const { parseIcsEventGenerator } = await import('../middlewares/automation.mjs')
+
+    const icsEvent = {
+        type: 'VEVENT',
+        summary: 'Recurring event',
+        start: new Date('2026-08-01T10:00:00.000Z'),
+        end: new Date('2026-08-01T11:00:00.000Z'),
+        uid: 'recurring-uid',
+    }
+
+    const automation = { id: 'test-automation' }
+
+    const results = []
+    for await (const ev of parseIcsEventGenerator([icsEvent], automation)) {
+        results.push(ev)
+    }
+
+    // We expect two expanded occurrences + the original event parsed => 3
+    assert.strictEqual(results.length, 3)
+    assert.strictEqual(new Date(results[0].beginsOn).toISOString(), '2026-08-01T10:00:00.000Z')
+    assert.strictEqual(new Date(results[1].beginsOn).toISOString(), '2026-08-02T10:00:00.000Z')
+    // original event should also be yielded last
+    assert.strictEqual(new Date(results[2].beginsOn).toISOString(), '2026-08-01T10:00:00.000Z')
+    assert.strictEqual(results[2].uid, 'recurring-uid')
+    // Restore original to avoid side-effects on other tests
+    icalModule.default.expandRecurringEvent = originalExpand
+})
 beforeEach(() => {
     mockConvertUrlToBase64.mock.resetCalls()
     mockScrapWeb.mock.resetCalls()

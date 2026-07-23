@@ -1,3 +1,4 @@
+import ical from 'node-ical'
 import crypto from 'node:crypto'
 import InvalidJsonBody from './exceptions/InvalidJsonBody.mjs'
 import InvalidJsonProperty from './exceptions/InvalidJsonProperty.mjs'
@@ -524,6 +525,7 @@ export const executeIcsAutomation = async automation =>
     // For each event, parse it to get a mbzEvent object, then keep only future events (or ongoing if endsOn is not defined)
     const parsedIcsFutureEvents = []
     for await (const event of parseIcsEventGenerator(rawIcsEvents, automation)) {
+        
         if (event && isFuture(event)) {
             parsedIcsFutureEvents.push(event)
         }
@@ -555,8 +557,27 @@ const completeIcsEventFromWebGenerator = async function* (icsEvents, automation)
     }
 }
     
-const parseIcsEventGenerator = async function* (icsEvents, automation) {
-    for (const icsEvent of icsEvents) {
+export const parseIcsEventGenerator = async function* (icsEvents, automation)
+{
+    for (const icsEvent of icsEvents)
+    {
+        const expandedIcsEvent = ical.expandRecurringEvent(icsEvent, {
+            from: new Date(),
+            to: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
+        })
+        
+        for (const expandedEvent of expandedIcsEvent)
+            {
+
+            const mbzEvent = await parseIcsEvent({
+                ...expandedEvent.event,
+                ...expandedEvent
+            }, automation)
+
+            if (mbzEvent) {
+                yield mbzEvent
+            }
+        }
         const mbzEvent = await parseIcsEvent(icsEvent, automation)
         if (mbzEvent) {
             yield mbzEvent
