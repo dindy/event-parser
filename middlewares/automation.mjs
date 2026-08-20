@@ -566,21 +566,31 @@ export const parseIcsEventGenerator = async function* (icsEvents, automation)
             to: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
         })
         
-        for (const expandedEvent of expandedIcsEvent)
-            {
+        // Yield original event and reccurring events if any. If the original event is within the expansion range, it will be included in the expandedIcsEvent array, even if there is no RRULE.
+        if (expandedIcsEvent.length > 0) {
 
-            const mbzEvent = await parseIcsEvent({
-                ...expandedEvent.event,
-                ...expandedEvent
-            }, automation)
+            for (const expandedEvent of expandedIcsEvent) {
 
+                const mbzEvent = await parseIcsEvent({
+                    ...expandedEvent.event,
+                    ...expandedEvent
+                }, automation)
+
+                if (mbzEvent) {
+                    yield mbzEvent
+                    console.log(`Yielded event ${mbzEvent.uid} - ${mbzEvent.title} from ICS feed.`)
+                }
+            }
+    
+        // If no expanded events (the original event is not in the expansion range), we still want to parse the original event and yield it.
+        } else {
+
+            const mbzEvent = await parseIcsEvent(icsEvent, automation)
+        
             if (mbzEvent) {
                 yield mbzEvent
+                console.log(`Yielded event ${mbzEvent.uid} - ${mbzEvent.title} from ICS feed.`)
             }
-        }
-        const mbzEvent = await parseIcsEvent(icsEvent, automation)
-        if (mbzEvent) {
-            yield mbzEvent
         }
     }
 }
