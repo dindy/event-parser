@@ -150,6 +150,7 @@ docker push dindy88/mobilizon-importer-backend
 * Improve event scrapper error return
 * handle page.goto fail
 * Add feature to suspend automation
+* Gérer les événements récurrents facebook (ex: https://www.facebook.com/events/1718186056152104/1718186096152100/)
 
 # SQL queries to monitor
 
