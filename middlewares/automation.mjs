@@ -14,7 +14,7 @@ import {
     destroy as destroyAutomation,
 } from '../models/Automation.mjs'
 import AutomationAlreadyExists from './exceptions/AutomationAlreadyExists.mjs'
-import { refreshOnExpired, requestApi } from './utils.mjs'
+import { refreshOnExpired, requestApi, getCurrentDate, getCurrentTimestamp } from './utils.mjs'
 import { saveEvent, getIdentitiesAndGroups } from '../api/mobilizon.mjs'
 import { convertUrlToBase64, convertBase64DataUrlToBase64, isValidUrl } from '../libs/parsers/web-parsers/utils/utils.mjs'
 import {
@@ -514,9 +514,10 @@ export const executeIcsAutomation = async automation =>
     }
     
     const isFuture = event => {
+        const now = getCurrentTimestamp()
         return event.endsOn ?
-            event.endsOn.getTime() >= (new Date()).getTime() :
-            event.beginsOn.getTime() >= (new Date()).getTime()
+            event.endsOn.getTime() >= now :
+            event.beginsOn.getTime() >= now
     }
 
     // Get event data as an object
@@ -561,11 +562,12 @@ export const parseIcsEventGenerator = async function* (icsEvents, automation)
 {
     for (const icsEvent of icsEvents)
     {
+        const now = getCurrentDate()
         const expandedIcsEvent = ical.expandRecurringEvent(icsEvent, {
-            from: new Date(),
-            to: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
+            from: now,
+            to: new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000) // 30 days from now
         })
-        
+
         // Yield original event and reccurring events if any. If the original event is within the expansion range, it will be included in the expandedIcsEvent array, even if there is no RRULE.
         if (expandedIcsEvent.length > 0) {
 
@@ -573,12 +575,13 @@ export const parseIcsEventGenerator = async function* (icsEvents, automation)
 
                 const mbzEvent = await parseIcsEvent({
                     ...expandedEvent.event,
-                    ...expandedEvent
+                    ...expandedEvent,
+                    uid: expandedEvent.event ? expandedEvent.event.uid + '-' + expandedEvent.start.getTime() : expandedEvent.uid // Unique uid for this occurrence of the recurring event
                 }, automation)
 
                 if (mbzEvent) {
                     yield mbzEvent
-                    console.log(`Yielded event ${mbzEvent.uid} - ${mbzEvent.title} from ICS feed.`)
+                    console.log(`Yielded recurring event ${mbzEvent.uid} - ${mbzEvent.title} - ${mbzEvent.beginsOn} from ICS feed.`)
                 }
             }
     
@@ -589,7 +592,7 @@ export const parseIcsEventGenerator = async function* (icsEvents, automation)
         
             if (mbzEvent) {
                 yield mbzEvent
-                console.log(`Yielded event ${mbzEvent.uid} - ${mbzEvent.title} from ICS feed.`)
+                console.log(`Yielded unique event ${mbzEvent.uid} - ${mbzEvent.title} - ${mbzEvent.beginsOn} from ICS feed.`)
             }
         }
     }

@@ -1,0 +1,33 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//https://chreode.org/?//YesWiki doryphore 4.6.7//EN
+SOURCE:https://chreode.org/?api/forms/2/entries/ical
+BEGIN:VEVENT
+UID:https://chreode.org/?LesAgitesDuLocalSurRadioActive100Fm
+URL:https://chreode.org/?LesAgitesDuLocalSurRadioActive100Fm
+DTSTAMP:20260915T153731Z
+DTSTART:20260217T173000Z
+DTEND:20260217T183000Z
+RRULE:FREQ=MONTHLY;BYDAY=3TU;UNTIL=20261029T230000Z
+EXDATE:20260818T163000Z
+CREATED:20260206T095910Z
+DATE-MOD:20260608T115402Z
+SUMMARY:Les Agités du Local sur Radio Active 100 FM
+NAME:Les Agités du Local sur Radio Active 100 FM
+DESCRIPTION:Virgil et Fabien vous embarquent sur Radio Active 100 FM, la 
+ radio associative de la région toulonnaise, dans une émission 
+ entièrement dédiée à la transition écologique, sociale et culturelle.
+ Des invités, des discussions, du lien et du partage, du bon son, des 
+ expériences et de belles rencontres au programme ! 🌍\n\n\n Une 
+ nouvelle émission chaque 3ème mardi du mois\n Une rediffusion le 4ème 
+ mardi.\n \nSource: 
+ https://chreode.org/?LesAgitesDuLocalSurRadioActive100Fm
+LOCATION:343 Avenue du 11 Novembre 83160 La Valette-du-Var
+GEO:43.140549678044664;5.997132360935211
+IMAGE;VALUE=URI;DISPLAY=BADGE:https://chreode.org/files/LesAgitesDuLocalSu
+ rRadioActive100Fm_imagebf_image_lesagitesdulocal_logo_20260206105910_20260
+ 206105910.jpg
+ATTACH:https://chreode.org/files/LesAgitesDuLocalSurRadioActive100Fm_image
+ bf_image_lesagitesdulocal_logo_20260206105910_20260206105910.jpg
+END:VEVENT
+END:VCALENDAR

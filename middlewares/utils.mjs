@@ -13,6 +13,10 @@ const sleep = ms => new Promise((resolve) => {
 
 const dt = str => "'..." + str.substring(str.length - 8) + "'"
 
+export const getCurrentDate = () => new Date()
+
+export const getCurrentTimestamp = () => getCurrentDate().getTime()
+
 export const refreshOnExpired = async(
     ...args    
 ) => await internalRefreshOnExpired(

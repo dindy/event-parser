@@ -33,6 +33,9 @@ const mockAutomation = {
         getApplication: async () => ({})
     })
 }
+const mockNow = new Date('2026-01-01T00:00:00.000Z')
+const mockGetCurrentDate = mock.fn(() => new Date(mockNow))
+const mockGetCurrentTimestamp = mock.fn(() => mockNow.getTime())
 const mockRefreshOnExpired = mock.fn(async () => null)
 const mockScrapIcs = mock.fn(async () => null)
 
@@ -63,7 +66,9 @@ mock.module('../models/Automation.mjs', {
 mock.module('../middlewares/utils.mjs', {
     namedExports: {
         refreshOnExpired: mockRefreshOnExpired,
-        requestApi: () => null
+        requestApi: () => null,
+        getCurrentDate: mockGetCurrentDate,
+        getCurrentTimestamp: mockGetCurrentTimestamp,
     }
 })
 mock.module('../libs/AutomationLogger.mjs', {
@@ -163,7 +168,30 @@ beforeEach(() => {
     mockConvertBase64DataUrlToBase64.mock.mockImplementation(mock.fn(() => ({ base64: 'mockbase64', extension: 'jpg', type: 'image/jpg' })))
 })
 
-const { parseIcsEvent, saveNewOrModifiedEvent } = await import('../middlewares/automation.mjs');
+const { parseIcsEvent, saveNewOrModifiedEvent, parseIcsEventGenerator } = await import('../middlewares/automation.mjs');
+
+test('should handle recurring ics events correctly', async () => {
+    const automation = { id: 'test-automation' }
+
+    const events = await ical.async.parseFile(path.resolve('./test/ics/calendar-form-2.ics'));
+    const eventList = Object.values(events).filter(e => e.type === 'VEVENT');
+    const parsedEvents = [];
+
+    for await (const event of parseIcsEventGenerator(eventList, automation)) {
+        parsedEvents.push(event);
+    }
+
+    assert.strictEqual(parsedEvents.length > 2, true, 'Expected more than two recurring events to be parsed');
+    assert.strictEqual(new Set(parsedEvents.map(event => event.uid)).size, parsedEvents.length, 'Each parsed event must have a unique uid');
+
+    assert.strictEqual(parsedEvents[0].uid, 'https://chreode.org/?LesAgitesDuLocalSurRadioActive100Fm-1771349400000');
+    assert.strictEqual(new Date(parsedEvents[0].beginsOn).toISOString(), '2026-02-17T17:30:00.000Z');
+
+    assert.strictEqual(parsedEvents[1].uid, 'https://chreode.org/?LesAgitesDuLocalSurRadioActive100Fm-1773768600000');
+    assert.strictEqual(new Date(parsedEvents[1].beginsOn).toISOString(), '2026-03-17T17:30:00.000Z');
+
+    assert.strictEqual(parsedEvents.at(-1).uid, 'https://chreode.org/?LesAgitesDuLocalSurRadioActive100Fm-1792517400000');
+})
 
 test('should parse and convert ics events to Mobilizon events', async () => {
 
