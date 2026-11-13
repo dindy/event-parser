@@ -47,14 +47,20 @@ app.get("/cron/automations", cronSecretChecker, executeAutomations)
 app.get("/cron/maintenance", cronSecretChecker, cleanUpLogs)
 app.use(mobilizonApiErrorHandler)
 app.use(errorHandler)
-process.on("uncaughtException", (err) => {
+
+process.on("uncaughtException", async (err) => {
   console.error("Uncaught Exception:", err)
+  await cluster.close() // Close the Puppeteer cluster to free resources
+  console.log("Cluster closed due to uncaught exception")
   process.exit(1) // Exit to prevent an unstable state
 })
+
 // Handle unhandled promise rejections (async errors outside Express)
-process.on("unhandledRejection", (err) => {
+process.on("unhandledRejection", async (err) => {
   console.error("Unhandled Promise Rejection:", err.message)
-  process.exit(1)
+  await cluster.close() // Close the Puppeteer cluster to free resources
+  console.log("Cluster closed due to unhandled rejection")
+  process.exit(1) // Exit to prevent an unstable state
 })
 
 export default app
