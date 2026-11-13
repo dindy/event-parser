@@ -6,12 +6,12 @@ puppeteer.use(StealthPlugin())
 const maxConcurrency = process.env.PUPPETEER_MAX_CONCURRENCY ? parseInt(process.env.PUPPETEER_MAX_CONCURRENCY) : 3
 const headless = process.env.PUPPETEER_HEADLESS_MODE === '1' ? true : false
 const args = [
-    "--no-sandbox"
+    "--no-sandbox",
+    '--disable-dev-shm-usage',    
     // '--disable-extensions',
     // '--disable-plugins',
     // '--disable-gpu',
     // '--disable-software-rasterizer',
-    // '--disable-dev-shm-usage',    
 ]
 
 // Always use local proxy, which will decide whether to forward the request to the actual proxy.
@@ -22,6 +22,7 @@ const cluster = await Cluster.launch({
     maxConcurrency,
     puppeteer,
     puppeteerOptions: {
+        pipe: true,
         headless,
         args
     }
